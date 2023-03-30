@@ -32,17 +32,18 @@ docs-gen: ## generate docs for every module, as markdown thanks to https://githu
 ##############
 
 changelogs-gen: ## generate changelog for every module.
-	@( \
-		for module in $(ALL_MODULES_SPACE_SEP); do \
-			sed -i '' -E "s:TAG_MODULE:$$module:g" ./cliff.toml && \
-			git cliff \
-				--include-path "**/$$module/*" \
-				-o ./$$module/CHANGELOG.md && \
-			sed -i '' -E "s:$$module:TAG_MODULE:g" ./cliff.toml && \
-			printf "\nchangelog generated for $$module!\n"; \
-			git commit -m "docs(changelog): update CHANGELOG.md for $$(git describe --abbrev=0 --tags $$(git rev-list --tags="$$module/v[0-9].*" --max-count=1))" ./$$module/CHANGELOG.md; \
-		done \
-	)
+	@for module in $(ALL_MODULES_SPACE_SEP); do \
+		awk -v module="$$module" '{gsub(/TAG_MODULE/, module); print}' ./cliff.toml > ./cliff.toml.tmp && \
+		mv ./cliff.toml.tmp ./cliff.toml && \
+		git cliff \
+			--include-path "**/$$module/*" \
+			-o ./$$module/CHANGELOG.md && \
+		awk -v module="$$module" '{gsub(module, "TAG_MODULE"); print}' ./cliff.toml > ./cliff.toml.tmp && \
+		mv ./cliff.toml.tmp ./cliff.toml && \
+		printf "\nchangelog generated for $$module!\n"; \
+		git commit -m "docs(changelog): update CHANGELOG.md for $$(git describe --abbrev=0 --tags $$(git rev-list --tags="$$module/v[0-9].*" --max-count=1))" ./$$module/CHANGELOG.md; \
+	done
+
 
 
 #############################
