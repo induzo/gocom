@@ -1,0 +1,16 @@
+name: Semgrep
+on:
+  pull_request: {}
+  schedule:
+  - cron: '0 0 * * 6'
+env:
+  SEMGREP_APP_TOKEN : ${{ secrets.SEMGREP_APP_TOKEN }}
+jobs:
+  semgrep:
+    name: Scan
+    runs-on: ubuntu-20.04
+    container:
+      image: returntocorp/semgrep
+    steps:
+    - uses: actions/checkout@v3
+    - run: semgrep ci --exclude "docker-compose*.yml"

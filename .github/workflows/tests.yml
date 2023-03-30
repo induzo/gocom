@@ -1,0 +1,59 @@
+name: "tests race and leak"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  test-race:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ">=1.19.0"
+      - name: Cache tests
+        id: tests
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-tests
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: run all tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+          GOPRIVATE: github.com/induzo/*
+        run: |
+          git config --global url."https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com".insteadOf "https://github.com"
+          make test-all-race
+  test-leak:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ">=1.19.0"
+      - name: Cache tests
+        id: tests
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-tests
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: run all tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+          GOPRIVATE: github.com/induzo/*
+        run: |
+          git config --global url."https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com".insteadOf "https://github.com"
+          make test-all-leak

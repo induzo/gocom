@@ -1,0 +1,33 @@
+name: "security scanner"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  sec-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ">=1.19.0"
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/.local/bin v0.38.3
+      - name: Run security scan with aquasecurity trivy
+        run: make trivy-scan
+      - name: Install govuln
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+      - name: Run security scan with govuln
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GOPRIVATE: github.com/induzo/*
+        run: |
+          git config --global url."https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com".insteadOf "https://github.com"
+          make vuln-scan-all

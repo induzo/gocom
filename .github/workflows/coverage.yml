@@ -1,0 +1,36 @@
+name: "code coverage"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  coveralls:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ">=1.19.0"
+      - name: Cache coveralls
+        id: coveralls
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-coveralls
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install goveralls
+        run: go install github.com/mattn/goveralls@latest
+      - name: Test and send coverage to coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+          GOPRIVATE: github.com/induzo/*
+        run: |
+          git config --global url."https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com".insteadOf "https://github.com"
+          make coveralls
