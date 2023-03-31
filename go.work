@@ -1,3 +1,6 @@
 go 1.20
 
-use ./monitoring/otelinit
+use (
+	./monitoring/otelinit
+	./shutdown
+)

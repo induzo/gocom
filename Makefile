@@ -1,4 +1,4 @@
-.PHONY: all clean docs-gen changelogs-gen readme-version-table-update lint sec-scan upgrade release test-all coveralls test leak bench bench-compare
+.PHONY: all clean docs-gen changelogs-gen readme-version-table-update lint sec-scan upgrade release test-all coverage test leak bench bench-compare
 
 help: ## show this help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_-]+:.*?## / {sub("\\\\n",sprintf("\n%22c"," "), $$2);printf "\033[36m%-25s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -181,6 +181,9 @@ release-specific: ## release selection module, gen-changelog, gen docs, commit a
 			printf "docs generated for $$module!\n"; \
 			git add ./$$module/README.md && \
 			git commit -m "docs: update docs for module $$module" ./$$module/README.md; \
+			go work sync && \
+			git add ./go.work ./go.work.sum && \
+			git commit -m "chore: update go.work" ./go.work ./go.work.sum; \
 			git tag $$TAG && \
 			printf "\nrelease tagged $$TAG !\n"; \
 			printf "\nrelease and tagging has been done, if you are OK with everything, just git push origin $$(git describe --abbrev=0 --tags $$(git rev-list --tags="$$module/v[0-9].*" --max-count=1))\n"; \
