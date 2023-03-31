@@ -9,6 +9,7 @@ common golang packages
 | module                                     | benchmarks  | latest version |
 | ------------------------------------------ | ----------- | -------------- |
 | [monitoring/otelinit](monitoring/otelinit) | [benches]() | 1.0.0          |
+| [shutdown](shutdown)                       | [benches]() | 1.0.0          |
 
 ## How to use any of these private modules
 
