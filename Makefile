@@ -210,9 +210,8 @@ test-all-leak:
 		done \
 	)
 
-coveralls:
+coverage:
 	go test $(ALL_MODULES_DOTDOTDOT) -race -failfast -covermode=atomic -coverprofile=./coverage.out
-	goveralls -covermode=atomic -coverprofile=./coverage.out -repotoken=$(COVERALLS_TOKEN)
 
 test: ## launch tests for a selection module
 	@( \
