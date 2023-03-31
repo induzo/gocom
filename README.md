@@ -1,4 +1,4 @@
-# golang-common
+# induzo/gocom
 
 [![security scanner](https://github.com/induzo/gocom/actions/workflows/sec-scanner.yml/badge.svg)](https://github.com/induzo/gocom/actions/workflows/sec-scanner.yml) [![linter](https://github.com/induzo/gocom/actions/workflows/linter.yml/badge.svg)](https://github.com/induzo/gocom/actions/workflows/linter.yml) [![test & coverage](https://github.com/induzo/gocom/actions/workflows/coverage.yml/badge.svg)](https://github.com/induzo/gocom/actions/workflows/coverage.yml) [![conv commits checker](https://github.com/induzo/gocom/actions/workflows/conv-commits-checker.yml/badge.svg)](https://github.com/induzo/gocom/actions/workflows/conv-commits-checker.yml) [![codecov](https://codecov.io/gh/induzo/gocom/branch/main/graph/badge.svg?token=UBWDRLOYDU)](https://codecov.io/gh/induzo/gocom)
 
