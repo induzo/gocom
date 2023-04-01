@@ -361,13 +361,13 @@ func TestConnPool_WithCustomDataTypes(t *testing.T) {
 			}
 
 			var d decimal.Decimal
-			err = db.QueryRow(context.Background(), "select 10.98").Scan(d)
+			err = db.QueryRow(context.Background(), "select 10.98::numeric").Scan(&d)
 			if err != nil && !tt.expectErrDecimal {
 				t.Errorf("expected no err: %s", err)
 			}
 
 			var u uuid.UUID
-			err = db.QueryRow(context.Background(), "select 'b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5'").Scan(u)
+			err = db.QueryRow(context.Background(), "select 'b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5'::uuid").Scan(&u)
 			if err != nil && !tt.expectErrUUID {
 				t.Errorf("expected no err: %s", err)
 			}
@@ -377,6 +377,9 @@ func TestConnPool_WithCustomDataTypes(t *testing.T) {
 
 func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 	t.Parallel()
+
+	tenPointEight, _ := decimal.NewFromString("10.888888888888")
+	eleven, _ := decimal.NewFromString("11.00")
 
 	ctx := context.Background()
 
@@ -435,7 +438,7 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 			}
 
 			// create
-			row := tx.QueryRow(ctx, "INSERT INTO uuid_decimal(uuid, price) VALUES('b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5', 10.988888888889) RETURNING uuid, price")
+			row := tx.QueryRow(ctx, "INSERT INTO uuid_decimal(uuid, price) VALUES('b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5', 10.888888888888) RETURNING uuid, price")
 			r := struct {
 				uuid  uuid.UUID
 				price decimal.Decimal
@@ -443,8 +446,13 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 			if err := row.Scan(&r.uuid, &r.price); err != nil { //nolint:govet // inline err is within scope
 				t.Errorf("expected no error but got: %v, (%+v)", err, row)
 			}
-			if r.uuid.String() != "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5" || r.price.Cmp(decimal.New(10988888888889, 12)) != 0 {
-				t.Error("inserted data doesn't match with input")
+
+			if r.uuid.String() != "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5" {
+				t.Errorf("expected %s but got: %s", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5", r.uuid.String())
+			}
+
+			if r.price.Cmp(tenPointEight) != 0 {
+				t.Errorf("expected %s but got: %s", tenPointEight.String(), r.price.String())
 			}
 
 			// read
@@ -465,9 +473,15 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 				if err := rows.Scan(&r.uuid, &r.price); err != nil {
 					t.Errorf("expected no error but got: %v", err)
 				}
-				if r.uuid.String() != "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5" || r.price.Cmp(decimal.New(10988888888889, 12)) != 0 {
-					t.Error("inserted data doesn't match with input")
+
+				if r.uuid.String() != "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5" {
+					t.Errorf("expected %s but got: %s", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5", r.uuid.String())
 				}
+
+				if r.price.Cmp(tenPointEight) != 0 {
+					t.Errorf("expected %s but got: %s", tenPointEight.String(), r.price.String())
+				}
+
 				results = append(results, r)
 			}
 			if len(results) != 1 {
@@ -478,8 +492,8 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 			if err := row.Scan(&r.uuid, &r.price); err != nil {
 				t.Errorf("expected no error but got: %v, (%+v)", err, row)
 			}
-			if r.price.Cmp(decimal.New(1100, 2)) != 0 {
-				t.Errorf("expected 11.00 but got %+v", r)
+			if r.price.Cmp(eleven) != 0 {
+				t.Errorf("expected 11.00 but got %s", r.price.String())
 			}
 
 			// delete
