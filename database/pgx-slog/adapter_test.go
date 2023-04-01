@@ -2,13 +2,29 @@ package slog
 
 import (
 	"context"
+	"flag"
 	"io"
+	"os"
 	"reflect"
 	"testing"
 
 	"github.com/jackc/pgx/v5/tracelog"
+	"go.uber.org/goleak"
 	"golang.org/x/exp/slog"
 )
+
+func TestMain(m *testing.M) {
+	leak := flag.Bool("leak", false, "use leak detector")
+	flag.Parse()
+
+	if *leak {
+		goleak.VerifyTestMain(m)
+
+		return
+	}
+
+	os.Exit(m.Run())
+}
 
 func TestNewLogger(t *testing.T) {
 	t.Parallel()

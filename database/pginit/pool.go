@@ -89,6 +89,8 @@ func (pgi *PGInit) ConnPool(ctx context.Context) (*pgxpool.Pool, error) {
 	}
 
 	if err := pool.Ping(ctx); err != nil {
+		pool.Close()
+
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 

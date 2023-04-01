@@ -35,6 +35,8 @@ func ExamplePGInit_ConnPool() {
 		log.Fatalf("init pgi config: %v", err)
 	}
 
+	defer pool.Close()
+
 	if err := pool.Ping(ctx); err != nil {
 		log.Fatalf("ping: %v", err)
 	}
@@ -71,6 +73,8 @@ func ExamplePGInit_ConnPool_withlogger() {
 		log.Fatalf("init pgi config: %v", err)
 	}
 
+	defer pool.Close()
+
 	if err := pool.Ping(ctx); err != nil {
 		log.Fatalf("ping: %v", err)
 	}
@@ -100,6 +104,8 @@ func ExampleConnPoolHealthCheck() {
 	if err != nil {
 		log.Fatalf("init pgi config: %v", err)
 	}
+
+	defer pool.Close()
 
 	healthCheck := pginit.ConnPoolHealthCheck(pool)
 
