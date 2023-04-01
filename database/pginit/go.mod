@@ -3,7 +3,7 @@ module github.com/induzo/gocom/database/pginit
 go 1.20
 
 require (
-	github.com/gofrs/uuid/v5 v5.0.0
+	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/induzo/gocom/database/pgx-slog v1.0.0
 	github.com/jackc/pgx-gofrs-uuid v0.0.0-20230224015001-1d428863c2e2
 	github.com/jackc/pgx-shopspring-decimal v0.0.0-20220624020537-1d36b5a1853e
@@ -24,6 +24,7 @@ require (
 	github.com/docker/docker v23.0.2+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
+	github.com/gofrs/uuid/v5 v5.0.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
