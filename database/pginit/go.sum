@@ -1,0 +1,14 @@
+github.com/gofrs/uuid v4.4.0+incompatible h1:3qXRTX8/NbyulANqlc0lchS1gqAVxRgsuW1YrTJupqA=
+github.com/gofrs/uuid v4.4.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
+github.com/gofrs/uuid/v5 v5.0.0 h1:p544++a97kEL+svbcFbCQVM9KFu0Yo25UoISXGNNH9M=
+github.com/gofrs/uuid/v5 v5.0.0/go.mod h1:CDOjlDMVAtN56jqyRUZh58JT31Tiw7/oQyEXZV+9bD8=
+github.com/jackc/pgx-gofrs-uuid v0.0.0-20230224015001-1d428863c2e2 h1:QWdhlQz98hUe1xmjADOl2mr8ERLrOqj0KWLdkrnNsRQ=
+github.com/jackc/pgx-gofrs-uuid v0.0.0-20230224015001-1d428863c2e2/go.mod h1:Ti7pyNDU/UpXKmBTeFgxTvzYDM9xHLiYKMsLdt4b9cg=
+github.com/jackc/pgx-shopspring-decimal v0.0.0-20220624020537-1d36b5a1853e h1:i3gQ/Zo7sk4LUVbsAjTNeC4gIjoPNIZVzs4EXstssV4=
+github.com/jackc/pgx-shopspring-decimal v0.0.0-20220624020537-1d36b5a1853e/go.mod h1:zUHglCZ4mpDUPgIwqEKoba6+tcUQzRdb1+DPTuYe9pI=
+github.com/jackc/pgx/v5 v5.0.0-alpha.1.0.20220402194133-53ec52aa174c h1:QJXOyTMAw0RuPWx/mBO2lB+6kI3ncpKMy3J4o1HeOHA=
+github.com/jackc/pgx/v5 v5.0.0-alpha.1.0.20220402194133-53ec52aa174c/go.mod h1:hpqr/HW4qanKY/8S2BFVFWYaOpch/IjnvAAt6YdntZQ=
+github.com/jackc/pgx/v5 v5.0.0-alpha.1.0.20220402215505-8cf6721d6672 h1:n6d8fVEARY8cw0D7l/lpZlhF5FnSLixnByz0TiZEu/c=
+github.com/jackc/pgx/v5 v5.0.0-alpha.1.0.20220402215505-8cf6721d6672/go.mod h1:hpqr/HW4qanKY/8S2BFVFWYaOpch/IjnvAAt6YdntZQ=
+github.com/shopspring/decimal v1.3.1 h1:2Usl1nmF/WZucqkFZhnfFYxxxu8LG21F6nPQBE5gKV8=
+github.com/shopspring/decimal v1.3.1/go.mod h1:DKyhrW/HYNuLGql+MJL6WCR6knT2jwCFRcu2hWCYk4o=
