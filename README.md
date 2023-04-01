@@ -8,7 +8,7 @@ common golang packages
 
 | module                                     | benchmarks  | latest version |
 | ------------------------------------------ | ----------- | -------------- |
-| [database/pginit](pginit)                  | [benches]() | 1.0.0          |
+| [database/pginit](pginit)                  | [benches]() | 1.1.0          |
 | [database/pgtest](pgtest)                  | [benches]() | 1.0.0          |
 | [database/pgx-slog](pgx-slog)              | [benches]() | 1.0.0          |
 | [monitoring/otelinit](monitoring/otelinit) | [benches]() | 1.0.0          |
