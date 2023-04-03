@@ -9,9 +9,10 @@ common golang packages
 | module                                     | benchmarks                                                    | latest version |
 | ------------------------------------------ | ------------------------------------------------------------- | -------------- |
 | [contextslogger](contextslogger)           | [benches](https://induzo.github.io/gocom/contextslogger)      | 1.0.0          |
-| [database/pginit](pginit)                  | [benches](https://induzo.github.io/gocom/database/pginit)     | 1.1.2          |
-| [database/pgtest](pgtest)                  | [benches](https://induzo.github.io/gocom/database/pgtest)     | 1.0.1          |
-| [database/pgx-slog](pgx-slog)              | [benches](https://induzo.github.io/gocom/database/pgx-slog)   | 1.0.0          |
+| [database/pginit](database/pginit)         | [benches](https://induzo.github.io/gocom/database/pginit)     | 1.1.2          |
+| [database/pgtest](database/pgtest)         | [benches](https://induzo.github.io/gocom/database/pgtest)     | 1.0.1          |
+| [database/pgx-slog](database/pgx-slog)     | [benches](https://induzo.github.io/gocom/database/pgx-slog)   | 1.0.0          |
+| [http/health](http/health)                 | [benches](https://induzo.github.io/gocom/http/health)         | 0.0.0          |
 | [monitoring/otelinit](monitoring/otelinit) | [benches](https://induzo.github.io/gocom/monitoring/otelinit) | 1.0.0          |
 | [shutdown](shutdown)                       | [benches](https://induzo.github.io/gocom/shutdown)            | 1.0.0          |
 
