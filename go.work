@@ -1,9 +1,11 @@
 go 1.20
 
 use (
+	./contextslogger
 	./database/pginit
 	./database/pgtest
 	./database/pgx-slog
 	./monitoring/otelinit
 	./shutdown
+	./transport/http/health
 )
