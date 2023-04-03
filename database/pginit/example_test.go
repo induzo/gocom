@@ -80,7 +80,7 @@ func ExamplePGInit_ConnPool_withlogger() {
 	}
 }
 
-// Using standard net/http package. We can also simply pass healthCheck as a CheckFn in gocom/transport/http/health/v2.
+// Using standard net/http package. We can also simply pass healthCheck as a CheckFn in gocom/http/health/v2.
 //
 //nolint:testableexamples // cannot run without db
 func ExampleConnPoolHealthCheck() {
