@@ -51,10 +51,3 @@ Let's take an example of an opentelemetry module.
 
 - Create a pull request
 - Wait for review
-
-## Other modules (TODO)
-
-- [ ] use slog
-- [ ] reset git
-- [ ] update pgx/v5 sqlc
-- [ ] bench
