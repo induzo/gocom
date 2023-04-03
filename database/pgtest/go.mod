@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/gofrs/uuid/v5 v5.0.0
 	github.com/golang-migrate/migrate/v4 v4.15.2
-	github.com/induzo/gocom/database/pginit v1.1.1
+	github.com/induzo/gocom/database/pginit v1.1.2
 	github.com/jackc/pgx/v5 v5.3.1
 	github.com/ory/dockertest/v3 v3.9.1
 	go.uber.org/goleak v1.2.1
@@ -22,7 +22,6 @@ require (
 	github.com/docker/docker v23.0.2+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
-	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect

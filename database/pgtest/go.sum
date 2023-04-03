@@ -495,7 +495,6 @@ github.com/godbus/dbus/v5 v5.0.4/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5x
 github.com/godbus/dbus/v5 v5.0.6/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
 github.com/gofrs/uuid v3.2.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
 github.com/gofrs/uuid v4.0.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
-github.com/gofrs/uuid v4.4.0+incompatible h1:3qXRTX8/NbyulANqlc0lchS1gqAVxRgsuW1YrTJupqA=
 github.com/gofrs/uuid/v5 v5.0.0 h1:p544++a97kEL+svbcFbCQVM9KFu0Yo25UoISXGNNH9M=
 github.com/gofrs/uuid/v5 v5.0.0/go.mod h1:CDOjlDMVAtN56jqyRUZh58JT31Tiw7/oQyEXZV+9bD8=
 github.com/gogo/googleapis v1.2.0/go.mod h1:Njal3psf3qN6dwBtQfUmBZh2ybovJ0tlu3o/AC7HYjU=
@@ -664,8 +663,8 @@ github.com/imdario/mergo v0.3.12/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH
 github.com/imdario/mergo v0.3.15 h1:M8XP7IuFNsqUx6VPK2P9OSmsYsI/YFaGil0uD21V3dM=
 github.com/imdario/mergo v0.3.15/go.mod h1:WBLT9ZmE3lPoWsEzCh9LPo3TiwVN+ZKEjmz+hD27ysY=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
-github.com/induzo/gocom/database/pginit v1.1.1 h1:LDl6jeQ+mBIOTrsa7ZvdDJ3ZU4WVS5zaZ/ZzxW111lQ=
-github.com/induzo/gocom/database/pginit v1.1.1/go.mod h1:/1Z1LUeiWb+UaTg9EvwMse3ULNLP518MYCpIC/dA1e8=
+github.com/induzo/gocom/database/pginit v1.1.2 h1:JEIuGp3qcu50MdtpKi+qS2d/mWJXW5o1LZcH8z4u38I=
+github.com/induzo/gocom/database/pginit v1.1.2/go.mod h1:HP9DzifbCq6h3wGyxe0kGSuHO9Kn7T95/amVF6wDsqM=
 github.com/induzo/gocom/database/pgx-slog v1.0.0 h1:a9A2LyG0SNIHTHhrmQb1CdTi/3xLC4IKoh9Tlb1QUtk=
 github.com/induzo/gocom/database/pgx-slog v1.0.0/go.mod h1:or0q6IM6HiDiJudCl7iI+CGEKSYCwf3AKf5R+9/acsw=
 github.com/intel/goresctrl v0.2.0/go.mod h1:+CZdzouYFn5EsxgqAQTEzMfwKwuc0fVdMrT9FCCAVRQ=
