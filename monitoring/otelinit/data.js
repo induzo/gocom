@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1680505153449,
+  "lastUpdate": 1680512423635,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -180,6 +180,42 @@ window.BENCHMARK_DATA = {
             "value": 41679,
             "unit": "ns/op\t   48695 B/op\t      56 allocs/op",
             "extra": "31354 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "79b87a871679051442698b0b0934060fca649fa4",
+          "message": "docs(readme): update latest versions",
+          "timestamp": "2023-04-03T16:58:21+08:00",
+          "tree_id": "8ddaccd1322856b543029ef2cc726f6c57b100bb",
+          "url": "https://github.com/induzo/gocom/commit/79b87a871679051442698b0b0934060fca649fa4"
+        },
+        "date": 1680512422745,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkInitProvider",
+            "value": 8432,
+            "unit": "ns/op\t    1928 B/op\t      47 allocs/op",
+            "extra": "135787 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkInitProvider",
+            "value": 54883,
+            "unit": "ns/op\t   48702 B/op\t      56 allocs/op",
+            "extra": "25000 times\n2 procs"
           }
         ]
       }
