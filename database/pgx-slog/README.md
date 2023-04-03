@@ -29,6 +29,39 @@ type Logger struct {
 func NewLogger(logger *slog.Logger) *Logger
 ```
 
+<details><summary>Example</summary>
+<p>
+
+```go
+package main
+
+import (
+	"context"
+	"io"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/tracelog"
+	"golang.org/x/exp/slog"
+
+	slogadapter "github.com/induzo/gocom/database/pgx-slog"
+)
+
+func main() {
+	textAdapter := slog.NewTextHandler(io.Discard)
+	logger := slog.New(textAdapter)
+
+	pgxPool, _ := pgxpool.New(context.Background(), "postgres://postgres:postgres@localhost:5432/datawarehouse")
+
+	pgxPool.Config().ConnConfig.Tracer = &tracelog.TraceLog{
+		Logger:   slogadapter.NewLogger(logger),
+		LogLevel: tracelog.LogLevelTrace,
+	}
+}
+```
+
+</p>
+</details>
+
 ### func \(\*Logger\) Log
 
 ```go
