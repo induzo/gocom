@@ -6,13 +6,13 @@ common golang packages
 
 ## Current modules
 
-| module                                     | benchmarks  | latest version |
-| ------------------------------------------ | ----------- | -------------- |
-| [database/pginit](pginit)                  | [benches]() | 1.1.1          |
-| [database/pgtest](pgtest)                  | [benches]() | 1.0.0          |
-| [database/pgx-slog](pgx-slog)              | [benches]() | 1.0.0          |
-| [monitoring/otelinit](monitoring/otelinit) | [benches]() | 1.0.0          |
-| [shutdown](shutdown)                       | [benches]() | 1.0.0          |
+| module                                     | benchmarks                                                    | latest version |
+| ------------------------------------------ | ------------------------------------------------------------- | -------------- |
+| [database/pginit](pginit)                  | [benches](https://induzo.github.io/gocom/database/pginit)     | 1.1.1          |
+| [database/pgtest](pgtest)                  | [benches](https://induzo.github.io/gocom/database/pgtest)     | 1.0.0          |
+| [database/pgx-slog](pgx-slog)              | [benches](https://induzo.github.io/gocom/database/pgx)        | 1.0.0          |
+| [monitoring/otelinit](monitoring/otelinit) | [benches](https://induzo.github.io/gocom/monitoring/otelinit) | 1.0.0          |
+| [shutdown](shutdown)                       | [benches](https://induzo.github.io/gocom/shutdown)            | 1.0.0          |
 
 ## How to use any of these private modules
 
