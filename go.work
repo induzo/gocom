@@ -5,6 +5,7 @@ use (
 	./database/pginit
 	./database/pgtest
 	./database/pgx-slog
+	./database/redisinit
 	./http/health
 	./monitoring/otelinit
 	./shutdown
