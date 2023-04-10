@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1681118904597,
+  "lastUpdate": 1681119192911,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -329,6 +329,36 @@ window.BENCHMARK_DATA = {
             "name": "BenchmarkNew",
             "value": 1009123789,
             "unit": "ns/op\t  377296 B/op\t    2913 allocs/op",
+            "extra": "1 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "e57f3813038c76f5f4a8004ec1215a189b690a4f",
+          "message": "fix: linter in tests",
+          "timestamp": "2023-04-10T17:31:57+08:00",
+          "tree_id": "66318ffe132b3e1f2380578f9c4180040d509c2f",
+          "url": "https://github.com/induzo/gocom/commit/e57f3813038c76f5f4a8004ec1215a189b690a4f"
+        },
+        "date": 1681119192107,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkNew",
+            "value": 1186945756,
+            "unit": "ns/op\t  377864 B/op\t    2911 allocs/op",
             "extra": "1 times\n2 procs"
           }
         ]
