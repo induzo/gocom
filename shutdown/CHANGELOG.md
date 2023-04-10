@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### Documentation
+
+- Update CHANGELOG.md for shutdown/v1.0.0
+
+### Features
+
+- Contextslogger new module
+
 ## [shutdown/v1.0.0] - 2023-03-31
 
 ### Documentation
