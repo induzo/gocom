@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1681117546902,
+  "lastUpdate": 1681117679971,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -330,6 +330,36 @@ window.BENCHMARK_DATA = {
             "value": 12729775,
             "unit": "ns/op\t    1766 B/op\t      34 allocs/op",
             "extra": "92 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "f633e4a1e380688b1b6b256e37038291e69260db",
+          "message": "fix: semgrep workflow format",
+          "timestamp": "2023-04-10T17:06:46+08:00",
+          "tree_id": "5df3b49d6d81ad357d2c43684c91dfafacdb2e08",
+          "url": "https://github.com/induzo/gocom/commit/f633e4a1e380688b1b6b256e37038291e69260db"
+        },
+        "date": 1681117679360,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkShutdown",
+            "value": 12519866,
+            "unit": "ns/op\t    1776 B/op\t      34 allocs/op",
+            "extra": "94 times\n2 procs"
           }
         ]
       }
