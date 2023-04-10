@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1681117307593,
+  "lastUpdate": 1681117392775,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -329,6 +329,36 @@ window.BENCHMARK_DATA = {
             "name": "BenchmarkNew",
             "value": 4951022497,
             "unit": "ns/op\t 3103952 B/op\t   19738 allocs/op",
+            "extra": "1 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "d690cf54fa900941302a71eb0c4b899acc841e85",
+          "message": "fix: use checkout v3",
+          "timestamp": "2023-04-10T17:01:52+08:00",
+          "tree_id": "1e5ea2d61a958cdb6e094265ac17815df8050cbd",
+          "url": "https://github.com/induzo/gocom/commit/d690cf54fa900941302a71eb0c4b899acc841e85"
+        },
+        "date": 1681117392161,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkNew",
+            "value": 3339159585,
+            "unit": "ns/op\t 2753528 B/op\t   17342 allocs/op",
             "extra": "1 times\n2 procs"
           }
         ]
