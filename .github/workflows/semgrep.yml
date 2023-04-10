@@ -2,9 +2,9 @@ name: Semgrep
 on:
   pull_request: {}
   schedule:
-  - cron: '0 0 * * 6'
+    - cron: "0 0 * * 6"
 env:
-  SEMGREP_APP_TOKEN : ${{ secrets.SEMGREP_APP_TOKEN }}
+  SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 jobs:
   semgrep:
     name: Scan
@@ -12,7 +12,7 @@ jobs:
     container:
       image: returntocorp/semgrep
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-    - run: semgrep ci --exclude "docker-compose*.yml"
+      - run: semgrep ci --exclude "docker-compose*.yml"
