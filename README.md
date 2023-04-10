@@ -14,7 +14,7 @@ common golang packages
 | [database/pgx-slog](database/pgx-slog)     | [benches](https://induzo.github.io/gocom/database/pgx-slog)   | 1.0.0          |
 | [database/redisinit](database/redisinit)   | [benches](https://induzo.github.io/gocom/database/redisinit)  | 1.0.1          |
 | [database/redistest](database/redistest)   | [benches](https://induzo.github.io/gocom/database/redistest)  | 1.0.1          |
-| [http/health](http/health)                 | [benches](https://induzo.github.io/gocom/http/health)         | 1.0.0          |
+| [http/health](http/health)                 | [benches](https://induzo.github.io/gocom/http/health)         | 1.0.1          |
 | [monitoring/otelinit](monitoring/otelinit) | [benches](https://induzo.github.io/gocom/monitoring/otelinit) | 1.0.0          |
 | [shutdown](shutdown)                       | [benches](https://induzo.github.io/gocom/shutdown)            | 1.0.0          |
 
