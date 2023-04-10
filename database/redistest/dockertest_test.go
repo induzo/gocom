@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	if *leak {
 		if code == 0 {
 			if err := goleak.Find(); err != nil {
-				log.Fatalf("goleak: Errors on successful test run: %v\n", err)
+				log.Fatalf("goleak: Errors on successful test run: %v\n", err) //nolint:revive // test code
 
 				code = 1
 			}
