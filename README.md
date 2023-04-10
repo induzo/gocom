@@ -9,7 +9,7 @@ common golang packages
 | module                                     | benchmarks                                                    | latest version |
 | ------------------------------------------ | ------------------------------------------------------------- | -------------- |
 | [contextslogger](contextslogger)           | [benches](https://induzo.github.io/gocom/contextslogger)      | 1.0.0          |
-| [database/pginit](database/pginit)         | [benches](https://induzo.github.io/gocom/database/pginit)     | 1.1.2          |
+| [database/pginit](database/pginit)         | [benches](https://induzo.github.io/gocom/database/pginit)     | 1.1.3          |
 | [database/pgtest](database/pgtest)         | [benches](https://induzo.github.io/gocom/database/pgtest)     | 1.0.1          |
 | [database/pgx-slog](database/pgx-slog)     | [benches](https://induzo.github.io/gocom/database/pgx-slog)   | 1.0.0          |
 | [database/redisinit](database/redisinit)   | [benches](https://induzo.github.io/gocom/database/redisinit)  | 1.0.0          |
