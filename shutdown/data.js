@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1681113146157,
+  "lastUpdate": 1681114008443,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -210,6 +210,36 @@ window.BENCHMARK_DATA = {
             "value": 12612469,
             "unit": "ns/op\t    1699 B/op\t      34 allocs/op",
             "extra": "93 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "f2083d8c51976872ba146eee3dda9803be87ecf6",
+          "message": "fix: use go 1.20.3 in GA pipeline",
+          "timestamp": "2023-04-10T16:05:50+08:00",
+          "tree_id": "94d0e45fe5c5442e84ca9209af1081f8ef888713",
+          "url": "https://github.com/induzo/gocom/commit/f2083d8c51976872ba146eee3dda9803be87ecf6"
+        },
+        "date": 1681114007317,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkShutdown",
+            "value": 12685504,
+            "unit": "ns/op\t    1669 B/op\t      34 allocs/op",
+            "extra": "94 times\n2 procs"
           }
         ]
       }
