@@ -20,9 +20,11 @@ jobs:
         with:
           path: |
             ~/.cache/go-build
-            ~/.cache/golangci-lint
             ~/go/pkg/mod
-          key: ${{ runner.os }}-golangci-lint
+            ~/.cache/golangci-lint
+          key: ${{ runner.os }}-golangci-lint-${{ hashFiles('go.work.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-golangci-lint-
       - name: Checkout code
         uses: actions/checkout@v3
         with:
