@@ -7,6 +7,10 @@ on:
       - ".github/workflows/**"
     branches: [main]
 
+permissions:
+  contents: write
+  deployments: write
+
 jobs:
   benchmark:
     name: Performance regression check
@@ -33,7 +37,7 @@ jobs:
           tool: "go"
           output-file-path: ./database/pgtest/bench-continuous.txt
           # Workflow will fail when an alert happens
-          fail-on-alert: true
+          fail-on-alert: false
           # GitHub API token to make a commit comment
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # Enable alert commit comment

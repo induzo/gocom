@@ -27,7 +27,6 @@ jobs:
       - name: run all tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
           GOPRIVATE: github.com/induzo/*
         run: |
           git config --global url."https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com".insteadOf "https://github.com"
@@ -52,7 +51,6 @@ jobs:
       - name: run all tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
           GOPRIVATE: github.com/induzo/*
         run: |
           git config --global url."https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com".insteadOf "https://github.com"
