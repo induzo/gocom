@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1680572665321,
+  "lastUpdate": 1681113154740,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -168,6 +168,48 @@ window.BENCHMARK_DATA = {
             "value": 4.77,
             "unit": "ns/op\t       0 B/op\t       0 allocs/op",
             "extra": "249674221 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "abb4d866bcea67b9b3f3675b439eb35e45a8a628",
+          "message": "feat: add changelog for database/pgx-slog",
+          "timestamp": "2023-04-10T15:51:35+08:00",
+          "tree_id": "bbea04d400e6de36eed1c4b1e115ff52d0755832",
+          "url": "https://github.com/induzo/gocom/commit/abb4d866bcea67b9b3f3675b439eb35e45a8a628"
+        },
+        "date": 1681113153885,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkNewContext",
+            "value": 57.97,
+            "unit": "ns/op\t      48 B/op\t       1 allocs/op",
+            "extra": "19090011 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkFromContext/logger_in_context",
+            "value": 8.538,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "140302269 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkFromContext/no_logger_in_context",
+            "value": 4.853,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "241991299 times\n2 procs"
           }
         ]
       }
