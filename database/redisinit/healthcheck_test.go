@@ -114,3 +114,20 @@ func TestClientHealthCheck(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkXxx(b *testing.B) {
+	cli := redis.NewClient(&redis.Options{
+		Addr: fmt.Sprintf("localhost:%s", testPort),
+	})
+	defer cli.Close()
+
+	healthCheck := ClientHealthCheck(cli)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		if err := healthCheck(context.Background()); err != nil {
+			b.Errorf("unexpected error in health check: %s", err)
+		}
+	}
+}
