@@ -21,7 +21,7 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles('go.work.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Checkout code
@@ -49,7 +49,9 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-tests
+          key: ${{ runner.os }}-go-${{ hashFiles('go.work.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
       - name: Checkout code
         uses: actions/checkout@v3
         with:
