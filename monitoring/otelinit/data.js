@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1681280511034,
+  "lastUpdate": 1681285842174,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -756,6 +756,42 @@ window.BENCHMARK_DATA = {
             "value": 36939,
             "unit": "ns/op\t   48690 B/op\t      56 allocs/op",
             "extra": "33926 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "35a02a99b9e14ad1fb617f64c2378c520ab59d50",
+          "message": "feat: add bench for handlerwrap",
+          "timestamp": "2023-04-12T15:48:35+08:00",
+          "tree_id": "ebc60ad4013d2c9496b26e85733e474f84234293",
+          "url": "https://github.com/induzo/gocom/commit/35a02a99b9e14ad1fb617f64c2378c520ab59d50"
+        },
+        "date": 1681285841178,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkInitProvider",
+            "value": 8502,
+            "unit": "ns/op\t    1938 B/op\t      47 allocs/op",
+            "extra": "137056 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkInitProvider",
+            "value": 54957,
+            "unit": "ns/op\t   48701 B/op\t      56 allocs/op",
+            "extra": "23761 times\n2 procs"
           }
         ]
       }
