@@ -165,7 +165,7 @@ release-specific: ## release selection module, gen-changelog, gen docs, commit a
 				break; \
 			fi; \
 			printf "here is the $$module latest tag present: "; \
-			git describe --abbrev=0 --tags $$(git rev-list --tags="$$module/v[0-9].*" --max-count=1); \
+			git tag --list --sort=version:refname "$$module/v*" | tail -1; \
 			printf "what tag do you want to give? (use the form $$module/vX.X.X): "; \
 			read -r TAG; \
 			sed -i '' -E "s:TAG_MODULE:$$module:g" ./cliff.toml && \
