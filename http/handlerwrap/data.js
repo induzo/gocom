@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1681285952296,
+  "lastUpdate": 1681286086014,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -72,6 +72,42 @@ window.BENCHMARK_DATA = {
             "value": 785.3,
             "unit": "ns/op\t     287 B/op\t       5 allocs/op",
             "extra": "1610535 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "9d0cccd53752c6559c50453b7092b02d56098eca",
+          "message": "fix: need all depth for conv commit checks",
+          "timestamp": "2023-04-12T15:52:47+08:00",
+          "tree_id": "378564dc65e2e185c271600e8b8c8003349c7be4",
+          "url": "https://github.com/induzo/gocom/commit/9d0cccd53752c6559c50453b7092b02d56098eca"
+        },
+        "date": 1681286085427,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkParsePaginationQueryParams",
+            "value": 572.8,
+            "unit": "ns/op\t     496 B/op\t       5 allocs/op",
+            "extra": "2039352 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkHTTPWrapper",
+            "value": 835.6,
+            "unit": "ns/op\t     299 B/op\t       5 allocs/op",
+            "extra": "1465303 times\n2 procs"
           }
         ]
       }
