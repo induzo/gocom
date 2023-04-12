@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1681118898194,
+  "lastUpdate": 1681279626102,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -450,6 +450,36 @@ window.BENCHMARK_DATA = {
             "value": 12402473,
             "unit": "ns/op\t    1697 B/op\t      34 allocs/op",
             "extra": "96 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "f8f4dcb811eed84c82b0062d70d527529c2ecee6",
+          "message": "feat: simplify workflows",
+          "timestamp": "2023-04-12T14:05:49+08:00",
+          "tree_id": "bf76b085fd5aa49a6cf708045c7d74ef3c5038f1",
+          "url": "https://github.com/induzo/gocom/commit/f8f4dcb811eed84c82b0062d70d527529c2ecee6"
+        },
+        "date": 1681279625448,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkShutdown",
+            "value": 12531892,
+            "unit": "ns/op\t    1715 B/op\t      34 allocs/op",
+            "extra": "93 times\n2 procs"
           }
         ]
       }
