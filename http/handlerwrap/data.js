@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1681286086014,
+  "lastUpdate": 1681464950355,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -108,6 +108,42 @@ window.BENCHMARK_DATA = {
             "value": 835.6,
             "unit": "ns/op\t     299 B/op\t       5 allocs/op",
             "extra": "1465303 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "e799eba6e02f1af53ad1db937804ea85e5a693f9",
+          "message": "docs: add badges for docs and report",
+          "timestamp": "2023-04-14T17:34:27+08:00",
+          "tree_id": "1b72c462b4f0a99ffef478aa976210e6ce6f73b3",
+          "url": "https://github.com/induzo/gocom/commit/e799eba6e02f1af53ad1db937804ea85e5a693f9"
+        },
+        "date": 1681464949307,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkParsePaginationQueryParams",
+            "value": 764.4,
+            "unit": "ns/op\t     496 B/op\t       5 allocs/op",
+            "extra": "1418210 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkHTTPWrapper",
+            "value": 967.5,
+            "unit": "ns/op\t     273 B/op\t       5 allocs/op",
+            "extra": "1264660 times\n2 procs"
           }
         ]
       }
