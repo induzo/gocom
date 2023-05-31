@@ -44,7 +44,7 @@ func ExamplePGInit_ConnPool() {
 
 //nolint:testableexamples // cannot run without db
 func ExamplePGInit_ConnPool_withlogger() {
-	textHandler := slog.NewTextHandler(io.Discard)
+	textHandler := slog.NewTextHandler(io.Discard, nil)
 	logger := slog.New(textHandler)
 
 	pgi, err := pginit.New(

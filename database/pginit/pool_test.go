@@ -175,7 +175,7 @@ func TestConnPool(t *testing.T) {
 
 			ctx := context.TODO()
 
-			textHandler := slog.NewTextHandler(io.Discard)
+			textHandler := slog.NewTextHandler(io.Discard, nil)
 			logger := slog.New(textHandler)
 
 			pgi, err := New(&tt.args.Config, WithLogger(logger, ""))
@@ -232,7 +232,7 @@ func TestConnPoolWithLogger(t *testing.T) {
 
 			ctx := context.Background()
 
-			textHandler := slog.NewTextHandler(io.Discard)
+			textHandler := slog.NewTextHandler(io.Discard, nil)
 			logger := slog.New(textHandler)
 
 			pgi, err := New(
@@ -277,7 +277,7 @@ func TestConnPoolWithLogger(t *testing.T) {
 func TestConnPool_WithCustomDataTypes(t *testing.T) {
 	t.Parallel()
 
-	textHandler := slog.NewTextHandler(io.Discard)
+	textHandler := slog.NewTextHandler(io.Discard, nil)
 	logger := slog.New(textHandler)
 
 	tests := []struct {
@@ -396,7 +396,7 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			textHandler := slog.NewTextHandler(io.Discard)
+			textHandler := slog.NewTextHandler(io.Discard, nil)
 			logger := slog.New(textHandler)
 
 			pgi, err := New(&Config{
@@ -516,7 +516,7 @@ func BenchmarkConnPool(b *testing.B) {
 	for i := 0; i <= b.N; i++ {
 		ctx := context.Background()
 
-		textHandler := slog.NewTextHandler(io.Discard)
+		textHandler := slog.NewTextHandler(io.Discard, nil)
 		logger := slog.New(textHandler)
 
 		b.StartTimer()
