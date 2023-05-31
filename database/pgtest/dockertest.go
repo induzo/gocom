@@ -54,7 +54,7 @@ func New() *DockertestWrapper {
 		log.Fatalf("Could not start resource: %s", err)
 	}
 
-	textHandler := slog.NewTextHandler(io.Discard)
+	textHandler := slog.NewTextHandler(io.Discard, nil)
 	logger := slog.New(textHandler)
 
 	if errP := pool.Retry(func() error {
