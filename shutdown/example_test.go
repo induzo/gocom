@@ -17,7 +17,7 @@ import (
 
 //nolint:testableexamples // do not have testable output
 func ExampleShutdown() {
-	textHandler := slog.NewTextHandler(io.Discard)
+	textHandler := slog.NewTextHandler(io.Discard, nil)
 	logger := slog.New(textHandler)
 
 	shutdownHandler := shutdown.New(

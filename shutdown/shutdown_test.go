@@ -129,7 +129,7 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 	for _, tt := range tests { //nolint:paralleltest // subtest modify same map
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			textHandler := slog.NewTextHandler(io.Discard)
+			textHandler := slog.NewTextHandler(io.Discard, nil)
 			logger := slog.New(textHandler)
 
 			shutdownHandler := New(
@@ -159,7 +159,7 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 }
 
 func BenchmarkShutdown(b *testing.B) {
-	textHandler := slog.NewTextHandler(io.Discard)
+	textHandler := slog.NewTextHandler(io.Discard, nil)
 	logger := slog.New(textHandler)
 
 	shutdownHandler := New(

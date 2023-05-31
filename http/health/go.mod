@@ -10,7 +10,7 @@ require (
 	github.com/ory/dockertest/v3 v3.9.1
 	github.com/redis/go-redis/v9 v9.0.3
 	go.uber.org/goleak v1.2.1
-	golang.org/x/exp v0.0.0-20230321023759-10a507213a29
+	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 	golang.org/x/sync v0.1.0
 )
 
