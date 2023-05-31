@@ -11,7 +11,7 @@ import (
 
 //nolint:testableexamples // do not have testable output
 func ExampleNewContext() {
-	textHandler := slog.NewTextHandler(io.Discard)
+	textHandler := slog.NewTextHandler(io.Discard, nil)
 	logger := slog.New(textHandler)
 
 	_ = contextslogger.NewContext(context.Background(), logger)
@@ -19,7 +19,7 @@ func ExampleNewContext() {
 
 //nolint:testableexamples // do not have testable output
 func ExampleFromContext() {
-	textHandler := slog.NewTextHandler(io.Discard)
+	textHandler := slog.NewTextHandler(io.Discard, nil)
 	logger := slog.New(textHandler)
 
 	ctxWithLogger := contextslogger.NewContext(context.Background(), logger)

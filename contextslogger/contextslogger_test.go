@@ -33,7 +33,7 @@ func TestNewContext(t *testing.T) {
 	}{
 		{
 			name:   "basic",
-			logger: slog.New(slog.NewTextHandler(io.Discard)),
+			logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
 		},
 	}
 
@@ -53,7 +53,7 @@ func TestNewContext(t *testing.T) {
 
 func BenchmarkNewContext(b *testing.B) {
 	parentCtx := context.Background()
-	logger := slog.New(slog.NewTextHandler(io.Discard))
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 
 	b.ResetTimer()
 
@@ -65,7 +65,7 @@ func BenchmarkNewContext(b *testing.B) {
 func TestFromContext(t *testing.T) {
 	t.Parallel()
 
-	logger := slog.New(slog.NewTextHandler(io.Discard))
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	loggerCtx := NewContext(context.Background(), logger)
 	nologgerCtx := context.Background()
 
@@ -102,7 +102,7 @@ func TestFromContext(t *testing.T) {
 }
 
 func BenchmarkFromContext(b *testing.B) {
-	logger := slog.New(slog.NewTextHandler(io.Discard))
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	ctxWithLogger := NewContext(context.Background(), logger)
 	ctxWithoutLogger := context.Background()
 
