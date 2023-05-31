@@ -49,7 +49,7 @@ func ExampleTypedHandler_post() {
 	}
 
 	req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, "/", bytes.NewBuffer(reqBody))
-	req = req.WithContext(contextslogger.NewContext(req.Context(), slog.New(slog.NewTextHandler(io.Discard))))
+	req = req.WithContext(contextslogger.NewContext(req.Context(), slog.New(slog.NewTextHandler(io.Discard, nil))))
 
 	nr := httptest.NewRecorder()
 
@@ -103,7 +103,7 @@ func ExampleTypedHandler_get() {
 	}
 
 	req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, "/", nil)
-	req = req.WithContext(contextslogger.NewContext(req.Context(), slog.New(slog.NewTextHandler(io.Discard))))
+	req = req.WithContext(contextslogger.NewContext(req.Context(), slog.New(slog.NewTextHandler(io.Discard, nil))))
 	nr := httptest.NewRecorder()
 
 	handlerwrap.Wrapper(getHandler(getter)).ServeHTTP(nr, req)
@@ -134,7 +134,7 @@ func ExampleRender() {
 	mux.Handle("/", handler())
 
 	req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, "/", nil)
-	req = req.WithContext(contextslogger.NewContext(req.Context(), slog.New(slog.NewTextHandler(io.Discard))))
+	req = req.WithContext(contextslogger.NewContext(req.Context(), slog.New(slog.NewTextHandler(io.Discard, nil))))
 	nr := httptest.NewRecorder()
 
 	mux.ServeHTTP(nr, req)
@@ -169,7 +169,7 @@ func ExampleParseAcceptedEncoding() {
 	mux.Handle("/", handler())
 
 	req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, "/", nil)
-	req = req.WithContext(contextslogger.NewContext(req.Context(), slog.New(slog.NewTextHandler(io.Discard))))
+	req = req.WithContext(contextslogger.NewContext(req.Context(), slog.New(slog.NewTextHandler(io.Discard, nil))))
 	nr := httptest.NewRecorder()
 
 	mux.ServeHTTP(nr, req)
@@ -204,7 +204,7 @@ func ExampleResponse_Render() {
 	mux.Handle("/", handler())
 
 	req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, "/", nil)
-	req = req.WithContext(contextslogger.NewContext(req.Context(), slog.New(slog.NewTextHandler(io.Discard))))
+	req = req.WithContext(contextslogger.NewContext(req.Context(), slog.New(slog.NewTextHandler(io.Discard, nil))))
 	nr := httptest.NewRecorder()
 
 	mux.ServeHTTP(nr, req)
@@ -239,7 +239,7 @@ func ExampleErrorResponse_Render() {
 	mux.Handle("/", handler())
 
 	req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, "/", nil)
-	req = req.WithContext(contextslogger.NewContext(req.Context(), slog.New(slog.NewTextHandler(io.Discard))))
+	req = req.WithContext(contextslogger.NewContext(req.Context(), slog.New(slog.NewTextHandler(io.Discard, nil))))
 	nr := httptest.NewRecorder()
 
 	mux.ServeHTTP(nr, req)
@@ -272,7 +272,7 @@ func ExampleParsePaginationQueryParams() {
 	}
 
 	req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, "/limit?=10", nil)
-	req = req.WithContext(contextslogger.NewContext(req.Context(), slog.New(slog.NewTextHandler(io.Discard))))
+	req = req.WithContext(contextslogger.NewContext(req.Context(), slog.New(slog.NewTextHandler(io.Discard, nil))))
 	nr := httptest.NewRecorder()
 
 	handlerwrap.Wrapper(listHandler()).ServeHTTP(nr, req)

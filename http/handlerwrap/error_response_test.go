@@ -384,7 +384,7 @@ func TestErrorResponse_Log(t *testing.T) {
 
 			var logBuf bytes.Buffer
 
-			logger := slog.New(slog.NewTextHandler(&logBuf))
+			logger := slog.New(slog.NewTextHandler(&logBuf, nil))
 
 			tt.errResp.Log(logger)
 
