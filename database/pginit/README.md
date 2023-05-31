@@ -242,7 +242,7 @@ import (
 )
 
 func main() {
-	textHandler := slog.NewTextHandler(io.Discard)
+	textHandler := slog.NewTextHandler(io.Discard, nil)
 	logger := slog.New(textHandler)
 
 	pgi, err := pginit.New(
