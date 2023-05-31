@@ -29,7 +29,7 @@ func TestMain(m *testing.M) {
 func TestNewLogger(t *testing.T) {
 	t.Parallel()
 
-	textHandler := slog.NewTextHandler(io.Discard)
+	textHandler := slog.NewTextHandler(io.Discard, nil)
 	logger := slog.New(textHandler)
 	want := &Logger{logger: logger}
 
@@ -40,7 +40,7 @@ func TestNewLogger(t *testing.T) {
 
 // BenchmarkNewLogger benchmarks the NewLogger function.
 func BenchmarkNewLogger(b *testing.B) {
-	textHandler := slog.NewTextHandler(io.Discard)
+	textHandler := slog.NewTextHandler(io.Discard, nil)
 	logger := slog.New(textHandler)
 
 	b.ResetTimer()
@@ -53,7 +53,7 @@ func BenchmarkNewLogger(b *testing.B) {
 func TestLogger_Log(t *testing.T) {
 	t.Parallel()
 
-	textHandler := slog.NewTextHandler(io.Discard)
+	textHandler := slog.NewTextHandler(io.Discard, nil)
 	logger := slog.New(textHandler)
 	pl := NewLogger(logger)
 
@@ -129,7 +129,7 @@ func TestLogger_Log(t *testing.T) {
 
 // BenchmarkLogger_Log benchmarks the Log method of the Logger.
 func BenchmarkLogger_Log(b *testing.B) {
-	textHandler := slog.NewTextHandler(io.Discard)
+	textHandler := slog.NewTextHandler(io.Discard, nil)
 	logger := slog.New(textHandler)
 
 	pl := NewLogger(logger)
