@@ -47,7 +47,7 @@ import (
 )
 
 func main() {
-	textAdapter := slog.NewTextHandler(io.Discard)
+	textAdapter := slog.NewTextHandler(io.Discard, nil)
 	logger := slog.New(textAdapter)
 
 	pgxPool, _ := pgxpool.New(context.Background(), "postgres://postgres:postgres@localhost:5432/datawarehouse")
