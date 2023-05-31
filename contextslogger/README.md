@@ -38,7 +38,7 @@ import (
 )
 
 func main() {
-	textHandler := slog.NewTextHandler(io.Discard)
+	textHandler := slog.NewTextHandler(io.Discard, nil)
 	logger := slog.New(textHandler)
 
 	ctxWithLogger := contextslogger.NewContext(context.Background(), logger)
@@ -76,7 +76,7 @@ import (
 )
 
 func main() {
-	textHandler := slog.NewTextHandler(io.Discard)
+	textHandler := slog.NewTextHandler(io.Discard, nil)
 	logger := slog.New(textHandler)
 
 	_ = contextslogger.NewContext(context.Background(), logger)
