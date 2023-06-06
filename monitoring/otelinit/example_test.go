@@ -6,11 +6,9 @@ import (
 	"io"
 	"log"
 
-	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 
 	"github.com/induzo/gocom/monitoring/otelinit"
-	"github.com/induzo/gocom/monitoring/otelinit/metric"
 	"github.com/induzo/gocom/monitoring/otelinit/trace"
 )
 
@@ -109,35 +107,6 @@ func ExampleStartTrace_collector() {
 	// <nil>
 }
 
-// Init and start an otel metric provider with a collector
-func ExampleStartMetric_collector() {
-	ctx := context.Background()
-
-	shutdown, err := otelinit.StartMetric(ctx, &otelinit.Config{
-		AppName:  "simple-gohttp",
-		Host:     "otlp.nr-data.net",
-		Port:     4317,
-		APIKey:   "123",
-		IsSecure: true,
-	})
-	if err != nil {
-		log.Println("failed to start opentelemetry")
-
-		return
-	}
-
-	defer func() {
-		if errS := shutdown(ctx); errS != nil {
-			log.Println("failed to shutdown trace")
-		}
-	}()
-
-	fmt.Println(err)
-
-	// Output:
-	// <nil>
-}
-
 // Initialize a otel trace provider with a collector
 func ExampleInitTraceProvider_collector() {
 	ctx := context.Background()
@@ -170,38 +139,6 @@ func ExampleInitTraceProvider_collector() {
 	// <nil>
 }
 
-// Initialize a otel trace provider with a collector
-func ExampleInitMetricProvider_collector() {
-	ctx := context.Background()
-
-	shutdown, err := otelinit.InitMetricProvider(
-		ctx,
-		"simple-gohttp",
-		metric.WithGRPCMetricExporter(
-			ctx,
-			otlpmetricgrpc.WithEndpoint(fmt.Sprintf("%s:%d", "otlp.nr-data.net", 4317)),
-			otlpmetricgrpc.WithHeaders(map[string]string{"api-key": "123"}),
-			otlpmetricgrpc.WithCompressor("gzip"),
-		),
-	)
-	if err != nil {
-		log.Println("failed to initialize opentelemetry")
-
-		return
-	}
-
-	defer func() {
-		if errS := shutdown(); errS != nil {
-			log.Println("failed to shutdown")
-		}
-	}()
-
-	fmt.Println(err)
-
-	// Output:
-	// <nil>
-}
-
 // Initialize a otel trace provider and discard traces
 // useful for dev
 func ExampleInitTraceProvider_discardTraces() {
@@ -211,34 +148,6 @@ func ExampleInitTraceProvider_discardTraces() {
 		ctx,
 		"simple-gohttp",
 		trace.WithWriterTraceExporter(io.Discard),
-	)
-	if err != nil {
-		log.Println("failed to initialize opentelemetry")
-
-		return
-	}
-
-	defer func() {
-		if errS := shutdown(); errS != nil {
-			log.Println("failed to shutdown")
-		}
-	}()
-
-	fmt.Println(err)
-
-	// Output:
-	// <nil>
-}
-
-// Initialize a otel metric provider and discard traces
-// useful for dev
-func ExampleInitMetricProvider_discardMetrics() {
-	ctx := context.Background()
-
-	shutdown, err := otelinit.InitMetricProvider(
-		ctx,
-		"simple-gohttp",
-		metric.WithWriterMetricExporter(io.Discard),
 	)
 	if err != nil {
 		log.Println("failed to initialize opentelemetry")
