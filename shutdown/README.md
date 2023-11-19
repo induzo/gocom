@@ -82,7 +82,7 @@ import (
 	"syscall"
 	"time"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 
 	"github.com/induzo/gocom/shutdown"
 )

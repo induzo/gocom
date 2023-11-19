@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"reflect"
 	"syscall"
@@ -12,7 +13,6 @@ import (
 	"time"
 
 	"go.uber.org/goleak"
-	"golang.org/x/exp/slog"
 )
 
 func TestMain(m *testing.M) {

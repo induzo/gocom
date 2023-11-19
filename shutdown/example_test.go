@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
 	"syscall"
 	"time"
-
-	"golang.org/x/exp/slog"
 
 	"github.com/induzo/gocom/shutdown"
 )

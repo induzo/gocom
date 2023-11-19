@@ -4,12 +4,11 @@ package shutdown
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"sync"
 	"time"
-
-	"golang.org/x/exp/slog"
 )
 
 const defaultGracePeriodDuration = 30 * time.Second
