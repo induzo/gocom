@@ -3,8 +3,7 @@ package contextslogger
 
 import (
 	"context"
-
-	slog "golang.org/x/exp/slog"
+	"log/slog"
 )
 
 type contextKey struct{}

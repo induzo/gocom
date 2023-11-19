@@ -3,8 +3,7 @@ package contextslogger_test
 import (
 	"context"
 	"io"
-
-	slog "golang.org/x/exp/slog"
+	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 )

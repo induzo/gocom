@@ -32,7 +32,7 @@ import (
 	"context"
 	"io"
 
-	slog "golang.org/x/exp/slog"
+	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 )
@@ -70,7 +70,7 @@ import (
 	"context"
 	"io"
 
-	slog "golang.org/x/exp/slog"
+	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 )
