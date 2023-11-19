@@ -5,7 +5,9 @@ help: ## show this help
 
 all: docs-gen changelogs-gen readme-version-table-update
 
-ALL_MODULES=$(shell go work edit -json | grep ModPath | sed -E 's:^.*gocom/(.*)":\1:' | sed -E 's:/v[0-9]+$$::')
+# ALL_MODULES=$(shell go work edit -json | grep DiskPath | sed -E 's:^.*gocom/(.*)":\1:' | sed -E 's:/v[0-9]+$$::')
+
+ALL_MODULES=$(shell go work edit -print | grep "./" | cut -d ' ' -f 8)
 
 ALL_MODULES_SPACE_SEP=$(shell echo $(ALL_MODULES) | xargs printf "%s ")
 
@@ -16,6 +18,9 @@ SHELL = /bin/bash
 ########
 # docs #
 ########
+
+test-echo: 
+	echo $(ALL_MODULES_SPACE_SEP)
 
 docs-gen: ## generate docs for every module, as markdown thanks to https://github.com/princjef/gomarkdoc
 	@( \
