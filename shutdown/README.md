@@ -78,11 +78,10 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
 	"syscall"
 	"time"
-
-	"log/slog"
 
 	"github.com/induzo/gocom/shutdown"
 )
