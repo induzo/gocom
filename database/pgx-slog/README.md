@@ -38,10 +38,10 @@ package main
 import (
 	"context"
 	"io"
+	"log/slog"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/tracelog"
-	"log/slog"
 
 	slogadapter "github.com/induzo/gocom/database/pgx-slog"
 )
