@@ -4,13 +4,13 @@ import (
 	"context"
 	"flag"
 	"io"
+	"log/slog"
 	"os"
 	"reflect"
 	"testing"
 
 	"github.com/jackc/pgx/v5/tracelog"
 	"go.uber.org/goleak"
-	"golang.org/x/exp/slog"
 )
 
 func TestMain(m *testing.M) {

@@ -3,9 +3,9 @@ package slog
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/jackc/pgx/v5/tracelog"
-	"golang.org/x/exp/slog"
 )
 
 type Logger struct {

@@ -41,7 +41,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/tracelog"
-	"golang.org/x/exp/slog"
+	"log/slog"
 
 	slogadapter "github.com/induzo/gocom/database/pgx-slog"
 )
