@@ -3,68 +3,61 @@ package redisinit
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"testing"
 
-	"github.com/ory/dockertest/v3"
 	"github.com/redis/go-redis/v9"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
 	"go.uber.org/goleak"
 )
 
-var testPort string //nolint:gochecknoglobals // redis dockertest info
+var endpoint string //nolint:gochecknoglobals // test code
 
 func TestMain(m *testing.M) {
+	ctx := context.Background()
+
+	req := testcontainers.ContainerRequest{
+		Image:        "redis:latest",
+		ExposedPorts: []string{"6379/tcp"},
+		WaitingFor:   wait.ForLog("Ready to accept connections"),
+	}
+
+	redisC, errP := testcontainers.GenericContainer(
+		ctx,
+		testcontainers.GenericContainerRequest{
+			ContainerRequest: req,
+			Started:          true,
+		},
+	)
+	if errP != nil {
+		log.Fatalf("Could not run container: %s", errP)
+	}
+
+	defer func() {
+		if err := redisC.Terminate(ctx); err != nil {
+			log.Fatalf("Could not terminate container: %s", err)
+		}
+	}()
+
 	var err error
 
-	dockerPool, err := dockertest.NewPool("")
+	endpoint, err = redisC.Endpoint(ctx, "")
 	if err != nil {
-		log.Fatalf("Could not connect to docker: %s", err)
+		log.Fatalf("Could not retrieve the container endpoint: %s", err)
 	}
-
-	resource, err := dockerPool.Run("redis", "7", nil)
-	if err != nil {
-		log.Fatalf("Could not start resource: %s", err)
-	}
-
-	var redisCli *redis.Client
-
-	testPort = resource.GetPort("6379/tcp")
-
-	if errP := dockerPool.Retry(func() error {
-		redisCli = redis.NewClient(&redis.Options{
-			Addr: fmt.Sprintf("localhost:%s", testPort),
-		})
-
-		return redisCli.Ping(context.Background()).Err()
-	}); errP != nil {
-		log.Fatalf("Could not connect to docker: %s", errP)
-	}
-
-	defer redisCli.Close()
 
 	leak := flag.Bool("leak", false, "use leak detector")
 	flag.Parse()
 
-	code := m.Run()
-
 	if *leak {
-		if code == 0 {
-			if err := goleak.Find(); err != nil {
-				log.Fatalf("goleak: Errors on successful test run: %v\n", err) //nolint:revive // test code
+		goleak.VerifyTestMain(m, goleak.IgnoreAnyFunction("github.com/testcontainers/testcontainers-go.(*Reaper).Connect.func1"))
 
-				code = 1
-			}
-		}
+		return
 	}
 
-	// You can't defer this because os.Exit doesn't care for defer
-	if err := dockerPool.Purge(resource); err != nil {
-		log.Fatalf("Could not purge resource: %s", err)
-	}
-
-	os.Exit(code)
+	os.Exit(m.Run())
 }
 
 func TestClientHealthCheck(t *testing.T) {
@@ -83,7 +76,7 @@ func TestClientHealthCheck(t *testing.T) {
 			name: "happy",
 			args: args{
 				opt: &redis.Options{
-					Addr: fmt.Sprintf("localhost:%s", testPort),
+					Addr: endpoint,
 				},
 			},
 			wantErr: false,
@@ -117,7 +110,7 @@ func TestClientHealthCheck(t *testing.T) {
 
 func BenchmarkXxx(b *testing.B) {
 	cli := redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("localhost:%s", testPort),
+		Addr: endpoint,
 	})
 	defer cli.Close()
 
