@@ -89,6 +89,11 @@ func TestConnPool(t *testing.T) {
 			connString: "postgres://postgres:postgres@localhost:5432/testbadconn?sslmode=disable",
 			wantErr:    true,
 		},
+		{
+			name:       "expecting error with wrong conn string",
+			connString: "postg:/",
+			wantErr:    true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -103,7 +108,11 @@ func TestConnPool(t *testing.T) {
 
 			pgi, err := New(tt.connString, WithLogger(logger, ""))
 			if err != nil {
-				t.Errorf("unexpected error in test (%v)", err)
+				if !tt.wantErr {
+					t.Errorf("expect no err but err returned: %s", err)
+				}
+
+				return
 			}
 
 			db, err := pgi.ConnPool(ctx)
