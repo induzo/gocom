@@ -108,6 +108,14 @@ func TestLogger_Log(t *testing.T) {
 			},
 		},
 		{
+			name: "LogLevelNone",
+			args: args{
+				level: tracelog.LogLevelNone,
+				msg:   "None log level message",
+				data:  map[string]interface{}{"key": "value"},
+			},
+		},
+		{
 			name: "LogLevelUndefined",
 			args: args{
 				level: tracelog.LogLevel(99),
