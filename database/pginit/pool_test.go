@@ -4,167 +4,94 @@ import (
 	"context"
 	"errors"
 	"flag"
-	"fmt"
 	"io"
 	"log"
-	"net/url"
+	"log/slog"
 	"os"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
-	"github.com/ory/dockertest/v3"
 	"github.com/shopspring/decimal"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/modules/postgres"
+	"github.com/testcontainers/testcontainers-go/wait"
 	"go.uber.org/goleak"
-	"golang.org/x/exp/slog"
 )
 
-var testHost, testPort string //nolint:gochecknoglobals // postgres dockertest info
+var connStr string //nolint:gochecknoglobals // test code
 
 func TestMain(m *testing.M) {
-	dockerPool, err := dockertest.NewPool("")
-	if err != nil {
-		log.Fatalf("Could not connect to docker: %s", err)
+	ctx := context.Background()
+
+	dbName := "datawarehouse"
+	dbUser := "postgres"
+	dbPassword := "postgres"
+
+	postgresContainer, errR := postgres.RunContainer(ctx,
+		testcontainers.WithImage("docker.io/postgres:16-alpine"),
+		postgres.WithDatabase(dbName),
+		postgres.WithUsername(dbUser),
+		postgres.WithPassword(dbPassword),
+		testcontainers.WithWaitStrategy(
+			wait.ForLog("database system is ready to accept connections").
+				WithOccurrence(2).
+				WithStartupTimeout(5*time.Second)),
+	)
+	if errR != nil {
+		log.Fatalf("could not create container: %v", errR)
 	}
 
-	resource, err := dockerPool.Run("postgres", "14", []string{
-		"POSTGRES_PASSWORD=postgres",
-		"POSTGRES_USER=postgres",
-		"POSTGRES_DB=datawarehouse",
-		"listen_addresses = '*'",
-	})
+	// Clean up the container
+	defer func() {
+		if err := postgresContainer.Terminate(ctx); err != nil {
+			panic(err)
+		}
+	}()
+
+	var err error
+
+	connStr, err = postgresContainer.ConnectionString(ctx, "sslmode=disable", "application_name=test")
 	if err != nil {
-		log.Fatalf("Could not start resource: %s", err)
-	}
-
-	databaseURL := fmt.Sprintf("postgres://postgres:%s@%s/datawarehouse?sslmode=disable", "postgres", getHostPort(resource, "5432/tcp"))
-
-	if err := dockerPool.Retry(func() error {
-		ctx := context.Background()
-		db, err := pgx.Connect(ctx, databaseURL)
-		if err != nil {
-			return fmt.Errorf("pgx connect: %w", err)
-		}
-		if err := db.Ping(ctx); err != nil {
-			return fmt.Errorf("ping: %w", err)
-		}
-
-		return nil
-	}); err != nil {
-		log.Fatalf("Could not connect to docker(%s): %s", databaseURL, err)
+		log.Fatalf("could not retrieve conn string: %v", err)
 	}
 
 	leak := flag.Bool("leak", false, "use leak detector")
 	flag.Parse()
 
-	code := m.Run()
-
 	if *leak {
-		if code == 0 {
-			if err := goleak.Find(); err != nil {
-				log.Fatalf("goleak: Errors on successful test run: %v\n", err) //nolint:revive // this is a test
+		goleak.VerifyTestMain(m, goleak.IgnoreAnyFunction("github.com/testcontainers/testcontainers-go.(*Reaper).Connect.func1"))
 
-				code = 1
-			}
-		}
+		return
 	}
 
-	// You can't defer this because os.Exit doesn't care for defer
-	if err := dockerPool.Purge(resource); err != nil {
-		log.Fatalf("Could not purge resource: %s", err)
-	}
-
-	os.Exit(code)
-}
-
-func getHostPort(resource *dockertest.Resource, id string) string {
-	dockerURL := os.Getenv("DOCKER_HOST")
-	if dockerURL == "" {
-		hostAndPort := resource.GetHostPort("5432/tcp")
-		hp := strings.Split(hostAndPort, ":")
-		testHost = hp[0]
-		testPort = hp[1]
-
-		return testHost + ":" + testPort
-	}
-
-	u, err := url.Parse(dockerURL)
-	if err != nil {
-		panic(err)
-	}
-
-	testHost = u.Hostname()
-	testPort = resource.GetPort(id)
-
-	return u.Hostname() + ":" + resource.GetPort(id)
+	os.Exit(m.Run())
 }
 
 func TestConnPool(t *testing.T) {
 	t.Parallel()
 
-	type args struct {
-		Config Config
-	}
-
 	tests := []struct {
-		name       string
-		args       args
-		wantConfig Config
-		wantErr    bool
+		name                string
+		connString          string
+		wantMinConns        int32
+		wantMaxConns        int32
+		wantMaxConnLifetime time.Duration
+		wantErr             bool
 	}{
 		{
-			name: "expecting no error with default connection setting",
-			args: args{
-				Config{
-					Host:     testHost,
-					Port:     testPort,
-					User:     "postgres",
-					Password: "postgres",
-					Database: "datawarehouse",
-				},
-			},
-			wantConfig: Config{
-				MaxConns:     25,
-				MaxIdleConns: 25,
-				MaxLifeTime:  5 * time.Minute,
-			},
-			wantErr: false,
+			name:                "expecting no error with default connection setting",
+			connString:          connStr,
+			wantMinConns:        0,
+			wantMaxConns:        8,
+			wantMaxConnLifetime: 60 * time.Minute,
+			wantErr:             false,
 		},
 		{
-			name: "expecting no error with custom connection setting",
-			args: args{
-				Config{
-					Host:         testHost,
-					Port:         testPort,
-					User:         "postgres",
-					Password:     "postgres",
-					Database:     "datawarehouse",
-					MaxConns:     15,
-					MaxIdleConns: 10,
-					MaxLifeTime:  10 * time.Minute,
-				},
-			},
-			wantConfig: Config{
-				MaxConns:     15,
-				MaxIdleConns: 10,
-				MaxLifeTime:  10 * time.Minute,
-			},
-			wantErr: false,
-		},
-		{
-			name: "expecting error with wrong user setting",
-			args: args{
-				Config{
-					Host:     testHost,
-					Port:     testPort,
-					User:     "wrong",
-					Password: "postgres",
-					Database: "datawarehouse",
-				},
-			},
-			wantErr: true,
+			name:       "expecting error with wrong user setting",
+			connString: "postgres://postgres:postgres@localhost:5432/testbadconn?sslmode=disable",
+			wantErr:    true,
 		},
 	}
 
@@ -178,7 +105,7 @@ func TestConnPool(t *testing.T) {
 			textHandler := slog.NewTextHandler(io.Discard, nil)
 			logger := slog.New(textHandler)
 
-			pgi, err := New(&tt.args.Config, WithLogger(logger, ""))
+			pgi, err := New(tt.connString, WithLogger(logger, ""))
 			if err != nil {
 				t.Errorf("unexpected error in test (%v)", err)
 			}
@@ -201,14 +128,14 @@ func TestConnPool(t *testing.T) {
 			if err := db.Ping(ctx); err != nil {
 				t.Errorf("cannot ping db: %s", err)
 			}
-			if db.Config().MaxConns != tt.wantConfig.MaxConns {
-				t.Errorf("expected (%v) but got (%v)", tt.wantConfig.MaxConns, db.Config().MaxConns)
+			if db.Config().MinConns != tt.wantMinConns {
+				t.Errorf("expected (%v) but got (%v)", tt.wantMinConns, db.Config().MinConns)
 			}
-			if db.Config().MaxConnLifetime != tt.wantConfig.MaxLifeTime {
-				t.Errorf("expected (%v) but got (%v)", tt.wantConfig.MaxLifeTime, db.Config().MaxConnLifetime)
+			if db.Config().MaxConns != tt.wantMaxConns {
+				t.Errorf("expected (%v) but got (%v)", tt.wantMaxConns, db.Config().MaxConns)
 			}
-			if db.Config().MinConns != tt.wantConfig.MaxIdleConns {
-				t.Errorf("expected (%v) but got (%v)", tt.wantConfig.MaxIdleConns, db.Config().MinConns)
+			if db.Config().MaxConnLifetime != tt.wantMaxConnLifetime {
+				t.Errorf("expected (%v) but got (%v)", tt.wantMaxConnLifetime, db.Config().MaxConnLifetime)
 			}
 		})
 	}
@@ -236,14 +163,7 @@ func TestConnPoolWithLogger(t *testing.T) {
 			logger := slog.New(textHandler)
 
 			pgi, err := New(
-				&Config{
-					Host:     testHost,
-					Port:     testPort,
-					User:     "postgres",
-					Password: "postgres",
-					Database: "datawarehouse",
-					MaxConns: 2,
-				},
+				connStr,
 				WithLogger(logger, "request-id"),
 				WithDecimalType(),
 				WithUUIDType(),
@@ -334,14 +254,7 @@ func TestConnPool_WithCustomDataTypes(t *testing.T) {
 			ctx := context.Background()
 
 			pgi, err := New(
-				&Config{
-					Host:     testHost,
-					Port:     testPort,
-					User:     "postgres",
-					Password: "postgres",
-					Database: "datawarehouse",
-					MaxConns: 2,
-				},
+				connStr,
 				tt.opts...,
 			)
 			if err != nil {
@@ -399,13 +312,8 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 			textHandler := slog.NewTextHandler(io.Discard, nil)
 			logger := slog.New(textHandler)
 
-			pgi, err := New(&Config{
-				Host:     testHost,
-				Port:     testPort,
-				User:     "postgres",
-				Password: "postgres",
-				Database: "datawarehouse",
-			},
+			pgi, err := New(
+				connStr,
 				WithLogger(logger, "request-id"),
 				WithDecimalType(),
 				WithUUIDType(),
@@ -522,13 +430,7 @@ func BenchmarkConnPool(b *testing.B) {
 		b.StartTimer()
 
 		pgi, _ := New(
-			&Config{
-				Host:     testHost,
-				Port:     testPort,
-				User:     "postgres",
-				Password: "postgres",
-				Database: "datawarehouse",
-			},
+			connStr,
 			WithLogger(logger, "request-id"),
 			WithDecimalType(),
 			WithUUIDType(),

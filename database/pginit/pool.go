@@ -3,8 +3,7 @@ package pginit
 import (
 	"context"
 	"fmt"
-	"net"
-	"time"
+	"log/slog"
 
 	pgxuuid "github.com/jackc/pgx-gofrs-uuid"
 	pgxdecimal "github.com/jackc/pgx-shopspring-decimal"
@@ -12,15 +11,8 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/tracelog"
-	"golang.org/x/exp/slog"
 
 	slogadapter "github.com/induzo/gocom/database/pgx-slog"
-)
-
-const (
-	defaultMaxConns     = 25
-	defaultMaxIdleConns = 25
-	defaultMaxLifeTime  = 5 * time.Minute
 )
 
 // Option configures PGInit behaviour.
@@ -34,32 +26,10 @@ type PGInit struct {
 
 // New initializes a PGInit using the provided Config and options. If
 // opts is not provided it will initializes PGInit with default configuration.
-func New(conf *Config, opts ...Option) (*PGInit, error) {
-	databaseURL := fmt.Sprintf(
-		"postgres://%s:%s@%s/%s",
-		conf.User, conf.Password, net.JoinHostPort(conf.Host, conf.Port), conf.Database,
-	)
-
-	pgxConf, err := pgxpool.ParseConfig(databaseURL)
+func New(connString string, opts ...Option) (*PGInit, error) {
+	pgxConf, err := pgxpool.ParseConfig(connString)
 	if err != nil {
 		return nil, fmt.Errorf("parse config: %w", err)
-	}
-
-	pgxConf.MaxConns = defaultMaxConns
-	if conf.MaxConns != 0 {
-		pgxConf.MaxConns = conf.MaxConns
-	}
-
-	pgxConf.MinConns = defaultMaxIdleConns
-	if conf.MaxIdleConns != 0 && conf.MaxConns >= conf.MaxIdleConns {
-		pgxConf.MinConns = conf.MaxIdleConns
-	} else {
-		pgxConf.MinConns = pgxConf.MaxConns
-	}
-
-	pgxConf.MaxConnLifetime = defaultMaxLifeTime
-	if conf.MaxLifeTime != 0 {
-		pgxConf.MaxConnLifetime = conf.MaxLifeTime
 	}
 
 	pgi := &PGInit{

@@ -8,41 +8,18 @@ import (
 func TestConnPoolHealthCheck(t *testing.T) {
 	t.Parallel()
 
-	type args struct {
-		config *Config
-	}
-
 	tests := []struct {
 		name    string
-		args    args
 		closeDB bool
 		wantErr bool
 	}{
 		{
-			name: "happy path",
-			args: args{
-				config: &Config{
-					Host:     testHost,
-					Port:     testPort,
-					User:     "postgres",
-					Password: "postgres",
-					Database: "datawarehouse",
-				},
-			},
+			name:    "happy path",
 			closeDB: false,
 			wantErr: false,
 		},
 		{
-			name: "conn closed",
-			args: args{
-				config: &Config{
-					Host:     testHost,
-					Port:     testPort,
-					User:     "postgres",
-					Password: "postgres",
-					Database: "datawarehouse",
-				},
-			},
+			name:    "conn closed",
 			closeDB: true,
 			wantErr: true,
 		},
@@ -53,7 +30,7 @@ func TestConnPoolHealthCheck(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			pgi, err := New(tt.args.config)
+			pgi, err := New(connStr)
 			if err != nil {
 				t.Errorf("unexpected error in test (%v)", err)
 			}

@@ -4,26 +4,15 @@ import (
 	"context"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
-	"time"
-
-	"golang.org/x/exp/slog"
 
 	"github.com/induzo/gocom/database/pginit"
 )
 
 //nolint:testableexamples // cannot run without db
 func ExamplePGInit_ConnPool() {
-	pgi, err := pginit.New(&pginit.Config{
-		Host:         "localhost",
-		Port:         "5432",
-		User:         "postgres",
-		Password:     "postgres",
-		Database:     "datawarehouse",
-		MaxConns:     10,
-		MaxIdleConns: 10,
-		MaxLifeTime:  1 * time.Minute,
-	})
+	pgi, err := pginit.New("postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m")
 	if err != nil {
 		log.Fatalf("init pgi config: %v", err)
 	}
@@ -48,16 +37,7 @@ func ExamplePGInit_ConnPool_withlogger() {
 	logger := slog.New(textHandler)
 
 	pgi, err := pginit.New(
-		&pginit.Config{
-			Host:         "localhost",
-			Port:         "5432",
-			User:         "postgres",
-			Password:     "postgres",
-			Database:     "datawarehouse",
-			MaxConns:     10,
-			MaxIdleConns: 10,
-			MaxLifeTime:  1 * time.Minute,
-		},
+		"postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m",
 		pginit.WithLogger(logger, "request-id"),
 		pginit.WithDecimalType(),
 		pginit.WithUUIDType(),
@@ -84,16 +64,7 @@ func ExamplePGInit_ConnPool_withlogger() {
 //
 //nolint:testableexamples // cannot run without db
 func ExampleConnPoolHealthCheck() {
-	pgi, err := pginit.New(&pginit.Config{
-		Host:         "localhost",
-		Port:         "5432",
-		User:         "postgres",
-		Password:     "postgres",
-		Database:     "datawarehouse",
-		MaxConns:     10,
-		MaxIdleConns: 10,
-		MaxLifeTime:  1 * time.Minute,
-	})
+	pgi, err := pginit.New("postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m")
 	if err != nil {
 		log.Fatalf("init pgi config: %v", err)
 	}
