@@ -3,6 +3,7 @@ package contextslogger_test
 import (
 	"context"
 	"io"
+
 	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"

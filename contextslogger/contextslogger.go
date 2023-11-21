@@ -3,6 +3,7 @@ package contextslogger
 
 import (
 	"context"
+
 	"log/slog"
 )
 
