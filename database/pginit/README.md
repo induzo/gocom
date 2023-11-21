@@ -20,13 +20,12 @@ default LogLevel = Warn
 
 - [func ConnPoolHealthCheck(pool *pgxpool.Pool) func(ctx context.Context) error](<#func-connpoolhealthcheck>)
 - [func StdConnHealthCheck(conn *sql.DB) func(ctx context.Context) error](<#func-stdconnhealthcheck>)
-- [type Config](<#type-config>)
 - [type Option](<#type-option>)
   - [func WithDecimalType() Option](<#func-withdecimaltype>)
   - [func WithLogger(logger *slog.Logger, _ string) Option](<#func-withlogger>)
   - [func WithUUIDType() Option](<#func-withuuidtype>)
 - [type PGInit](<#type-pginit>)
-  - [func New(conf *Config, opts ...Option) (*PGInit, error)](<#func-new>)
+  - [func New(connString string, opts ...Option) (*PGInit, error)](<#func-new>)
   - [func (pgi *PGInit) ConnPool(ctx context.Context) (*pgxpool.Pool, error)](<#func-pginit-connpool>)
 
 
@@ -50,22 +49,12 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/induzo/gocom/database/pginit"
 )
 
 func main() {
-	pgi, err := pginit.New(&pginit.Config{
-		Host:         "localhost",
-		Port:         "5432",
-		User:         "postgres",
-		Password:     "postgres",
-		Database:     "datawarehouse",
-		MaxConns:     10,
-		MaxIdleConns: 10,
-		MaxLifeTime:  1 * time.Minute,
-	})
+	pgi, err := pginit.New("postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m")
 	if err != nil {
 		log.Fatalf("init pgi config: %v", err)
 	}
@@ -101,23 +90,6 @@ func StdConnHealthCheck(conn *sql.DB) func(ctx context.Context) error
 ```
 
 StdConnHealthCheck returns a health check function for sql.DB that can be used in health endpoint.
-
-## type Config
-
-Config allow you to set database credential to connect to database
-
-```go
-type Config struct {
-    User         string
-    Password     string
-    Host         string
-    Port         string
-    Database     string
-    MaxConns     int32
-    MaxIdleConns int32
-    MaxLifeTime  time.Duration
-}
-```
 
 ## type Option
 
@@ -164,7 +136,7 @@ type PGInit struct {
 ### func New
 
 ```go
-func New(conf *Config, opts ...Option) (*PGInit, error)
+func New(connString string, opts ...Option) (*PGInit, error)
 ```
 
 New initializes a PGInit using the provided Config and options. If opts is not provided it will initializes PGInit with default configuration.
@@ -186,22 +158,12 @@ package main
 import (
 	"context"
 	"log"
-	"time"
 
 	"github.com/induzo/gocom/database/pginit"
 )
 
 func main() {
-	pgi, err := pginit.New(&pginit.Config{
-		Host:         "localhost",
-		Port:         "5432",
-		User:         "postgres",
-		Password:     "postgres",
-		Database:     "datawarehouse",
-		MaxConns:     10,
-		MaxIdleConns: 10,
-		MaxLifeTime:  1 * time.Minute,
-	})
+	pgi, err := pginit.New("postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m")
 	if err != nil {
 		log.Fatalf("init pgi config: %v", err)
 	}
@@ -234,8 +196,6 @@ import (
 	"context"
 	"io"
 	"log"
-	"time"
-
 	"log/slog"
 
 	"github.com/induzo/gocom/database/pginit"
@@ -246,16 +206,7 @@ func main() {
 	logger := slog.New(textHandler)
 
 	pgi, err := pginit.New(
-		&pginit.Config{
-			Host:         "localhost",
-			Port:         "5432",
-			User:         "postgres",
-			Password:     "postgres",
-			Database:     "datawarehouse",
-			MaxConns:     10,
-			MaxIdleConns: 10,
-			MaxLifeTime:  1 * time.Minute,
-		},
+		"postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m",
 		pginit.WithLogger(logger, "request-id"),
 		pginit.WithDecimalType(),
 		pginit.WithUUIDType(),
