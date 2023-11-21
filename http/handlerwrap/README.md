@@ -175,10 +175,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
-
-	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 	"github.com/induzo/gocom/http/handlerwrap"
@@ -244,10 +243,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
-
-	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 	"github.com/induzo/gocom/http/handlerwrap"
@@ -335,10 +333,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
-
-	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 	"github.com/induzo/gocom/http/handlerwrap"
@@ -492,10 +489,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
-
-	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 	"github.com/induzo/gocom/http/handlerwrap"
@@ -925,10 +921,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
-
-	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 	"github.com/induzo/gocom/http/handlerwrap"
@@ -997,11 +992,10 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
-
-	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 	"github.com/induzo/gocom/http/handlerwrap"
@@ -1082,10 +1076,9 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
-
-	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 	"github.com/induzo/gocom/http/handlerwrap"
