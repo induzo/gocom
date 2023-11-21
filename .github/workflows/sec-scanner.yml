@@ -13,14 +13,15 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: ">=1.20.5"
+          go-version: ">=1.21"
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0 # we use 0 here as we need it for gitguardian to inspect everything
       - name: Install trivy
         run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/.local/bin v0.42.1
+          VERSION=0.47.0
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/.local/bin v"$VERSION"
       - name: Run security scan with aquasecurity trivy
         run: make trivy-scan
       - name: Install govuln
@@ -34,7 +35,7 @@ jobs:
           git config --global url."https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com".insteadOf "https://github.com"
           make vuln-scan-all
       - name: GitGuardian scan
-        uses: GitGuardian/ggshield-action@master
+        uses: GitGuardian/ggshield-action@v1.21.0
         env:
           GITHUB_PUSH_BEFORE_SHA: ${{ github.event.before }}
           GITHUB_PUSH_BASE_SHA: ${{ github.event.base }}
