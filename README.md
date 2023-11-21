@@ -54,3 +54,14 @@ Let's take an example of an opentelemetry module.
 
 - Create a pull request
 - Wait for review
+
+## Dependency graph
+
+### Depends on database/pgx-slog
+
+- database/pginit
+
+### Depends on contextslogger
+
+- http/handlerwrap
+- http/health
