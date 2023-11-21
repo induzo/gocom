@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1686296786836,
+  "lastUpdate": 1700563835291,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -270,6 +270,48 @@ window.BENCHMARK_DATA = {
             "value": 184537,
             "unit": "ns/op\t     162 B/op\t       7 allocs/op",
             "extra": "6117 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "bf560b6de7c24541b08057eed36a8586ec7b48e3",
+          "message": "refactor: delete dockertest deps",
+          "timestamp": "2023-11-21T18:49:40+08:00",
+          "tree_id": "b07a1ac1ace91532fbf409932caba3af8397b6d2",
+          "url": "https://github.com/induzo/gocom/commit/bf560b6de7c24541b08057eed36a8586ec7b48e3"
+        },
+        "date": 1700563834802,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkXxx - ns/op",
+            "value": 115037,
+            "unit": "ns/op",
+            "extra": "9322 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkXxx - B/op",
+            "value": 161,
+            "unit": "B/op",
+            "extra": "9322 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkXxx - allocs/op",
+            "value": 7,
+            "unit": "allocs/op",
+            "extra": "9322 times\n4 procs"
           }
         ]
       }
