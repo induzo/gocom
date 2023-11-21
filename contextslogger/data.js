@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1700564629725,
+  "lastUpdate": 1700570666823,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -954,6 +954,84 @@ window.BENCHMARK_DATA = {
             "value": 0,
             "unit": "allocs/op",
             "extra": "295257840 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "12537736db8b006001496136b621b2980a184d2c",
+          "message": "docs(README): update dependency cycle",
+          "timestamp": "2023-11-21T20:43:49+08:00",
+          "tree_id": "53431cf53ef41e78849bec4dddf4b4a4d8445785",
+          "url": "https://github.com/induzo/gocom/commit/12537736db8b006001496136b621b2980a184d2c"
+        },
+        "date": 1700570665657,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkNewContext - ns/op",
+            "value": 35.81,
+            "unit": "ns/op",
+            "extra": "32192664 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkNewContext - B/op",
+            "value": 48,
+            "unit": "B/op",
+            "extra": "32192664 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkNewContext - allocs/op",
+            "value": 1,
+            "unit": "allocs/op",
+            "extra": "32192664 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromContext/logger_in_context - ns/op",
+            "value": 6.809,
+            "unit": "ns/op",
+            "extra": "176369616 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromContext/logger_in_context - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "176369616 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromContext/logger_in_context - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "176369616 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromContext/no_logger_in_context - ns/op",
+            "value": 4.044,
+            "unit": "ns/op",
+            "extra": "297962828 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromContext/no_logger_in_context - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "297962828 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromContext/no_logger_in_context - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "297962828 times\n4 procs"
           }
         ]
       }
