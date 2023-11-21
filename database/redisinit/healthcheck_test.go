@@ -9,7 +9,7 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
+	tcredis "github.com/testcontainers/testcontainers-go/modules/redis"
 	"go.uber.org/goleak"
 )
 
@@ -18,32 +18,23 @@ var endpoint string //nolint:gochecknoglobals // test code
 func TestMain(m *testing.M) {
 	ctx := context.Background()
 
-	req := testcontainers.ContainerRequest{
-		Image:        "redis:latest",
-		ExposedPorts: []string{"6379/tcp"},
-		WaitingFor:   wait.ForLog("Ready to accept connections"),
-	}
-
-	redisC, errP := testcontainers.GenericContainer(
-		ctx,
-		testcontainers.GenericContainerRequest{
-			ContainerRequest: req,
-			Started:          true,
-		},
+	redisContainer, errP := tcredis.RunContainer(ctx,
+		testcontainers.WithImage("docker.io/redis:7-alpine"),
+		tcredis.WithSnapshotting(10, 1),
 	)
 	if errP != nil {
 		log.Fatalf("Could not run container: %s", errP)
 	}
 
 	defer func() {
-		if err := redisC.Terminate(ctx); err != nil {
+		if err := redisContainer.Terminate(ctx); err != nil {
 			log.Fatalf("Could not terminate container: %s", err)
 		}
 	}()
 
 	var err error
 
-	endpoint, err = redisC.Endpoint(ctx, "")
+	endpoint, err = redisContainer.Endpoint(ctx, "")
 	if err != nil {
 		log.Fatalf("Could not retrieve the container endpoint: %s", err)
 	}
