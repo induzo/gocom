@@ -31,7 +31,6 @@ package main
 import (
 	"context"
 	"io"
-
 	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
@@ -69,7 +68,6 @@ package main
 import (
 	"context"
 	"io"
-
 	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
