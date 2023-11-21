@@ -4,10 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"reflect"
-
-	"golang.org/x/exp/slog"
 )
 
 // ErrorResponse is a wrapper for the error response body to have a clean way of displaying errors.

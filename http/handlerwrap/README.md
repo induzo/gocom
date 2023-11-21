@@ -178,7 +178,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 	"github.com/induzo/gocom/http/handlerwrap"
@@ -247,7 +247,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 	"github.com/induzo/gocom/http/handlerwrap"
@@ -338,7 +338,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 	"github.com/induzo/gocom/http/handlerwrap"
@@ -495,7 +495,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 	"github.com/induzo/gocom/http/handlerwrap"
@@ -928,7 +928,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 	"github.com/induzo/gocom/http/handlerwrap"
@@ -1001,7 +1001,7 @@ import (
 	"net/http/httptest"
 	"strconv"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 	"github.com/induzo/gocom/http/handlerwrap"
@@ -1085,7 +1085,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 	"github.com/induzo/gocom/http/handlerwrap"

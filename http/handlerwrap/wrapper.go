@@ -2,10 +2,10 @@ package handlerwrap
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 
 	"github.com/goccy/go-json"
-	"golang.org/x/exp/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 )

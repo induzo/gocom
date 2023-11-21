@@ -7,11 +7,10 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
-
-	"golang.org/x/exp/slog"
 
 	"github.com/induzo/gocom/contextslogger"
 	"github.com/induzo/gocom/http/handlerwrap"

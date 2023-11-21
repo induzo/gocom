@@ -6,12 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
-
-	"golang.org/x/exp/slog"
 )
 
 func TestErrorResponse_render(t *testing.T) {
