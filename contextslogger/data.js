@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1686296754333,
+  "lastUpdate": 1700563822018,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -798,6 +798,84 @@ window.BENCHMARK_DATA = {
             "value": 4.75,
             "unit": "ns/op\t       0 B/op\t       0 allocs/op",
             "extra": "252896028 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "bf560b6de7c24541b08057eed36a8586ec7b48e3",
+          "message": "refactor: delete dockertest deps",
+          "timestamp": "2023-11-21T18:49:40+08:00",
+          "tree_id": "b07a1ac1ace91532fbf409932caba3af8397b6d2",
+          "url": "https://github.com/induzo/gocom/commit/bf560b6de7c24541b08057eed36a8586ec7b48e3"
+        },
+        "date": 1700563820929,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkNewContext - ns/op",
+            "value": 35.55,
+            "unit": "ns/op",
+            "extra": "33835267 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkNewContext - B/op",
+            "value": 48,
+            "unit": "B/op",
+            "extra": "33835267 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkNewContext - allocs/op",
+            "value": 1,
+            "unit": "allocs/op",
+            "extra": "33835267 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromContext/logger_in_context - ns/op",
+            "value": 6.811,
+            "unit": "ns/op",
+            "extra": "158494719 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromContext/logger_in_context - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "158494719 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromContext/logger_in_context - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "158494719 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromContext/no_logger_in_context - ns/op",
+            "value": 4.074,
+            "unit": "ns/op",
+            "extra": "297770835 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromContext/no_logger_in_context - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "297770835 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromContext/no_logger_in_context - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "297770835 times\n4 procs"
           }
         ]
       }
