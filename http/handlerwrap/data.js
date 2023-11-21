@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1700564638641,
+  "lastUpdate": 1700570684346,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -336,6 +336,66 @@ window.BENCHMARK_DATA = {
             "value": 5,
             "unit": "allocs/op",
             "extra": "2200063 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "12537736db8b006001496136b621b2980a184d2c",
+          "message": "docs(README): update dependency cycle",
+          "timestamp": "2023-11-21T20:43:49+08:00",
+          "tree_id": "53431cf53ef41e78849bec4dddf4b4a4d8445785",
+          "url": "https://github.com/induzo/gocom/commit/12537736db8b006001496136b621b2980a184d2c"
+        },
+        "date": 1700570683320,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkParsePaginationQueryParams - ns/op",
+            "value": 407.2,
+            "unit": "ns/op",
+            "extra": "2950629 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParsePaginationQueryParams - B/op",
+            "value": 496,
+            "unit": "B/op",
+            "extra": "2950629 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParsePaginationQueryParams - allocs/op",
+            "value": 5,
+            "unit": "allocs/op",
+            "extra": "2950629 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHTTPWrapper - ns/op",
+            "value": 532.2,
+            "unit": "ns/op",
+            "extra": "2276224 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHTTPWrapper - B/op",
+            "value": 284,
+            "unit": "B/op",
+            "extra": "2276224 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHTTPWrapper - allocs/op",
+            "value": 5,
+            "unit": "allocs/op",
+            "extra": "2276224 times\n4 procs"
           }
         ]
       }
