@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1700563836943,
+  "lastUpdate": 1700564646403,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -1002,6 +1002,48 @@ window.BENCHMARK_DATA = {
             "value": 52,
             "unit": "allocs/op",
             "extra": "41058 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "203726318290aefcb8da3b0211e9ff2d6010c774",
+          "message": "chore: update github actions workflows",
+          "timestamp": "2023-11-21T19:03:04+08:00",
+          "tree_id": "edbe6ad1e61cc0715fdeb7668cdac16a37b847da",
+          "url": "https://github.com/induzo/gocom/commit/203726318290aefcb8da3b0211e9ff2d6010c774"
+        },
+        "date": 1700564645950,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkInitProvider - ns/op",
+            "value": 31972,
+            "unit": "ns/op",
+            "extra": "38763 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkInitProvider - B/op",
+            "value": 48682,
+            "unit": "B/op",
+            "extra": "38763 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkInitProvider - allocs/op",
+            "value": 52,
+            "unit": "allocs/op",
+            "extra": "38763 times\n4 procs"
           }
         ]
       }
