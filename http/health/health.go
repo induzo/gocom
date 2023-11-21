@@ -5,11 +5,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/goccy/go-json"
-	"golang.org/x/exp/slog"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/induzo/gocom/contextslogger"
@@ -139,7 +139,7 @@ func (h *Health) Handler() http.Handler {
 				"health check failed",
 				slog.String("path", req.URL.Path),
 				slog.String("method", req.Method),
-				err,
+				slog.Any("err", err),
 			)
 
 			respW.Header().Set("Content-Type", "application/json")
@@ -150,7 +150,7 @@ func (h *Health) Handler() http.Handler {
 					"write response body",
 					slog.String("path", req.URL.Path),
 					slog.String("method", req.Method),
-					err,
+					slog.Any("err", err),
 				)
 
 				return

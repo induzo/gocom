@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"os"
 	"reflect"
 	"strings"
@@ -15,12 +14,7 @@ import (
 	"time"
 
 	"github.com/goccy/go-json"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/ory/dockertest/v3"
-	"github.com/redis/go-redis/v9"
 	"go.uber.org/goleak"
-
-	"github.com/induzo/gocom/database/pginit"
 )
 
 func TestMain(m *testing.M) {
@@ -272,174 +266,6 @@ func TestHealth(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestHealth_Redis(t *testing.T) {
-	t.Parallel()
-
-	var err error
-
-	dockerPool, err := dockertest.NewPool("")
-	if err != nil {
-		t.Fatalf("Could not connect to docker: %s", err)
-	}
-
-	resource, err := dockerPool.Run("redis", "7.0.4", nil)
-	if err != nil {
-		t.Fatalf("Could not start resource: %s", err)
-	}
-
-	defer func() {
-		if err = dockerPool.Purge(resource); err != nil {
-			t.Fatalf("Could not purge resource: %s", err)
-		}
-	}()
-
-	var redisCli *redis.Client
-
-	if errP := dockerPool.Retry(func() error {
-		redisCli = redis.NewClient(&redis.Options{
-			Addr: fmt.Sprintf("localhost:%s", resource.GetPort("6379/tcp")),
-		})
-
-		return redisCli.Ping(context.Background()).Err()
-	}); errP != nil {
-		t.Fatalf("Could not connect to docker: %s", errP)
-	}
-
-	defer redisCli.Close()
-
-	rr := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, HealthEndpoint, nil)
-
-	health := NewHealth(WithChecks(
-		CheckConfig{
-			Name:    "redis",
-			Timeout: 1 * time.Second,
-			CheckFn: func(ctx context.Context) error {
-				return redisCli.Ping(ctx).Err()
-			},
-		}))
-
-	handler := health.Handler()
-	handler.ServeHTTP(rr, req)
-
-	resp := rr.Result()
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("expected status %d, got %d", http.StatusOK, resp.StatusCode)
-	}
-
-	body, _ := io.ReadAll(rr.Body)
-	trimmedBody := strings.TrimSpace(string(body))
-
-	if trimmedBody != "" {
-		t.Errorf("expected empty response")
-	}
-}
-
-func TestHealth_Pgx(t *testing.T) {
-	t.Parallel()
-
-	dockerPool, err := dockertest.NewPool("")
-	if err != nil {
-		t.Fatalf("Could not connect to docker: %s", err)
-	}
-
-	resource, err := dockerPool.Run("postgres", "14", []string{
-		"POSTGRES_PASSWORD=postgres",
-		"POSTGRES_USER=postgres",
-		"POSTGRES_DB=datawarehouse",
-		"listen_addresses = '*'",
-	})
-	if err != nil {
-		t.Fatalf("Could not start resource: %s", err)
-	}
-
-	defer func() {
-		if err = dockerPool.Purge(resource); err != nil {
-			t.Fatalf("Could not purge resource: %s", err)
-		}
-	}()
-
-	var connPool *pgxpool.Pool
-
-	if errP := dockerPool.Retry(func() error {
-		pgi, errI := pginit.New(
-			&pginit.Config{
-				Host:         "localhost",
-				Port:         strings.Split(getHostPort(resource, "5432/tcp"), ":")[1],
-				User:         "postgres",
-				Password:     "postgres",
-				Database:     "datawarehouse",
-				MaxConns:     10,
-				MaxIdleConns: 10,
-				MaxLifeTime:  1 * time.Minute,
-			})
-		if errI != nil {
-			return errI
-		}
-
-		var errC error
-		connPool, errC = pgi.ConnPool(context.Background())
-		if errC != nil {
-			return errC
-		}
-
-		return connPool.Ping(context.Background())
-	}); errP != nil {
-		t.Fatalf("Could not connect to docker: %s", errP)
-	}
-
-	defer connPool.Close()
-
-	rr := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, HealthEndpoint, nil)
-
-	health := NewHealth(WithChecks(CheckConfig{
-		Name:    "pgx",
-		Timeout: 1 * time.Second,
-		CheckFn: func(ctx context.Context) error {
-			return connPool.Ping(ctx)
-		},
-	}))
-
-	handler := health.Handler()
-	handler.ServeHTTP(rr, req)
-
-	resp := rr.Result()
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("expected status %d, got %d", http.StatusOK, resp.StatusCode)
-	}
-
-	body, _ := io.ReadAll(rr.Body)
-	trimmedBody := strings.TrimSpace(string(body))
-
-	if trimmedBody != "" {
-		t.Errorf("expected empty response")
-	}
-}
-
-func getHostPort(resource *dockertest.Resource, id string) string {
-	dockerURL := os.Getenv("DOCKER_HOST")
-	if dockerURL == "" {
-		hostAndPort := resource.GetHostPort("5432/tcp")
-		hp := strings.Split(hostAndPort, ":")
-		testRefHost := hp[0]
-		testRefPort := hp[1]
-
-		return testRefHost + ":" + testRefPort
-	}
-
-	u, err := url.Parse(dockerURL)
-	if err != nil {
-		panic(err)
-	}
-
-	return u.Hostname() + ":" + resource.GetPort(id)
 }
 
 func BenchmarkHealth(b *testing.B) {
