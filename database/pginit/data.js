@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1700570686190,
+  "lastUpdate": 1700571397317,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -778,6 +778,48 @@ window.BENCHMARK_DATA = {
           {
             "name": "BenchmarkConnPool - ns/op",
             "value": 2121060,
+            "unit": "ns/op",
+            "extra": "564 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - B/op",
+            "value": 40712,
+            "unit": "B/op",
+            "extra": "564 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - allocs/op",
+            "value": 280,
+            "unit": "allocs/op",
+            "extra": "564 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "5a34794f8c99dedffaf7c3a9ed5d135142cd9efd",
+          "message": "feat(database/pgx-slog): add more tests",
+          "timestamp": "2023-11-21T20:55:39+08:00",
+          "tree_id": "d28333acb9c2b8e0b2ec02b4a60a77a099e77df8",
+          "url": "https://github.com/induzo/gocom/commit/5a34794f8c99dedffaf7c3a9ed5d135142cd9efd"
+        },
+        "date": 1700571396809,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkConnPool - ns/op",
+            "value": 2117852,
             "unit": "ns/op",
             "extra": "564 times\n4 procs"
           },
