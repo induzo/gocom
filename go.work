@@ -3,7 +3,6 @@ go 1.21
 use (
 	./contextslogger
 	./database/pginit
-	./database/pgtest
 	./database/pgx-slog
 	./database/redisinit
 	./http/handlerwrap
