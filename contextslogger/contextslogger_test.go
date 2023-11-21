@@ -4,11 +4,11 @@ import (
 	"context"
 	"flag"
 	"io"
+	"log/slog"
 	"os"
 	"testing"
 
 	"go.uber.org/goleak"
-	"log/slog"
 )
 
 func TestMain(m *testing.M) {
