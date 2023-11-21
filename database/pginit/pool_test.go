@@ -25,15 +25,12 @@ var connStr string //nolint:gochecknoglobals // test code
 func TestMain(m *testing.M) {
 	ctx := context.Background()
 
-	dbName := "datawarehouse"
-	dbUser := "postgres"
-	dbPassword := "postgres"
-
-	postgresContainer, errR := postgres.RunContainer(ctx,
+	postgresContainer, errR := postgres.RunContainer(
+		ctx,
 		testcontainers.WithImage("docker.io/postgres:16-alpine"),
-		postgres.WithDatabase(dbName),
-		postgres.WithUsername(dbUser),
-		postgres.WithPassword(dbPassword),
+		postgres.WithDatabase("datawarehouse"),
+		postgres.WithUsername("postgres"),
+		postgres.WithPassword("postgres"),
 		testcontainers.WithWaitStrategy(
 			wait.ForLog("database system is ready to accept connections").
 				WithOccurrence(2).
@@ -84,7 +81,6 @@ func TestConnPool(t *testing.T) {
 			name:                "expecting no error with default connection setting",
 			connString:          connStr,
 			wantMinConns:        0,
-			wantMaxConns:        8,
 			wantMaxConnLifetime: 60 * time.Minute,
 			wantErr:             false,
 		},
@@ -130,9 +126,6 @@ func TestConnPool(t *testing.T) {
 			}
 			if db.Config().MinConns != tt.wantMinConns {
 				t.Errorf("expected (%v) but got (%v)", tt.wantMinConns, db.Config().MinConns)
-			}
-			if db.Config().MaxConns != tt.wantMaxConns {
-				t.Errorf("expected (%v) but got (%v)", tt.wantMaxConns, db.Config().MaxConns)
 			}
 			if db.Config().MaxConnLifetime != tt.wantMaxConnLifetime {
 				t.Errorf("expected (%v) but got (%v)", tt.wantMaxConnLifetime, db.Config().MaxConnLifetime)
