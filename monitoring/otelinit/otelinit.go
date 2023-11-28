@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/induzo/gocom/monitoring/otelinit/v2/trace"
+	"github.com/induzo/gocom/monitoring/otelinit/v3/trace"
 )
 
 func InitTraceProvider(

@@ -1,4 +1,4 @@
-module github.com/induzo/gocom/monitoring/otelinit/v2
+module github.com/induzo/gocom/monitoring/otelinit/v3
 
 go 1.21
 
