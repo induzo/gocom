@@ -3,7 +3,7 @@
 # otelinit
 
 ```go
-import "github.com/induzo/gocom/monitoring/otelinit/v2"
+import "github.com/induzo/gocom/monitoring/otelinit/v3"
 ```
 
 This package allows you to init and enable tracing in your app
