@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/induzo/gocom/monitoring/otelinit/trace"
+	"github.com/induzo/gocom/monitoring/otelinit/v2/trace"
 )
 
 func Start(ctx context.Context, conf *Config) ([]func(ctx context.Context) error, error) {

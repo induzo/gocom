@@ -8,8 +8,8 @@ import (
 
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 
-	"github.com/induzo/gocom/monitoring/otelinit"
-	"github.com/induzo/gocom/monitoring/otelinit/trace"
+	"github.com/induzo/gocom/monitoring/otelinit/v2"
+	"github.com/induzo/gocom/monitoring/otelinit/v2/trace"
 )
 
 // Init and start an otel trace and metric provider with a collector
