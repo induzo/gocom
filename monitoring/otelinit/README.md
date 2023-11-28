@@ -3,7 +3,7 @@
 # otelinit
 
 ```go
-import "github.com/induzo/gocom/monitoring/otelinit"
+import "github.com/induzo/gocom/monitoring/otelinit/v2"
 ```
 
 This package allows you to init and enable tracing in your app
@@ -28,20 +28,7 @@ func InitTraceProvider(ctx context.Context, serviceName string, options ...trace
 Initialize a otel trace provider with a collector
 
 ```go
-package main
-
-import (
-	"context"
-	"fmt"
-	"log"
-
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-
-	"github.com/induzo/gocom/monitoring/otelinit"
-	"github.com/induzo/gocom/monitoring/otelinit/trace"
-)
-
-func main() {
+{
 	ctx := context.Background()
 
 	shutdown, err := otelinit.InitTraceProvider(
@@ -86,19 +73,7 @@ func main() {
 Initialize a otel trace provider and discard traces useful for dev
 
 ```go
-package main
-
-import (
-	"context"
-	"fmt"
-	"io"
-	"log"
-
-	"github.com/induzo/gocom/monitoring/otelinit"
-	"github.com/induzo/gocom/monitoring/otelinit/trace"
-)
-
-func main() {
+{
 	ctx := context.Background()
 
 	shutdown, err := otelinit.InitTraceProvider(
@@ -144,17 +119,7 @@ func Start(ctx context.Context, conf *Config) ([]func(ctx context.Context) error
 Init and start an otel trace and metric provider with a collector
 
 ```go
-package main
-
-import (
-	"context"
-	"fmt"
-	"log"
-
-	"github.com/induzo/gocom/monitoring/otelinit"
-)
-
-func main() {
+{
 	ctx := context.Background()
 
 	shutdowns, err := otelinit.Start(ctx, &otelinit.Config{
@@ -200,17 +165,7 @@ func main() {
 Init and start an otel trace provider with a collector only
 
 ```go
-package main
-
-import (
-	"context"
-	"fmt"
-	"log"
-
-	"github.com/induzo/gocom/monitoring/otelinit"
-)
-
-func main() {
+{
 	ctx := context.Background()
 
 	shutdowns, err := otelinit.Start(ctx, &otelinit.Config{
@@ -262,17 +217,7 @@ func StartTrace(ctx context.Context, conf *Config) (func(ctx context.Context) er
 Init and start an otel trace provider with a collector
 
 ```go
-package main
-
-import (
-	"context"
-	"fmt"
-	"log"
-
-	"github.com/induzo/gocom/monitoring/otelinit"
-)
-
-func main() {
+{
 	ctx := context.Background()
 
 	shutdown, err := otelinit.StartTrace(ctx, &otelinit.Config{
