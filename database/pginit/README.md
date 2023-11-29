@@ -3,23 +3,14 @@
 # pginit
 
 ```go
-import "github.com/induzo/gocom/database/pginit"
+import "github.com/induzo/gocom/database/pginit/v2"
 ```
 
-This package allows you to init a connection pool to postgres database via pgx below are default value in pginit:
-
-default MaxConns = 25
-
-default MaxIdleConns = 25
-
-default MaxLifeTime = 5 minute
-
-default LogLevel = Warn
+This package allows you to init a connection pool to postgres database via pgx
 
 ## Index
 
 - [func ConnPoolHealthCheck(pool *pgxpool.Pool) func(ctx context.Context) error](<#func-connpoolhealthcheck>)
-- [func StdConnHealthCheck(conn *sql.DB) func(ctx context.Context) error](<#func-stdconnhealthcheck>)
 - [type Option](<#type-option>)
   - [func WithDecimalType() Option](<#func-withdecimaltype>)
   - [func WithLogger(logger *slog.Logger, _ string) Option](<#func-withlogger>)
@@ -43,17 +34,7 @@ ConnPoolHealthCheck returns a health check function for pgxpool.Pool that can be
 Using standard net/http package. We can also simply pass healthCheck as a CheckFn in gocom/http/health/v2.
 
 ```go
-package main
-
-import (
-	"context"
-	"log"
-	"net/http"
-
-	"github.com/induzo/gocom/database/pginit"
-)
-
-func main() {
+{
 	pgi, err := pginit.New("postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m")
 	if err != nil {
 		log.Fatalf("init pgi config: %v", err)
@@ -82,14 +63,6 @@ func main() {
 
 </p>
 </details>
-
-## func StdConnHealthCheck
-
-```go
-func StdConnHealthCheck(conn *sql.DB) func(ctx context.Context) error
-```
-
-StdConnHealthCheck returns a health check function for sql.DB that can be used in health endpoint.
 
 ## type Option
 
@@ -153,16 +126,7 @@ ConnPool initiates connection to database and return a pgxpool.Pool.
 <p>
 
 ```go
-package main
-
-import (
-	"context"
-	"log"
-
-	"github.com/induzo/gocom/database/pginit"
-)
-
-func main() {
+{
 	pgi, err := pginit.New("postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m")
 	if err != nil {
 		log.Fatalf("init pgi config: %v", err)
@@ -190,18 +154,7 @@ func main() {
 <p>
 
 ```go
-package main
-
-import (
-	"context"
-	"io"
-	"log"
-	"log/slog"
-
-	"github.com/induzo/gocom/database/pginit"
-)
-
-func main() {
+{
 	textHandler := slog.NewTextHandler(io.Discard, nil)
 	logger := slog.New(textHandler)
 
