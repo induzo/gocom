@@ -9,10 +9,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/httplog/v2"
 	"github.com/goccy/go-json"
 	"golang.org/x/sync/errgroup"
-
-	"github.com/induzo/gocom/contextslogger"
 )
 
 const (
@@ -99,7 +98,8 @@ func (h *Health) RegisterCheck(conf CheckConfig) {
 // application based on the provided check functions.
 func (h *Health) Handler() http.Handler {
 	return http.HandlerFunc(func(respW http.ResponseWriter, req *http.Request) {
-		logger := contextslogger.FromContext(req.Context())
+		logger := httplog.LogEntry(req.Context())
+
 		errGroup, ctx := errgroup.WithContext(req.Context())
 
 		for _, check := range h.checks {

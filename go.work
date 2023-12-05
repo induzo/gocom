@@ -1,11 +1,9 @@
 go 1.21
 
 use (
-	./contextslogger
 	./database/pginit
 	./database/pgx-slog
 	./database/redisinit
-	./http/handlerwrap
 	./http/health
 	./monitoring/otelinit
 	./shutdown
