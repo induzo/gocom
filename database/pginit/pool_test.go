@@ -196,6 +196,54 @@ func TestConnPoolWithLogger(t *testing.T) {
 	}
 }
 
+func TestConnPoolWithTracer(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+	}{
+		{
+			name: "level debug",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+
+			pgi, err := New(
+				connStr,
+				WithTracer(),
+			)
+			if err != nil {
+				t.Error("expected no error")
+			}
+
+			db, err := pgi.ConnPool(ctx)
+			if err != nil {
+				t.Error("expected no error")
+			}
+
+			defer db.Close()
+
+			if err := db.Ping(ctx); err != nil {
+				t.Error("expected no error")
+			}
+
+			if db.Config().ConnConfig.Tracer == nil {
+				t.Error("expected logger not nil")
+			}
+
+			if _, err := db.Exec(ctx, "SELECT * FROM ERROR"); err == nil {
+				t.Error("expected return error")
+			}
+		})
+	}
+}
+
 func TestConnPool_WithCustomDataTypes(t *testing.T) {
 	t.Parallel()
 

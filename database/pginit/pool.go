@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/exaring/otelpgx"
 	pgxuuid "github.com/jackc/pgx-gofrs-uuid"
 	pgxdecimal "github.com/jackc/pgx-shopspring-decimal"
 	"github.com/jackc/pgx/v5"
@@ -76,6 +77,13 @@ func WithLogger(logger *slog.Logger, _ string) Option {
 			Logger:   slogadapter.NewLogger(logger),
 			LogLevel: tracelog.LogLevelTrace,
 		}
+	}
+}
+
+// WithTracer Add tracer to pgx.
+func WithTracer(opts ...otelpgx.Option) Option {
+	return func(pgi *PGInit) {
+		pgi.pgxConf.ConnConfig.Tracer = otelpgx.NewTracer(opts...)
 	}
 }
 
