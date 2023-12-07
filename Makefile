@@ -1,4 +1,8 @@
-.PHONY: all clean docs-gen changelogs-gen readme-version-table-update lint sec-scan upgrade release test-all coverage test leak bench bench-compare
+.PHONY: all clean docs-gen \
+		changelogs-gen \
+		readme-version-table-update \
+		lint sec-scan upgrade release test-all coverage test leak \
+		bench bench-compare
 
 help: ## show this help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_-]+:.*?## / {sub("\\\\n",sprintf("\n%22c"," "), $$2);printf "\033[36m%-25s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -19,7 +23,7 @@ SHELL = /bin/bash
 # docs #
 ########
 
-test-echo: 
+test-echo:
 	echo $(ALL_MODULES_SPACE_SEP)
 
 docs-gen: ## generate docs for every module, as markdown thanks to https://github.com/princjef/gomarkdoc
@@ -106,7 +110,7 @@ lint-specific: ## lints a specific module
 #######
 
 sec-scan: trivy-scan vuln-scan-all ## scan for sec issues
-	
+
 trivy-scan: ## scan for sec issues with trivy (trivy binary needed)
 	trivy fs --exit-code 1 --no-progress --severity HIGH ./
 

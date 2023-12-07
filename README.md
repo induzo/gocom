@@ -12,6 +12,8 @@ common golang packages
 | [database/pgx-slog](database/pgx-slog)     | [benches](https://induzo.github.io/gocom/database/pgx-slog)   | 1.0.3          | [![Go Report Card](https://goreportcard.com/badge/github.com/induzo/gocom/database/pgx-slog)](https://goreportcard.com/report/github.com/induzo/gocom/database/pgx-slog)     | [![Go Reference](https://pkg.go.dev/badge/github.com/induzo/gocom/database/pgx-slog.svg)](https://pkg.go.dev/github.com/induzo/gocom/database/pgx-slog)     |
 | [database/redisinit](database/redisinit)   | [benches](https://induzo.github.io/gocom/database/redisinit)  | 1.0.3          | [![Go Report Card](https://goreportcard.com/badge/github.com/induzo/gocom/database/redisinit)](https://goreportcard.com/report/github.com/induzo/gocom/database/redisinit)   | [![Go Reference](https://pkg.go.dev/badge/github.com/induzo/gocom/database/redisinit.svg)](https://pkg.go.dev/github.com/induzo/gocom/database/redisinit)   |
 | [http/health](http/health)                 | [benches](https://induzo.github.io/gocom/http/health)         | 1.1.0          | [![Go Report Card](https://goreportcard.com/badge/github.com/induzo/gocom/http/health)](https://goreportcard.com/report/github.com/induzo/gocom/http/health)                 | [![Go Reference](https://pkg.go.dev/badge/github.com/induzo/gocom/http/health.svg)](https://pkg.go.dev/github.com/induzo/gocom/http/health)                 |
+| [http/middleware/writablecontext](http/middleware/writablecontext)                 | [benches](github.com/induzo/gocom/http/middleware/writablecontext)         | 1.1.0          | [![Go Report Card](https://goreportcard.com/badge/github.com/induzo/gocom/http/middleware/writablecontext)](https://goreportcard.com/report/github.com/induzo/gocom/http/middleware/writablecontext)                 | [![Go Reference](https://pkg.go.dev/badge/github.com/induzo/gocom/http/middleware/writablecontext.svg)](https://pkg.go.dev/github.com/induzo/gocom/http/middleware/writablecontext)                 |
+
 | [monitoring/otelinit](monitoring/otelinit) | [benches](https://induzo.github.io/gocom/monitoring/otelinit) | 3.0.0          | [![Go Report Card](https://goreportcard.com/badge/github.com/induzo/gocom/monitoring/otelinit)](https://goreportcard.com/report/github.com/induzo/gocom/monitoring/otelinit) | [![Go Reference](https://pkg.go.dev/badge/github.com/induzo/gocom/monitoring/otelinit.svg)](https://pkg.go.dev/github.com/induzo/gocom/monitoring/otelinit) |
 | [shutdown](shutdown)                       | [benches](https://induzo.github.io/gocom/shutdown)            | 1.2.0          | [![Go Report Card](https://goreportcard.com/badge/github.com/induzo/gocom/shutdown)](https://goreportcard.com/report/github.com/induzo/gocom/shutdown)                       | [![Go Reference](https://pkg.go.dev/badge/github.com/induzo/gocom/shutdown.svg)](https://pkg.go.dev/github.com/induzo/gocom/shutdown)                       |
 
@@ -62,3 +64,9 @@ Let's take an example of an opentelemetry module.
 ### Depends on contextslogger
 
 - http / handlerwrap
+
+## Contribution
+
+```bash
+pre-commit install -t commit-msg -t pre-commit -t pre-push
+```

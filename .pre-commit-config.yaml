@@ -24,8 +24,3 @@ repos:
   hooks:
   - id: detect-secrets
     args: ['--baseline', '.secrets.baseline']
-- repo: https://github.com/golangci/golangci-lint
-  rev: v1.55.2
-  hooks:
-  - id: golangci-lint
-    args: [--config=./.golangci.toml]
