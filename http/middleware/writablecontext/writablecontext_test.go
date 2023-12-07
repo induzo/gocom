@@ -115,6 +115,50 @@ func TestFromRequest(t *testing.T) {
 	}
 }
 
+func BenchmarkFromRequest(b *testing.B) {
+	b.ReportAllocs()
+
+	middlewareSetInStore := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			store := FromContext(r.Context())
+			store.Set("foo", "bar")
+			next.ServeHTTP(w, r)
+		})
+	}
+
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		store := FromContext(r.Context())
+		if store == nil {
+			return
+		}
+
+		val, ok := store.Get("foo")
+		if !ok {
+			return
+		}
+
+		valS, ok := val.(string)
+		if !ok {
+			return
+		}
+
+		w.Write([]byte(valS))
+	}
+
+	mux := http.NewServeMux()
+	mux.Handle("/", Middleware(middlewareSetInStore(http.HandlerFunc(handler))))
+
+	rr := httptest.NewRecorder()
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		mux.ServeHTTP(rr, req)
+	}
+}
+
 func TestMain(m *testing.M) {
 	leak := flag.Bool("leak", false, "use leak detector")
 	flag.Parse()
