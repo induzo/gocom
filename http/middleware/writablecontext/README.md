@@ -22,13 +22,19 @@ import "github.com/induzo/gocom/http/middleware/writablecontext"
 func Middleware(next http.Handler) http.Handler
 ```
 
+Middleware is a middleware that adds a writable context to the request.
+
 ## type Key
+
+Key is the type for the context key.
 
 ```go
 type Key string
 ```
 
 ## type Store
+
+Store is a map of key/value pairs for the context.
 
 ```go
 type Store map[string]any
@@ -40,17 +46,23 @@ type Store map[string]any
 func FromContext(ctx context.Context) Store
 ```
 
+FromContext returns the writable context from the request.
+
 ### func \(Store\) Get
 
 ```go
 func (s Store) Get(key string) (any, bool)
 ```
 
+Get returns the value for a key in the context.
+
 ### func \(Store\) Set
 
 ```go
 func (s Store) Set(key string, value any)
 ```
+
+Set sets the value for a key in the context.
 
 
 
