@@ -6,6 +6,5 @@ use (
 	./database/redisinit
 	./http/health
 	./http/middleware/writablecontext
-	./monitoring/otelinit
 	./shutdown
 )
