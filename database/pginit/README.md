@@ -11,9 +11,11 @@ This package allows you to init a connection pool to postgres database via pgx
 ## Index
 
 - [func ConnPoolHealthCheck(pool *pgxpool.Pool) func(ctx context.Context) error](<#func-connpoolhealthcheck>)
+- [func JSONRowToAddrOfStruct[T any](row pgx.CollectableRow) (*T, error)](<#func-jsonrowtoaddrofstruct>)
 - [type Option](<#type-option>)
   - [func WithDecimalType() Option](<#func-withdecimaltype>)
   - [func WithLogger(logger *slog.Logger, _ string) Option](<#func-withlogger>)
+  - [func WithTracer(opts ...otelpgx.Option) Option](<#func-withtracer>)
   - [func WithUUIDType() Option](<#func-withuuidtype>)
 - [type PGInit](<#type-pginit>)
   - [func New(connString string, opts ...Option) (*PGInit, error)](<#func-new>)
@@ -64,6 +66,12 @@ Using standard net/http package. We can also simply pass healthCheck as a CheckF
 </p>
 </details>
 
+## func JSONRowToAddrOfStruct
+
+```go
+func JSONRowToAddrOfStruct[T any](row pgx.CollectableRow) (*T, error)
+```
+
 ## type Option
 
 Option configures PGInit behaviour.
@@ -87,6 +95,14 @@ func WithLogger(logger *slog.Logger, _ string) Option
 ```
 
 WithLogger Add logger to pgx. if the request context contains request id, can pass in the request id context key to reqIDKeyFromCtx and logger will log with the request id.
+
+### func WithTracer
+
+```go
+func WithTracer(opts ...otelpgx.Option) Option
+```
+
+WithTracer Add tracer to pgx.
 
 ### func WithUUIDType
 
