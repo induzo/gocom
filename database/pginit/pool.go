@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/tracelog"
+	pgxGoogleUUID "github.com/vgarvardt/pgx-google-uuid/v5"
 
 	slogadapter "github.com/induzo/gocom/database/pgx-slog"
 )
@@ -98,5 +99,12 @@ func WithDecimalType() Option {
 func WithUUIDType() Option {
 	return func(p *PGInit) {
 		p.customDataTypes = append(p.customDataTypes, pgxuuid.Register)
+	}
+}
+
+// WithGoogleUUIDType set pgx uuid type to google/uuid.
+func WithGoogleUUIDType() Option {
+	return func(p *PGInit) {
+		p.customDataTypes = append(p.customDataTypes, pgxGoogleUUID.Register)
 	}
 }

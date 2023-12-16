@@ -294,6 +294,15 @@ func TestConnPool_WithCustomDataTypes(t *testing.T) {
 			expectErrDecimal: true,
 			expectErrUUID:    false,
 		},
+		{
+			name: "uuid google",
+			opts: []Option{
+				WithLogger(logger, "request-id"),
+				WithGoogleUUIDType(),
+			},
+			expectErrDecimal: true,
+			expectErrUUID:    false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -367,6 +376,138 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 				WithLogger(logger, "request-id"),
 				WithDecimalType(),
 				WithUUIDType(),
+			)
+			if err != nil {
+				t.Errorf("expected no error but got: %v", err)
+			}
+
+			pool, err := pgi.ConnPool(ctx)
+			if err != nil {
+				t.Errorf("expected no error but got: %v", err)
+			}
+			defer pool.Close()
+
+			conn, err := pool.Acquire(ctx)
+			if err != nil {
+				t.Errorf("expected no error but got: %v", err)
+			}
+			defer conn.Release()
+
+			tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
+			if err != nil {
+				t.Errorf("expected no error but got: %v", err)
+			}
+			defer tx.Rollback(ctx)
+
+			_, err = tx.Exec(ctx, "CREATE TABLE IF NOT EXISTS uuid_decimal(uuid uuid, price numeric, PRIMARY KEY (uuid))")
+			if err != nil {
+				t.Errorf("expected no error but got: %v", err)
+			}
+
+			// create
+			row := tx.QueryRow(ctx, "INSERT INTO uuid_decimal(uuid, price) VALUES('b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5', 10.888888888888) RETURNING uuid, price")
+			r := struct {
+				uuid  uuid.UUID
+				price decimal.Decimal
+			}{}
+			if err := row.Scan(&r.uuid, &r.price); err != nil { //nolint:govet // inline err is within scope
+				t.Errorf("expected no error but got: %v, (%+v)", err, row)
+			}
+
+			if r.uuid.String() != "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5" {
+				t.Errorf("expected %s but got: %s", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5", r.uuid.String())
+			}
+
+			if r.price.Cmp(tenPointEight) != 0 {
+				t.Errorf("expected %s but got: %s", tenPointEight.String(), r.price.String())
+			}
+
+			// read
+			rows, err := tx.Query(ctx, "SELECT * FROM uuid_decimal")
+			if err != nil {
+				t.Errorf("expected no error but got: %v", err)
+			}
+			defer rows.Close()
+			var results []struct {
+				uuid  uuid.UUID
+				price decimal.Decimal
+			}
+			for rows.Next() {
+				r := struct { //nolint:govet // r is within loop scope
+					uuid  uuid.UUID
+					price decimal.Decimal
+				}{}
+				if err := rows.Scan(&r.uuid, &r.price); err != nil {
+					t.Errorf("expected no error but got: %v", err)
+				}
+
+				if r.uuid.String() != "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5" {
+					t.Errorf("expected %s but got: %s", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5", r.uuid.String())
+				}
+
+				if r.price.Cmp(tenPointEight) != 0 {
+					t.Errorf("expected %s but got: %s", tenPointEight.String(), r.price.String())
+				}
+
+				results = append(results, r)
+			}
+			if len(results) != 1 {
+				t.Errorf("expected 1 result but got: %v", len(results))
+			}
+			// update
+			row = tx.QueryRow(ctx, "UPDATE uuid_decimal SET price = 11.00 WHERE uuid = $1 RETURNING uuid, price", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5")
+			if err := row.Scan(&r.uuid, &r.price); err != nil {
+				t.Errorf("expected no error but got: %v, (%+v)", err, row)
+			}
+			if r.price.Cmp(eleven) != 0 {
+				t.Errorf("expected 11.00 but got %s", r.price.String())
+			}
+
+			// delete
+			row = tx.QueryRow(ctx, "DELETE FROM uuid_decimal WHERE uuid = $1 RETURNING uuid, price", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5")
+			if err := row.Scan(&r.uuid, &r.price); err != nil {
+				t.Errorf("expected no error but got: %v, (%+v)", err, row)
+			}
+			if r.uuid.String() != "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5" {
+				t.Error("inserted data doesn't match with input")
+			}
+			row = tx.QueryRow(ctx, "SELECT * FROM uuid_decimal WHERE uuid = $1", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5")
+			if err := row.Scan(&r.uuid, &r.price); err != nil && !errors.Is(err, pgx.ErrNoRows) {
+				t.Errorf("expected no error but got: %v, (%+v)", err, row)
+			}
+		})
+	}
+}
+
+func TestConnPoolWithCustomTypesGoogle_CRUD(t *testing.T) {
+	t.Parallel()
+
+	tenPointEight, _ := decimal.NewFromString("10.888888888888")
+	eleven, _ := decimal.NewFromString("11.00")
+
+	ctx := context.Background()
+
+	tests := []struct {
+		name string
+	}{
+		{
+			name: "CRUD operation with custom type uuid and decimal",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			textHandler := slog.NewTextHandler(io.Discard, nil)
+			logger := slog.New(textHandler)
+
+			pgi, err := New(
+				connStr,
+				WithLogger(logger, "request-id"),
+				WithDecimalType(),
+				WithGoogleUUIDType(),
 			)
 			if err != nil {
 				t.Errorf("expected no error but got: %v", err)
