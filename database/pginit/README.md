@@ -14,6 +14,7 @@ This package allows you to init a connection pool to postgres database via pgx
 - [func JSONRowToAddrOfStruct[T any](row pgx.CollectableRow) (*T, error)](<#func-jsonrowtoaddrofstruct>)
 - [type Option](<#type-option>)
   - [func WithDecimalType() Option](<#func-withdecimaltype>)
+  - [func WithGoogleUUIDType() Option](<#func-withgoogleuuidtype>)
   - [func WithLogger(logger *slog.Logger, _ string) Option](<#func-withlogger>)
   - [func WithTracer(opts ...otelpgx.Option) Option](<#func-withtracer>)
   - [func WithUUIDType() Option](<#func-withuuidtype>)
@@ -87,6 +88,14 @@ func WithDecimalType() Option
 ```
 
 WithDecimalType set pgx decimal type to shopspring/decimal.
+
+### func WithGoogleUUIDType
+
+```go
+func WithGoogleUUIDType() Option
+```
+
+WithGoogleUUIDType set pgx uuid type to google/uuid.
 
 ### func WithLogger
 
