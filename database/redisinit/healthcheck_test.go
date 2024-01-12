@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/testcontainers/testcontainers-go"
@@ -38,6 +39,9 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("Could not retrieve the container endpoint: %s", err)
 	}
+
+	// wait for fix https://github.com/testcontainers/testcontainers-go/issues/2074
+	time.Sleep(3 * time.Second)
 
 	leak := flag.Bool("leak", false, "use leak detector")
 	flag.Parse()
