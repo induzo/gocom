@@ -6,53 +6,65 @@ import (
 	"log"
 	"os"
 	"testing"
-	"time"
 
+	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest/v3/docker"
 	"github.com/redis/go-redis/v9"
-	"github.com/testcontainers/testcontainers-go"
-	tcredis "github.com/testcontainers/testcontainers-go/modules/redis"
 	"go.uber.org/goleak"
 )
 
 var endpoint string //nolint:gochecknoglobals // test code
 
 func TestMain(m *testing.M) {
-	ctx := context.Background()
-
-	redisContainer, errP := tcredis.RunContainer(ctx,
-		testcontainers.WithImage("docker.io/redis:7-alpine"),
-		tcredis.WithSnapshotting(10, 1),
-	)
-	if errP != nil {
-		log.Fatalf("Could not run container: %s", errP)
-	}
-
-	defer func() {
-		if err := redisContainer.Terminate(ctx); err != nil {
-			log.Fatalf("Could not terminate container: %s", err)
-		}
-	}()
-
-	var err error
-
-	endpoint, err = redisContainer.Endpoint(ctx, "")
+	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
+	pool, err := dockertest.NewPool("")
 	if err != nil {
-		log.Fatalf("Could not retrieve the container endpoint: %s", err)
+		log.Fatalf("Could not construct pool: %s", err)
 	}
 
-	// wait for fix https://github.com/testcontainers/testcontainers-go/issues/2074
-	time.Sleep(3 * time.Second)
+	// uses pool to try to connect to Docker
+	errP := pool.Client.Ping()
+	if errP != nil {
+		log.Fatalf("Could not connect to Docker: %s", errP)
+	}
+
+	// pulls an image, creates a container based on it and runs it
+	resource, errP := pool.RunWithOptions(
+		&dockertest.RunOptions{
+			Repository: "redis",
+			Tag:        "7-alpine",
+		}, func(config *docker.HostConfig) {
+			// set AutoRemove to true so that stopped container goes away by itself
+			config.AutoRemove = true
+			config.RestartPolicy = docker.RestartPolicy{
+				Name: "no",
+			}
+		})
+	if errP != nil {
+		log.Fatalf("Could not start resource: %s", errP)
+	}
+
+	endpoint = resource.GetHostPort("6379/tcp")
+
+	resource.Expire(60) // Tell docker to hard kill the container in 60 seconds
 
 	leak := flag.Bool("leak", false, "use leak detector")
 	flag.Parse()
 
 	if *leak {
-		goleak.VerifyTestMain(m, goleak.IgnoreAnyFunction("github.com/testcontainers/testcontainers-go.(*Reaper).Connect.func1"))
+		goleak.VerifyTestMain(m)
 
 		return
 	}
 
-	os.Exit(m.Run())
+	code := m.Run()
+
+	// You can't defer this because os.Exit doesn't care for defer
+	if err := pool.Purge(resource); err != nil {
+		log.Fatalf("Could not purge resource: %s", err)
+	}
+
+	os.Exit(code)
 }
 
 func TestClientHealthCheck(t *testing.T) {
