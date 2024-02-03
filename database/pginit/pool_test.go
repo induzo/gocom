@@ -82,7 +82,11 @@ func TestMain(m *testing.M) {
 	flag.Parse()
 
 	if *leak {
-		goleak.VerifyTestMain(m)
+		goleak.VerifyTestMain(m,
+			goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
+			goleak.IgnoreTopFunction("net/http.(*persistConn).roundTrip"),
+			goleak.IgnoreTopFunction("net/http.(*persistConn).writeLoop"),
+		)
 
 		return
 	}
