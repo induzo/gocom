@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1706961366805,
+  "lastUpdate": 1706961676083,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -1266,6 +1266,54 @@ window.BENCHMARK_DATA = {
             "value": 276,
             "unit": "allocs/op",
             "extra": "494 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "2737ba374163f997e4bc7107dd917eef4a81829f",
+          "message": "fix(ci): remove the resource dockertest expire",
+          "timestamp": "2024-02-03T20:00:12+08:00",
+          "tree_id": "681168a5efccfaebecb68b88318c4397e0f73786",
+          "url": "https://github.com/induzo/gocom/commit/2737ba374163f997e4bc7107dd917eef4a81829f"
+        },
+        "date": 1706961675672,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkConnPool",
+            "value": 2463339,
+            "unit": "ns/op\t   39675 B/op\t     276 allocs/op",
+            "extra": "486 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - ns/op",
+            "value": 2463339,
+            "unit": "ns/op",
+            "extra": "486 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - B/op",
+            "value": 39675,
+            "unit": "B/op",
+            "extra": "486 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - allocs/op",
+            "value": 276,
+            "unit": "allocs/op",
+            "extra": "486 times\n4 procs"
           }
         ]
       }
