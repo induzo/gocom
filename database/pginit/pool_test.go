@@ -4,58 +4,79 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"log/slog"
+	"net"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
+	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest/v3/docker"
 	"github.com/shopspring/decimal"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/modules/postgres"
-	"github.com/testcontainers/testcontainers-go/wait"
 	"go.uber.org/goleak"
 )
 
 var connStr string //nolint:gochecknoglobals // test code
 
 func TestMain(m *testing.M) {
-	ctx := context.Background()
-
-	postgresContainer, errR := postgres.RunContainer(
-		ctx,
-		testcontainers.WithImage("docker.io/postgres:16-alpine"),
-		postgres.WithDatabase("datawarehouse"),
-		postgres.WithUsername("postgres"),
-		postgres.WithPassword("postgres"),
-		testcontainers.WithWaitStrategy(
-			wait.ForLog("database system is ready to accept connections").
-				WithOccurrence(2).
-				WithStartupTimeout(5*time.Second)),
-	)
-	if errR != nil {
-		log.Fatalf("could not create container: %v", errR)
-	}
-
-	// Clean up the container
-	defer func() {
-		if err := postgresContainer.Terminate(ctx); err != nil {
-			panic(err)
-		}
-	}()
-
-	var err error
-
-	connStr, err = postgresContainer.ConnectionString(ctx, "sslmode=disable", "application_name=test")
+	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
+	pool, err := dockertest.NewPool("")
 	if err != nil {
-		log.Fatalf("could not retrieve conn string: %v", err)
+		log.Fatalf("Could not construct pool: %s", err)
 	}
 
-	// wait for fix https://github.com/testcontainers/testcontainers-go/issues/2074
-	time.Sleep(3 * time.Second)
+	// uses pool to try to connect to Docker
+	errP := pool.Client.Ping()
+	if errP != nil {
+		log.Fatalf("Could not connect to Docker: %s", errP)
+	}
+
+	// pulls an image, creates a container based on it and runs it
+	resource, errP := pool.RunWithOptions(
+		&dockertest.RunOptions{
+			Repository: "postgres",
+			Tag:        "13",
+			Env: []string{
+				"POSTGRES_USER=postgres",
+				"POSTGRES_PASSWORD=postgres", // pragma: allowlist secret
+				"POSTGRES_DB=datawarehouse",
+			},
+		}, func(config *docker.HostConfig) {
+			// set AutoRemove to true so that stopped container goes away by itself
+			config.AutoRemove = true
+			config.RestartPolicy = docker.RestartPolicy{
+				Name: "no",
+			}
+		})
+	if errP != nil {
+		log.Fatalf("Could not start resource: %s", errP)
+	}
+
+	connStr = fmt.Sprintf("postgres://postgres:postgres@%s/datawarehouse?sslmode=disable", net.JoinHostPort(resource.GetBoundIP("5432/tcp"), resource.GetPort("5432/tcp")))
+
+	resource.Expire(60) // Tell docker to hard kill the container in 60 seconds
+
+	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
+	if err := pool.Retry(func() error {
+		pgi, err := New(connStr)
+		if err != nil {
+			return err
+		}
+
+		db, errC := pgi.ConnPool(context.Background())
+		if errC == nil {
+			db.Close()
+		}
+
+		return errC
+	}); err != nil {
+		log.Fatalf("Could not connect to database: %s", err)
+	}
 
 	leak := flag.Bool("leak", false, "use leak detector")
 	flag.Parse()
@@ -66,7 +87,14 @@ func TestMain(m *testing.M) {
 		return
 	}
 
-	os.Exit(m.Run())
+	code := m.Run()
+
+	// You can't defer this because os.Exit doesn't care for defer
+	if err := pool.Purge(resource); err != nil {
+		log.Fatalf("Could not purge resource: %s", err)
+	}
+
+	os.Exit(code)
 }
 
 func TestConnPool(t *testing.T) {
