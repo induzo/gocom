@@ -10,6 +10,6 @@ require (
 )
 
 require (
-	github.com/go-chi/chi/v5 v5.0.11 // indirect
+	github.com/go-chi/chi/v5 v5.0.12 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
 )
