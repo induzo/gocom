@@ -1,6 +1,6 @@
 module github.com/induzo/gocom/database/redisinit
 
-go 1.21
+go 1.22.1
 
 require (
 	github.com/ory/dockertest/v3 v3.10.0
