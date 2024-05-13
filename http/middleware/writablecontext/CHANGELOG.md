@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/writablecontext/v0.1.5] - 2024-05-13
+
+### Styling
+
+- Lint fixes
+
 ## [http/middleware/writablecontext/v0.1.4] - 2024-05-13
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/writablecontext/v0.1.4
 
 ### Miscellaneous Tasks
 
