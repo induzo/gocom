@@ -2,15 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [shutdown/v1.2.3] - 2024-05-13
+
+### Miscellaneous Tasks
+
+- Update deps
+- Update to go 1.22.3
+- Release
+
+## [shutdown/v1.2.1] - 2024-01-12
+
+### Features
+
+- Remove metrics as the API changed
+
+### Miscellaneous Tasks
+
+- Shutdown
+- Shutdown
+- Update deps
+
+## [shutdown/v1.1.0] - 2023-05-31
+
+### Bug Fixes
+
+- Add license for each module
 
 ### Documentation
 
 - Update CHANGELOG.md for shutdown/v1.0.0
+- Update CHANGELOG.md for shutdown/v1.0.0
+- Update docs for module shutdown
 
 ### Features
 
 - Contextslogger new module
+- Upgrade context log
 
 ## [shutdown/v1.0.0] - 2023-03-31
 
