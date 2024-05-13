@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1715612295989,
+  "lastUpdate": 1715612416635,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -1506,6 +1506,54 @@ window.BENCHMARK_DATA = {
             "value": 275,
             "unit": "allocs/op",
             "extra": "462 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "d134ca4ecdf1c2261de3e2e89375dd3b90121acc",
+          "message": "docs(changelog): update CHANGELOG.md for database/pginit/v2.2.6",
+          "timestamp": "2024-05-13T22:58:50+08:00",
+          "tree_id": "8f52fe31e35ab24ea3b05d8a029eabc4fcdf20c9",
+          "url": "https://github.com/induzo/gocom/commit/d134ca4ecdf1c2261de3e2e89375dd3b90121acc"
+        },
+        "date": 1715612415999,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkConnPool",
+            "value": 2714618,
+            "unit": "ns/op\t   39745 B/op\t     275 allocs/op",
+            "extra": "445 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - ns/op",
+            "value": 2714618,
+            "unit": "ns/op",
+            "extra": "445 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - B/op",
+            "value": 39745,
+            "unit": "B/op",
+            "extra": "445 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - allocs/op",
+            "value": 275,
+            "unit": "allocs/op",
+            "extra": "445 times\n4 procs"
           }
         ]
       }
