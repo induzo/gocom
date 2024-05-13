@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [http/health/v1.1.6] - 2024-05-13
 
+### Documentation
+
+- Update CHANGELOG.md for http/health/v1.1.6
+
 ### Styling
 
 - Lint fixes
