@@ -46,6 +46,18 @@ func TestMain(m *testing.M) {
 
 	endpoint = resource.GetHostPort("6379/tcp")
 
+	if err := pool.Retry(func() error {
+		if errNC := redis.NewClient(&redis.Options{
+			Addr: endpoint,
+		}).Ping(context.Background()).Err(); errNC != nil {
+			return errNC
+		}
+
+		return nil
+	}); err != nil {
+		log.Fatalf("Could not connect to redis container: %s", err)
+	}
+
 	resource.Expire(60) // Tell docker to hard kill the container in 60 seconds
 
 	leak := flag.Bool("leak", false, "use leak detector")
