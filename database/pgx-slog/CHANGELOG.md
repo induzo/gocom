@@ -2,11 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/pgx-slog/v1.0.10] - 2024-05-13
+
+### Styling
+
+- Lint fixes
+
 ## [database/pgx-slog/v1.0.9] - 2024-05-13
 
 ### Documentation
 
 - Update CHANGELOG.md for database/pgx-slog/v1.0.8
+- Update CHANGELOG.md for database/pgx-slog/v1.0.9
 
 ### Miscellaneous Tasks
 
