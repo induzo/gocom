@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1715610044105,
+  "lastUpdate": 1715612266680,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -312,6 +312,54 @@ window.BENCHMARK_DATA = {
             "value": 5,
             "unit": "allocs/op",
             "extra": "2871720 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "e24b69e60cc07d0d80b6c891bb373ff922e20387",
+          "message": "docs(changelog): update CHANGELOG.md for shutdown/v1.2.5",
+          "timestamp": "2024-05-13T22:57:01+08:00",
+          "tree_id": "fe377129ffe0949ae1c51713ca020ae9442f6ee1",
+          "url": "https://github.com/induzo/gocom/commit/e24b69e60cc07d0d80b6c891bb373ff922e20387"
+        },
+        "date": 1715612266070,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkFromRequest",
+            "value": 400.6,
+            "unit": "ns/op\t     691 B/op\t       5 allocs/op",
+            "extra": "2884954 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromRequest - ns/op",
+            "value": 400.6,
+            "unit": "ns/op",
+            "extra": "2884954 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromRequest - B/op",
+            "value": 691,
+            "unit": "B/op",
+            "extra": "2884954 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromRequest - allocs/op",
+            "value": 5,
+            "unit": "allocs/op",
+            "extra": "2884954 times\n4 procs"
           }
         ]
       }
