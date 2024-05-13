@@ -2,11 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-## [database/pginit/v2.2.4] - 2024-05-13
+## [database/pginit/v2.2.5] - 2024-05-13
+
+### Documentation
+
+- Update CHANGELOG.md for database/pginit/v2.2.4
 
 ### Miscellaneous Tasks
 
 - Update to go 1.22.3
+- Release
 
 ## [database/pginit/v2.2.3] - 2024-03-10
 
