@@ -2,7 +2,56 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [database/redisinit/v1.0.8] - 2024-05-13
+
+### Miscellaneous Tasks
+
+- Update deps
+- Update to go 1.22.3
+- Release
+
+## [database/redisinit/v1.0.6] - 2024-03-10
+
+### Bug Fixes
+
+- Remove the resource dockertest expire
+
+### Documentation
+
+- Update latest versions
+
+### Features
+
+- Remove metrics as the API changed
+- Update deps, use testcontainers
+- Use testcontainer/redis
+
+### Miscellaneous Tasks
+
+- Go work sync
+- Go work sync
+- Sync
+- Upgrade
+- Update deps
+- Update deps
+- Update deps
+- Update deps
+
+## [database/redisinit/v1.0.2] - 2023-05-31
+
+### Bug Fixes
+
+- Work sync
+- Add license for each module
+
+### Documentation
+
+- Update CHANGELOG.md for database/pgx-slog/v1.0.1
+
+### Features
+
+- Bench on redisinit
+- Update deps
 
 ### Miscellaneous Tasks
 
