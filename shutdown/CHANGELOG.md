@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [shutdown/v1.2.4] - 2024-05-13
 
+### Documentation
+
+- Update CHANGELOG.md for shutdown/v1.2.4
+
 ### Styling
 
 - Lint fixes
