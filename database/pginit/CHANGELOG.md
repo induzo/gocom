@@ -2,11 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [database/pginit/v2.2.4] - 2024-05-13
+
+### Miscellaneous Tasks
+
+- Update to go 1.22.3
+
+## [database/pginit/v2.2.3] - 2024-03-10
 
 ### Bug Fixes
 
-- Remove gofrs/uuid v4
+- Remove the resource dockertest expire
+
+### Miscellaneous Tasks
+
+- Update deps
+- Update deps
+- Update deps
+
+## [database/pginit/v2.2.1] - 2024-01-12
+
+### Documentation
+
+- Update latest versions
+
+### Miscellaneous Tasks
+
+- Upgrade
+- Update deps
+- Update deps
+
+## [database/pginit/v2.2.0] - 2023-12-16
 
 ### Documentation
 
@@ -14,13 +40,42 @@ All notable changes to this project will be documented in this file.
 
 ### Features
 
+- Add otel and jsonrow
+- Add google uuid for types
+
+## [database/pginit/v2.0.2] - 2023-11-29
+
+### Bug Fixes
+
+- Remove gofrs/uuid v4
+- Add license for each module
+
+### Documentation
+
+- Update docs for module database/pginit
+- Update CHANGELOG.md for contextslogger/v1.0.1
+- Update docs for module database/pginit
+- Update docs for module database/pginit
+- Update docs for module database/pginit
+
+### Features
+
 - Contextslogger new module
 - Add http/health
+- Upgrade context log
+- Upgrade deps
+- Remove metrics as the API changed
+- Use conn string instead of config
+- Add more tests
 
 ### Miscellaneous Tasks
 
 - Work sync
 - Work sync
+- Update deps
+- Update induzo deps
+- Go work sync
+- Update and adapt to newer version of pgx
 
 ## [database/pginit/v1.1.1] - 2023-04-01
 
