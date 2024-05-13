@@ -105,7 +105,7 @@ loop:
 	for i := range hooks {
 		hook := hooks[len(hooks)-1-i]
 
-		s.logger.Info(fmt.Sprintf("%s is shutting down", hook.Name))
+		s.logger.Info(hook.Name + " is shutting down")
 
 		errChan := make(chan error, 1)
 

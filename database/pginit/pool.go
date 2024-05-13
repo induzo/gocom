@@ -42,7 +42,7 @@ func New(connString string, opts ...Option) (*PGInit, error) {
 		opt(pgi)
 	}
 
-	pgi.pgxConf.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+	pgi.pgxConf.AfterConnect = func(_ context.Context, conn *pgx.Conn) error {
 		for _, customDataType := range pgi.customDataTypes {
 			customDataType(conn.TypeMap())
 		}

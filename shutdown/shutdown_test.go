@@ -2,8 +2,8 @@ package shutdown
 
 import (
 	"context"
+	"errors"
 	"flag"
-	"fmt"
 	"io"
 	"log/slog"
 	"os"
@@ -45,7 +45,7 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 			hooks: []Hook{
 				{
 					Name: "happy1",
-					ShutdownFn: func(ctx context.Context) error {
+					ShutdownFn: func(_ context.Context) error {
 						data = append(data, "foo")
 
 						return nil
@@ -53,7 +53,7 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 				},
 				{
 					Name: "happy2",
-					ShutdownFn: func(ctx context.Context) error {
+					ShutdownFn: func(_ context.Context) error {
 						data = append(data, "bar")
 
 						return nil
@@ -69,8 +69,8 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 			hooks: []Hook{
 				{
 					Name: "error",
-					ShutdownFn: func(ctx context.Context) error {
-						return fmt.Errorf("dummy error")
+					ShutdownFn: func(_ context.Context) error {
+						return errors.New("dummy error")
 					},
 				},
 			},
@@ -83,7 +83,7 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 			hooks: []Hook{
 				{
 					Name: "long",
-					ShutdownFn: func(ctx context.Context) error {
+					ShutdownFn: func(_ context.Context) error {
 						time.Sleep(100 * time.Millisecond)
 
 						return nil
@@ -99,7 +99,7 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 			hooks: []Hook{
 				{
 					Name: "happy1",
-					ShutdownFn: func(ctx context.Context) error {
+					ShutdownFn: func(_ context.Context) error {
 						data = append(data, "foo")
 
 						return nil
@@ -107,7 +107,7 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 				},
 				{
 					Name: "happy2",
-					ShutdownFn: func(ctx context.Context) error {
+					ShutdownFn: func(_ context.Context) error {
 						data = append(data, "bar")
 
 						return nil
@@ -115,8 +115,8 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 				},
 				{
 					Name: "error",
-					ShutdownFn: func(ctx context.Context) error {
-						return fmt.Errorf("dummy error")
+					ShutdownFn: func(_ context.Context) error {
+						return errors.New("dummy error")
 					},
 				},
 			},
@@ -127,7 +127,6 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 	}
 
 	for _, tt := range tests { //nolint:paralleltest // subtest modify same map
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			textHandler := slog.NewTextHandler(io.Discard, nil)
 			logger := slog.New(textHandler)
@@ -167,7 +166,7 @@ func BenchmarkShutdown(b *testing.B) {
 		WithHooks([]Hook{
 			{
 				Name: "happy1",
-				ShutdownFn: func(ctx context.Context) error {
+				ShutdownFn: func(_ context.Context) error {
 					time.Sleep(time.Millisecond)
 
 					return nil
@@ -175,7 +174,7 @@ func BenchmarkShutdown(b *testing.B) {
 			},
 			{
 				Name: "happy2",
-				ShutdownFn: func(ctx context.Context) error {
+				ShutdownFn: func(_ context.Context) error {
 					time.Sleep(time.Millisecond)
 
 					return nil

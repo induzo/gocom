@@ -16,7 +16,7 @@ func ExampleHealth() {
 		{
 			Name:    "lambda",
 			Timeout: 1 * time.Second, // Optional to specify timeout
-			CheckFn: func(ctx context.Context) error {
+			CheckFn: func(_ context.Context) error {
 				return nil
 			},
 		},

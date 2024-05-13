@@ -25,7 +25,7 @@ func ExampleShutdown() {
 			[]shutdown.Hook{
 				{
 					Name: "do something",
-					ShutdownFn: func(ctx context.Context) error {
+					ShutdownFn: func(_ context.Context) error {
 						return nil
 					},
 				},

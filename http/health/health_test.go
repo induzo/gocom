@@ -2,6 +2,7 @@ package health
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -46,10 +47,9 @@ func TestTimeoutError(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
-
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if tt.err.Error() != tt.expectedString {
 				t.Error("unexpected Error string")
 			}
@@ -67,16 +67,15 @@ func TestCheckError(t *testing.T) {
 	}{
 		{
 			name:           "happy path",
-			err:            &CheckError{name: "test", err: fmt.Errorf("err")},
-			expectedString: fmt.Sprintf("health check function: %s returned err: %v", "test", fmt.Errorf("err")),
+			err:            &CheckError{name: "test", err: errors.New("err")},
+			expectedString: fmt.Sprintf("health check function: %s returned err: %v", "test", errors.New("err")),
 		},
 	}
 
 	for _, tt := range tests {
-		tt := tt
-
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if tt.err.Error() != tt.expectedString {
 				t.Error("unexpected Error string")
 			}
@@ -96,7 +95,7 @@ func TestHealth(t *testing.T) {
 	t.Parallel()
 
 	var (
-		checkErr   = &CheckError{name: "check", err: fmt.Errorf("failed to ping db")}
+		checkErr   = &CheckError{name: "check", err: errors.New("failed to ping db")}
 		timeoutErr = &TimeoutError{name: "timeout", timeElapsed: time.Millisecond}
 	)
 
@@ -117,7 +116,7 @@ func TestHealth(t *testing.T) {
 					{
 						Name:    "happy",
 						Timeout: 50 * time.Millisecond,
-						CheckFn: func(ctx context.Context) error {
+						CheckFn: func(_ context.Context) error {
 							return nil
 						},
 					},
@@ -132,7 +131,7 @@ func TestHealth(t *testing.T) {
 				checkConfigs: []CheckConfig{
 					{
 						Name: "default timeout",
-						CheckFn: func(ctx context.Context) error {
+						CheckFn: func(_ context.Context) error {
 							return nil
 						},
 					},
@@ -147,8 +146,8 @@ func TestHealth(t *testing.T) {
 				checkConfigs: []CheckConfig{
 					{
 						Name: "check",
-						CheckFn: func(ctx context.Context) error {
-							return fmt.Errorf("failed to ping db")
+						CheckFn: func(_ context.Context) error {
+							return errors.New("failed to ping db")
 						},
 					},
 				},
@@ -163,7 +162,7 @@ func TestHealth(t *testing.T) {
 					{
 						Name:    "timeout",
 						Timeout: time.Millisecond,
-						CheckFn: func(ctx context.Context) error {
+						CheckFn: func(_ context.Context) error {
 							time.Sleep(20 * time.Millisecond)
 
 							return nil
@@ -180,14 +179,14 @@ func TestHealth(t *testing.T) {
 				checkConfigs: []CheckConfig{
 					{
 						Name: "happy",
-						CheckFn: func(ctx context.Context) error {
+						CheckFn: func(_ context.Context) error {
 							return nil
 						},
 					},
 					{
 						Name:    "timeout",
 						Timeout: time.Millisecond,
-						CheckFn: func(ctx context.Context) error {
+						CheckFn: func(_ context.Context) error {
 							time.Sleep(20 * time.Millisecond)
 
 							return nil
@@ -195,14 +194,14 @@ func TestHealth(t *testing.T) {
 					},
 					{
 						Name: "check",
-						CheckFn: func(ctx context.Context) error {
-							return fmt.Errorf("failed to ping db")
+						CheckFn: func(_ context.Context) error {
+							return errors.New("failed to ping db")
 						},
 					},
 					{
 						Name:    "no timeout",
 						Timeout: 50 * time.Millisecond,
-						CheckFn: func(ctx context.Context) error {
+						CheckFn: func(_ context.Context) error {
 							time.Sleep(10 * time.Millisecond)
 
 							return nil
@@ -219,16 +218,17 @@ func TestHealth(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
-
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
 			rr := httptest.NewRecorder()
+
 			req := httptest.NewRequest(http.MethodGet, HealthEndpoint, nil)
 
 			health := NewHealth(WithChecks(tt.args.checkConfigs...))
+
 			handler := health.Handler()
+
 			handler.ServeHTTP(rr, req)
 
 			resp := rr.Result()
@@ -240,8 +240,8 @@ func TestHealth(t *testing.T) {
 
 			if tt.wantErrResponse == nil {
 				body, _ := io.ReadAll(rr.Body)
-				trimmedBody := strings.TrimSpace(string(body))
 
+				trimmedBody := strings.TrimSpace(string(body))
 				if trimmedBody != "" {
 					t.Errorf("expected empty response")
 				}
@@ -256,11 +256,13 @@ func TestHealth(t *testing.T) {
 			}
 
 			found := false
+
 			for _, wantRes := range tt.wantErrResponse {
 				if reflect.DeepEqual(gotRes, wantRes) {
 					found = true
 				}
 			}
+
 			if !found {
 				t.Errorf("expected response in %v, got response %v", gotRes, tt.wantErrResponse)
 			}
@@ -270,12 +272,13 @@ func TestHealth(t *testing.T) {
 
 func BenchmarkHealth(b *testing.B) {
 	rr := httptest.NewRecorder()
+
 	req := httptest.NewRequest(http.MethodGet, HealthEndpoint, nil)
 
 	health := NewHealth(WithChecks(CheckConfig{
 		Name:    "test",
 		Timeout: 5 * time.Second,
-		CheckFn: func(ctx context.Context) error {
+		CheckFn: func(_ context.Context) error {
 			return nil
 		},
 	}))

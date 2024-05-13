@@ -103,7 +103,6 @@ func (h *Health) Handler() http.Handler {
 		errGroup, ctx := errgroup.WithContext(req.Context())
 
 		for _, check := range h.checks {
-			check := check
 			errGroup.Go(func() error {
 				ctxWithTimeout, cancel := context.WithTimeout(ctx, check.Timeout)
 
@@ -130,6 +129,7 @@ func (h *Health) Handler() http.Handler {
 
 		if err := errGroup.Wait(); err != nil {
 			respW.WriteHeader(http.StatusServiceUnavailable)
+
 			responseBody := Response{
 				Error:        errorToErrorCode(err),
 				ErrorMessage: err.Error(),
@@ -146,6 +146,7 @@ func (h *Health) Handler() http.Handler {
 
 			if err := json.NewEncoder(respW).EncodeContext(req.Context(), responseBody); err != nil {
 				respW.WriteHeader(http.StatusInternalServerError)
+
 				logger.Error(
 					"write response body",
 					slog.String("path", req.URL.Path),

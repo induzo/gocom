@@ -13,7 +13,7 @@ import (
 	"go.uber.org/goleak"
 )
 
-var endpoint string //nolint:gochecknoglobals // test code
+var endpoint string
 
 func TestMain(m *testing.M) {
 	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
@@ -104,7 +104,6 @@ func TestClientHealthCheck(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 

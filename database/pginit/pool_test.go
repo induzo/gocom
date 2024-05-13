@@ -21,7 +21,7 @@ import (
 	"go.uber.org/goleak"
 )
 
-var connStr string //nolint:gochecknoglobals // test code
+var connStr string
 
 func TestMain(m *testing.M) {
 	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
@@ -132,7 +132,6 @@ func TestConnPool(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -168,9 +167,11 @@ func TestConnPool(t *testing.T) {
 			if err := db.Ping(ctx); err != nil {
 				t.Errorf("cannot ping db: %s", err)
 			}
+
 			if db.Config().MinConns != tt.wantMinConns {
 				t.Errorf("expected (%v) but got (%v)", tt.wantMinConns, db.Config().MinConns)
 			}
+
 			if db.Config().MaxConnLifetime != tt.wantMaxConnLifetime {
 				t.Errorf("expected (%v) but got (%v)", tt.wantMaxConnLifetime, db.Config().MaxConnLifetime)
 			}
@@ -190,7 +191,6 @@ func TestConnPoolWithLogger(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -243,7 +243,6 @@ func TestConnPoolWithTracer(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -341,7 +340,6 @@ func TestConnPool_WithCustomDataTypes(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -368,12 +366,14 @@ func TestConnPool_WithCustomDataTypes(t *testing.T) {
 			}
 
 			var d decimal.Decimal
+
 			err = db.QueryRow(context.Background(), "select 10.98::numeric").Scan(&d)
 			if err != nil && !tt.expectErrDecimal {
 				t.Errorf("expected no err: %s", err)
 			}
 
 			var u uuid.UUID
+
 			err = db.QueryRow(context.Background(), "select 'b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5'::uuid").Scan(&u)
 			if err != nil && !tt.expectErrUUID {
 				t.Errorf("expected no err: %s", err)
@@ -399,7 +399,6 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -441,6 +440,7 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 
 			// create
 			row := tx.QueryRow(ctx, "INSERT INTO uuid_decimal(uuid, price) VALUES('b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5', 10.888888888888) RETURNING uuid, price")
+
 			r := struct {
 				uuid  uuid.UUID
 				price decimal.Decimal
@@ -462,11 +462,14 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 			if err != nil {
 				t.Errorf("expected no error but got: %v", err)
 			}
+
 			defer rows.Close()
+
 			var results []struct {
 				uuid  uuid.UUID
 				price decimal.Decimal
 			}
+
 			for rows.Next() {
 				r := struct { //nolint:govet // r is within loop scope
 					uuid  uuid.UUID
@@ -486,14 +489,17 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 
 				results = append(results, r)
 			}
+
 			if len(results) != 1 {
 				t.Errorf("expected 1 result but got: %v", len(results))
 			}
+
 			// update
 			row = tx.QueryRow(ctx, "UPDATE uuid_decimal SET price = 11.00 WHERE uuid = $1 RETURNING uuid, price", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5")
 			if err := row.Scan(&r.uuid, &r.price); err != nil {
 				t.Errorf("expected no error but got: %v, (%+v)", err, row)
 			}
+
 			if r.price.Cmp(eleven) != 0 {
 				t.Errorf("expected 11.00 but got %s", r.price.String())
 			}
@@ -503,9 +509,11 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 			if err := row.Scan(&r.uuid, &r.price); err != nil {
 				t.Errorf("expected no error but got: %v, (%+v)", err, row)
 			}
+
 			if r.uuid.String() != "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5" {
 				t.Error("inserted data doesn't match with input")
 			}
+
 			row = tx.QueryRow(ctx, "SELECT * FROM uuid_decimal WHERE uuid = $1", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5")
 			if err := row.Scan(&r.uuid, &r.price); err != nil && !errors.Is(err, pgx.ErrNoRows) {
 				t.Errorf("expected no error but got: %v, (%+v)", err, row)
@@ -531,7 +539,6 @@ func TestConnPoolWithCustomTypesGoogle_CRUD(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -552,18 +559,21 @@ func TestConnPoolWithCustomTypesGoogle_CRUD(t *testing.T) {
 			if err != nil {
 				t.Errorf("expected no error but got: %v", err)
 			}
+
 			defer pool.Close()
 
 			conn, err := pool.Acquire(ctx)
 			if err != nil {
 				t.Errorf("expected no error but got: %v", err)
 			}
+
 			defer conn.Release()
 
 			tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
 			if err != nil {
 				t.Errorf("expected no error but got: %v", err)
 			}
+
 			defer tx.Rollback(ctx)
 
 			_, err = tx.Exec(ctx, "CREATE TABLE IF NOT EXISTS uuid_decimal(uuid uuid, price numeric, PRIMARY KEY (uuid))")
@@ -573,10 +583,12 @@ func TestConnPoolWithCustomTypesGoogle_CRUD(t *testing.T) {
 
 			// create
 			row := tx.QueryRow(ctx, "INSERT INTO uuid_decimal(uuid, price) VALUES('b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5', 10.888888888888) RETURNING uuid, price")
+
 			r := struct {
 				uuid  uuid.UUID
 				price decimal.Decimal
 			}{}
+
 			if err := row.Scan(&r.uuid, &r.price); err != nil { //nolint:govet // inline err is within scope
 				t.Errorf("expected no error but got: %v, (%+v)", err, row)
 			}
@@ -594,11 +606,14 @@ func TestConnPoolWithCustomTypesGoogle_CRUD(t *testing.T) {
 			if err != nil {
 				t.Errorf("expected no error but got: %v", err)
 			}
+
 			defer rows.Close()
+
 			var results []struct {
 				uuid  uuid.UUID
 				price decimal.Decimal
 			}
+
 			for rows.Next() {
 				r := struct { //nolint:govet // r is within loop scope
 					uuid  uuid.UUID
@@ -618,14 +633,17 @@ func TestConnPoolWithCustomTypesGoogle_CRUD(t *testing.T) {
 
 				results = append(results, r)
 			}
+
 			if len(results) != 1 {
 				t.Errorf("expected 1 result but got: %v", len(results))
 			}
+
 			// update
 			row = tx.QueryRow(ctx, "UPDATE uuid_decimal SET price = 11.00 WHERE uuid = $1 RETURNING uuid, price", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5")
 			if err := row.Scan(&r.uuid, &r.price); err != nil {
 				t.Errorf("expected no error but got: %v, (%+v)", err, row)
 			}
+
 			if r.price.Cmp(eleven) != 0 {
 				t.Errorf("expected 11.00 but got %s", r.price.String())
 			}
@@ -635,9 +653,11 @@ func TestConnPoolWithCustomTypesGoogle_CRUD(t *testing.T) {
 			if err := row.Scan(&r.uuid, &r.price); err != nil {
 				t.Errorf("expected no error but got: %v, (%+v)", err, row)
 			}
+
 			if r.uuid.String() != "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5" {
 				t.Error("inserted data doesn't match with input")
 			}
+
 			row = tx.QueryRow(ctx, "SELECT * FROM uuid_decimal WHERE uuid = $1", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5")
 			if err := row.Scan(&r.uuid, &r.price); err != nil && !errors.Is(err, pgx.ErrNoRows) {
 				t.Errorf("expected no error but got: %v, (%+v)", err, row)

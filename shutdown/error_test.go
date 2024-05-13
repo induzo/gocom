@@ -1,7 +1,7 @@
 package shutdown
 
 import (
-	"fmt"
+	"errors"
 	"testing"
 )
 
@@ -16,8 +16,8 @@ func TestShutdownError(t *testing.T) {
 		{
 			name: "happy path",
 			err: shutdownError(map[string]error{
-				"test1": fmt.Errorf("dummy error 1"),
-				"test2": fmt.Errorf("dummy error 2"),
+				"test1": errors.New("dummy error 1"),
+				"test2": errors.New("dummy error 2"),
 			}),
 			expectedString: []string{
 				"test1 err: dummy error 1, test2 err: dummy error 2",
@@ -27,8 +27,6 @@ func TestShutdownError(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
-
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -36,6 +34,7 @@ func TestShutdownError(t *testing.T) {
 			gotErr := tt.err.Error()
 
 			found := false
+
 			for _, expectedString := range tt.expectedString {
 				if expectedString == gotErr {
 					found = true
