@@ -1,6 +1,6 @@
 module github.com/induzo/gocom/database/pginit/v2
 
-go 1.21
+go 1.22
 
 require (
 	github.com/goccy/go-json v0.10.2

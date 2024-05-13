@@ -1,6 +1,6 @@
 module github.com/induzo/gocom/database/pgx-slog
 
-go 1.22.1
+go 1.22.3
 
 require (
 	github.com/jackc/pgx/v5 v5.5.5
