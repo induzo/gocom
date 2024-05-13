@@ -2,19 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [database/pgx-slog/v1.0.8] - 2024-05-13
+
+### Miscellaneous Tasks
+
+- Update deps
+- Update to go 1.22.3
+
+## [database/pgx-slog/v1.0.6] - 2024-03-10
+
+### Documentation
+
+- Update latest versions
+
+### Features
+
+- Add more tests
+
+### Miscellaneous Tasks
+
+- Go work sync
+- Sync
+- Upgrade
+- Update deps
+- Update deps
+
+## [database/pgx-slog/v1.0.3] - 2023-11-20
 
 ### Bug Fixes
 
 - Leak in pool
+- Add license for each module
 
 ### Documentation
 
+- Update docs for module database/pgx-slog
+- Update docs for module database/pgx-slog
 - Update docs for module database/pgx-slog
 
 ### Features
 
 - Contextslogger new module
+- Add changelog for database/pgx-slog
+- Upgrade context log
+- Upgrade
+- Remove metrics as the API changed
 
 ### Miscellaneous Tasks
 
@@ -22,6 +54,7 @@ All notable changes to this project will be documented in this file.
 - Work sync
 - Work sync
 - Work sync
+- Update deps
 
 ## [database/pgx-slog/v1.0.0] - 2023-04-01
 
