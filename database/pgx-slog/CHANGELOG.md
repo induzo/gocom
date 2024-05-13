@@ -2,12 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
-## [database/pgx-slog/v1.0.8] - 2024-05-13
+## [database/pgx-slog/v1.0.9] - 2024-05-13
+
+### Documentation
+
+- Update CHANGELOG.md for database/pgx-slog/v1.0.8
 
 ### Miscellaneous Tasks
 
 - Update deps
 - Update to go 1.22.3
+- Release
 
 ## [database/pgx-slog/v1.0.6] - 2024-03-10
 
