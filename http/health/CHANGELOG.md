@@ -2,7 +2,58 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [http/health/v1.1.5] - 2024-05-13
+
+### Miscellaneous Tasks
+
+- Update deps
+- Update to go 1.22.3
+- Release
+
+## [http/health/v1.1.3] - 2024-03-10
+
+### Miscellaneous Tasks
+
+- Upgrade
+- Update deps
+- Update deps
+
+## [http/health/v1.1.0] - 2023-12-05
+
+### Features
+
+- Use chi http log instead of contextlogger
+
+## [http/health/v1.0.3] - 2023-11-21
+
+### Documentation
+
+- Update docs for module http/health
+
+### Features
+
+- Remove metrics as the API changed
+
+### Miscellaneous Tasks
+
+- Update deps
+- Update induzo deps
+
+## [http/health/v1.0.2] - 2023-05-31
+
+### Bug Fixes
+
+- Work sync
+- Add license for each module
+
+### Documentation
+
+- Update CHANGELOG.md for http/health/v1.0.1
+
+### Features
+
+- Upgrade context log
+- Update deps
 
 ### Miscellaneous Tasks
 
