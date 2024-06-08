@@ -9,7 +9,6 @@ module-path = "github.com/induzo"
 
 ## END SECTION TO BE CONFIGURED WITH YOUR OWN REPO PATH
 
-
 [run]
 timeout = "15m"
 
@@ -69,7 +68,6 @@ enable = [
     "ineffassign",
     "interfacebloat",
     "intrange",
-    "ireturn",
     "lll",
     "loggercheck",
     "maintidx",
@@ -118,29 +116,27 @@ enable = [
     "zerologlint",
 
     # Disabled by your configuration linters:
-    # deadcode [deprecated]: Finds unused code [fast: false, auto-fix: false]
-    # execinquery [deprecated]: execinquery is a linter about query string checker in Query function which reads your Go src files and warning it finds [fast: false, auto-fix: false]
-    # exhaustivestruct [deprecated]: Checks if all struct's fields are initialized [fast: false, auto-fix: false]
     # exhaustruct: Checks if all structure fields are initialized [fast: false, auto-fix: false]
     # funlen: Tool for detection of long functions [fast: true, auto-fix: false]
     # godot: Check if comments end in a period [fast: true, auto-fix: true]
-    # golint [deprecated]: Golint differs from gofmt. Gofmt reformats Go source code, whereas golint prints out style mistakes [fast: false, auto-fix: false]
-    # ifshort [deprecated]: Checks that your code uses short syntax for if-statements whenever possible. [fast: true, auto-fix: false]
     # inamedparam: reports interfaces with unnamed method parameters [fast: true, auto-fix: false]
-    # interfacer [deprecated]: Linter that suggests narrower interface types [fast: false, auto-fix: false]
-    # maligned [deprecated]: Tool to detect Go structs that would take less memory if their fields were sorted [fast: false, auto-fix: false]
+    # ireturn: Accept Interfaces, Return Concrete Types [fast: false, auto-fix: false]
     # musttag: enforce field tags in (un)marshaled structs [fast: false, auto-fix: false]
-    # nosnakecase [deprecated]: nosnakecase is a linter that detects snake case of variable naming and function name. [fast: true, auto-fix: false]
-    # scopelint [deprecated]: Scopelint checks for unpinned variables in go programs [fast: true, auto-fix: false]
-    # structcheck [deprecated]: Finds unused struct fields [fast: false, auto-fix: false]
     # tagliatelle: Checks the struct tags. [fast: true, auto-fix: false]
     # testpackage: linter that makes you use a separate _test package [fast: true, auto-fix: false]
-    # varcheck [deprecated]: Finds unused global variables and constants [fast: false, auto-fix: false]]
+    # deadcode [deprecated]: Deprecated [fast: false, auto-fix: false]
+    # execinquery [deprecated]: execinquery is a linter about query string checker in Query function which reads your Go src files and warning it finds [fast: false, auto-fix: false]
+    # exhaustivestruct [deprecated]: Deprecated [fast: false, auto-fix: false]
+    # golint [deprecated]: Deprecated [fast: false, auto-fix: false]
+    # gomnd [deprecated]: An analyzer to detect magic numbers. [fast: true, auto-fix: false]
+    # ifshort [deprecated]: Deprecated [fast: true, auto-fix: false]
+    # interfacer [deprecated]: Deprecated [fast: false, auto-fix: false]
+    # maligned [deprecated]: Deprecated [fast: false, auto-fix: false]
+    # nosnakecase [deprecated]: Deprecated [fast: true, auto-fix: false]
+    # scopelint [deprecated]: Deprecated [fast: true, auto-fix: false]
+    # structcheck [deprecated]: Deprecated [fast: false, auto-fix: false]
+    # varcheck [deprecated]: Deprecated [fast: false, auto-fix: false]
 ]
-
-[linters-settings.errcheck]
-check-type-assertions = true
-check-blank = true
 
 [linters-settings.govet]
 enable-all = true
@@ -203,6 +199,10 @@ desc = "please use errors from std lib"
 pkg = "gorm.io/gorm"
 desc = "please use pgx and learn sql"
 
+[[linters-settings.depguard.rules.main.deny]]
+pkg = "encoding/json"
+desc = "please use github.com/goccy/go-json instead"
+
 # [linters-settings.depguard.rules.test]
 # list-mode = "lax"
 
@@ -218,8 +218,12 @@ desc =  "please use go table tests and simple ifs"
 pkg = "github.com/stretchr/testify/suite"
 desc =  "please use go table tests and simple ifs"
 
-[linters-settings.ireturn]
-allow = ["anon", "error", "empty", "stdlib", "generic"]
+[linters-settings.wrapcheck]
+ignoreSigs = [
+    "fmt.Errorf(",
+    "errors.Join(",
+    "go.temporal.io/sdk/temporal.NewApplicationError("
+]
 
 [[issues.exclude-rules]]
 path = '(.+)_test\.go'
