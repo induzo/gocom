@@ -21,7 +21,7 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous Tasks
 
 - Update deps
-- Update to go 1.22.3
+- Update to go 1.22.4
 - Release
 
 ## [shutdown/v1.2.1] - 2024-01-12

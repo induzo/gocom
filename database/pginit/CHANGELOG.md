@@ -18,7 +18,7 @@ All notable changes to this project will be documented in this file.
 
 ### Miscellaneous Tasks
 
-- Update to go 1.22.3
+- Update to go 1.22.4
 - Release
 - Release
 - Release

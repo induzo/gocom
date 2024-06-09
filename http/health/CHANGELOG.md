@@ -33,7 +33,7 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous Tasks
 
 - Update deps
-- Update to go 1.22.3
+- Update to go 1.22.4
 - Release
 
 ## [http/health/v1.1.3] - 2024-03-10

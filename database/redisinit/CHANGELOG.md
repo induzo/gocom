@@ -37,7 +37,7 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous Tasks
 
 - Update deps
-- Update to go 1.22.3
+- Update to go 1.22.4
 - Release
 
 ## [database/redisinit/v1.0.6] - 2024-03-10

@@ -1,6 +1,6 @@
 module github.com/induzo/gocom/http/health
 
-go 1.22.3
+go 1.22.4
 
 require (
 	github.com/go-chi/httplog/v2 v2.0.11
