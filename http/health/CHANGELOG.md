@@ -7,6 +7,11 @@ All notable changes to this project will be documented in this file.
 ### Documentation
 
 - Update CHANGELOG.md for http/health/v1.1.9
+- Update CHANGELOG.md for http/health/v1.1.9
+
+### Features
+
+- Htt health update deps
 
 ### Miscellaneous Tasks
 
