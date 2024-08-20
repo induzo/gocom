@@ -2,10 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/pgx-slog/v1.0.13] - 2024-08-20
+
+### Miscellaneous Tasks
+
+- Update go version for sec
+- Update deps
+
 ## [database/pgx-slog/v1.0.12] - 2024-06-08
 
 ### Documentation
 
+- Update CHANGELOG.md for database/pgx-slog/v1.0.12
 - Update CHANGELOG.md for database/pgx-slog/v1.0.12
 
 ### Miscellaneous Tasks
@@ -38,7 +46,7 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous Tasks
 
 - Update deps
-- Update to go 1.22.4
+- Update to go 1.22.3
 - Release
 
 ## [database/pgx-slog/v1.0.6] - 2024-03-10
