@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [http/health/v1.1.9] - 2024-08-20
 
+### Documentation
+
+- Update CHANGELOG.md for http/health/v1.1.9
+
 ### Miscellaneous Tasks
 
 - Update go version for sec
