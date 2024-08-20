@@ -2,7 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/pginit/v2.2.8] - 2024-08-20
+
+### Miscellaneous Tasks
+
+- Update go version for sec
+- Update deps
+
 ## [database/pginit/v2.2.7] - 2024-06-08
+
+### Documentation
+
+- Update CHANGELOG.md for database/pginit/v2.2.7
 
 ### Miscellaneous Tasks
 
@@ -18,7 +29,7 @@ All notable changes to this project will be documented in this file.
 
 ### Miscellaneous Tasks
 
-- Update to go 1.22.4
+- Update to go 1.22.3
 - Release
 - Release
 - Release
