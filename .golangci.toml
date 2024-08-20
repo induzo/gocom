@@ -37,7 +37,6 @@ enable = [
     "errname",
     "errorlint",
     "exhaustive",
-    "exportloopref",
     "fatcontext",
     "forbidigo",
     "forcetypeassert",
@@ -117,6 +116,7 @@ enable = [
 
     # Disabled by your configuration linters:
     # exhaustruct: Checks if all structure fields are initialized [fast: false, auto-fix: false]
+    # exportloopref: checks for pointers to enclosing loop variables [fast: false, auto-fix: false]
     # funlen: Tool for detection of long functions [fast: true, auto-fix: false]
     # godot: Check if comments end in a period [fast: true, auto-fix: true]
     # inamedparam: reports interfaces with unnamed method parameters [fast: true, auto-fix: false]
