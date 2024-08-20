@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1717917141773,
+  "lastUpdate": 1724172879763,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -1368,6 +1368,54 @@ window.BENCHMARK_DATA = {
             "value": 20,
             "unit": "allocs/op",
             "extra": "404072 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "bc3dd03b02de598d4516b13edaa4c1d11d18dd2c",
+          "message": "--amend",
+          "timestamp": "2024-08-21T00:53:00+08:00",
+          "tree_id": "9b1d036126a85bf87e8e0890c9748379fc6b5ffe",
+          "url": "https://github.com/induzo/gocom/commit/bc3dd03b02de598d4516b13edaa4c1d11d18dd2c"
+        },
+        "date": 1724172879412,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHealth",
+            "value": 3156,
+            "unit": "ns/op\t    1224 B/op\t      20 allocs/op",
+            "extra": "380918 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHealth - ns/op",
+            "value": 3156,
+            "unit": "ns/op",
+            "extra": "380918 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHealth - B/op",
+            "value": 1224,
+            "unit": "B/op",
+            "extra": "380918 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHealth - allocs/op",
+            "value": 20,
+            "unit": "allocs/op",
+            "extra": "380918 times\n4 procs"
           }
         ]
       }
