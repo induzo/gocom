@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/health/v1.1.9] - 2024-08-20
+
+### Miscellaneous Tasks
+
+- Update go version for sec
+
 ## [http/health/v1.1.8] - 2024-06-08
+
+### Documentation
+
+- Update CHANGELOG.md for http/health/v1.1.8
 
 ### Miscellaneous Tasks
 
@@ -33,7 +43,7 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous Tasks
 
 - Update deps
-- Update to go 1.22.4
+- Update to go 1.22.3
 - Release
 
 ## [http/health/v1.1.3] - 2024-03-10
