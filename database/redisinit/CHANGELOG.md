@@ -2,7 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/redisinit/v1.0.12] - 2024-08-20
+
+### Miscellaneous Tasks
+
+- Update go version for sec
+- Update deps
+
 ## [database/redisinit/v1.0.11] - 2024-06-08
+
+### Documentation
+
+- Update CHANGELOG.md for database/redisinit/v1.0.11
 
 ### Miscellaneous Tasks
 
@@ -37,7 +48,7 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous Tasks
 
 - Update deps
-- Update to go 1.22.4
+- Update to go 1.22.3
 - Release
 
 ## [database/redisinit/v1.0.6] - 2024-03-10
