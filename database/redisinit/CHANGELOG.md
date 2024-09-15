@@ -2,7 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [database/redisinit/v1.0.3] - 2024-09-15
+## [database/redisinit/v1.0.13] - 2024-09-15
+
+### Documentation
+
+- Update CHANGELOG.md for database/redisinit/v1.0.3
 
 ### Features
 
