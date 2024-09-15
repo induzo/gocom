@@ -2,7 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [database/pgx-slog/v1.0.13] - 2024-08-20
+## [database/pgx-slog/v1.0.14] - 2024-09-15
+
+### Features
+
+- Upgrade pgx/slog
 
 ### Miscellaneous Tasks
 
