@@ -2,7 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/redisinit/v1.0.3] - 2024-09-15
+
+### Features
+
+- Upgrade pginit
+- Upgrade redisinit
+
 ## [database/redisinit/v1.0.12] - 2024-08-20
+
+### Documentation
+
+- Update CHANGELOG.md for database/redisinit/v1.0.12
 
 ### Miscellaneous Tasks
 
