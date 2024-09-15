@@ -2,7 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [database/pginit/v2.2.8] - 2024-08-20
+## [database/pginit/v2.2.9] - 2024-09-15
+
+### Documentation
+
+- Update CHANGELOG.md for database/pginit/v2.2.8
+
+### Features
+
+- Upgrade pginit
 
 ### Miscellaneous Tasks
 
