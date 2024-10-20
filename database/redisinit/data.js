@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1729417553158,
+  "lastUpdate": 1729417775330,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -1354,6 +1354,54 @@ window.BENCHMARK_DATA = {
           {
             "name": "BenchmarkXxx - B/op",
             "value": 161,
+            "unit": "B/op",
+            "extra": "10000 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkXxx - allocs/op",
+            "value": 7,
+            "unit": "allocs/op",
+            "extra": "10000 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "f6bd4579f7a855e00e08b5f308f9ed0649c91fa1",
+          "message": "docs: update docs for module database/redisinit",
+          "timestamp": "2024-10-20T17:48:06+08:00",
+          "tree_id": "806c31c74a0e1e11d6fd15002126e5644f361d15",
+          "url": "https://github.com/induzo/gocom/commit/f6bd4579f7a855e00e08b5f308f9ed0649c91fa1"
+        },
+        "date": 1729417775022,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkXxx",
+            "value": 112588,
+            "unit": "ns/op\t     177 B/op\t       7 allocs/op",
+            "extra": "10000 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkXxx - ns/op",
+            "value": 112588,
+            "unit": "ns/op",
+            "extra": "10000 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkXxx - B/op",
+            "value": 177,
             "unit": "B/op",
             "extra": "10000 times\n4 procs"
           },
