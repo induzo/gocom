@@ -35,8 +35,6 @@ repos:
     hooks:
       - id: no-go-testing
       - id: go-mod-tidy
-      - id: go-build
-        stages: [push]
   - repo: local
     hooks:
       - id: go-tests
