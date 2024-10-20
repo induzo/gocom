@@ -1,4 +1,4 @@
-default_stages: [commit, push]
+default_stages: [commit, pre-push]
 fail_fast: true
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -41,4 +41,4 @@ repos:
         name: go-tests
         entry: bash -c "make test-all | grep fail"
         language: system
-        stages: [push]
+        stages: [pre-push]
