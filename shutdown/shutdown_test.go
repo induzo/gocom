@@ -3,10 +3,8 @@ package shutdown
 import (
 	"context"
 	"errors"
-	"flag"
 	"io"
 	"log/slog"
-	"os"
 	"reflect"
 	"syscall"
 	"testing"
@@ -16,16 +14,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	leak := flag.Bool("leak", false, "use leak detector")
-	flag.Parse()
-
-	if *leak {
-		goleak.VerifyTestMain(m)
-
-		return
-	}
-
-	os.Exit(m.Run())
+	goleak.VerifyTestMain(m)
 }
 
 func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slice

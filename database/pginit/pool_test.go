@@ -3,7 +3,6 @@ package pginit
 import (
 	"context"
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -40,7 +39,7 @@ func TestMain(m *testing.M) {
 	resource, errP := pool.RunWithOptions(
 		&dockertest.RunOptions{
 			Repository: "postgres",
-			Tag:        "13",
+			Tag:        "16",
 			Env: []string{
 				"POSTGRES_USER=postgres",
 				"POSTGRES_PASSWORD=postgres", // pragma: allowlist secret
@@ -78,18 +77,11 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Could not connect to database: %s", err)
 	}
 
-	leak := flag.Bool("leak", false, "use leak detector")
-	flag.Parse()
-
-	if *leak {
-		goleak.VerifyTestMain(m,
-			goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
-			goleak.IgnoreTopFunction("net/http.(*persistConn).roundTrip"),
-			goleak.IgnoreTopFunction("net/http.(*persistConn).writeLoop"),
-		)
-
-		return
-	}
+	goleak.VerifyTestMain(m,
+		goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
+		goleak.IgnoreTopFunction("net/http.(*persistConn).roundTrip"),
+		goleak.IgnoreTopFunction("net/http.(*persistConn).writeLoop"),
+	)
 
 	code := m.Run()
 
