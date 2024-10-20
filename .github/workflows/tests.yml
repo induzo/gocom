@@ -7,7 +7,7 @@ on:
       - "main"
 
 jobs:
-  test-race:
+  tests:
     runs-on: ubuntu-latest
     steps:
       - name: Install Go
@@ -34,32 +34,4 @@ jobs:
           GOPRIVATE: github.com/induzo/*
         run: |
           git config --global url."https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com".insteadOf "https://github.com"
-          make test-all-race
-  test-leak:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ">=1.22.1"
-      - name: Cache tests
-        id: tests
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('go.work.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-      - name: run all tests
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GOPRIVATE: github.com/induzo/*
-        run: |
-          git config --global url."https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com".insteadOf "https://github.com"
-          make test-all-leak
+          make test-all
