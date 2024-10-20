@@ -40,7 +40,7 @@ Using standard net/http package. We can also simply pass healthCheck as a CheckF
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/sys/health", func(rw http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/sys/health", func(rw http.ResponseWriter, _ *http.Request) {
 		if err := healthCheck(ctx); err != nil {
 			rw.WriteHeader(http.StatusServiceUnavailable)
 		}
