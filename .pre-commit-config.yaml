@@ -39,6 +39,5 @@ repos:
     hooks:
       - id: go-tests
         name: go-tests
-        entry: bash -c "make test-all | grep fail"
+        entry: bash -c "make test-all"
         language: system
-        stages: [pre-push]
