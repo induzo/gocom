@@ -2,7 +2,6 @@ package redisinit
 
 import (
 	"context"
-	"flag"
 	"log"
 	"os"
 	"testing"
@@ -60,18 +59,11 @@ func TestMain(m *testing.M) {
 
 	resource.Expire(60) // Tell docker to hard kill the container in 60 seconds
 
-	leak := flag.Bool("leak", false, "use leak detector")
-	flag.Parse()
-
-	if *leak {
-		goleak.VerifyTestMain(m,
-			goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
-			goleak.IgnoreTopFunction("net/http.(*persistConn).roundTrip"),
-			goleak.IgnoreTopFunction("net/http.(*persistConn).writeLoop"),
-		)
-
-		return
-	}
+	goleak.VerifyTestMain(m,
+		goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
+		goleak.IgnoreTopFunction("net/http.(*persistConn).roundTrip"),
+		goleak.IgnoreTopFunction("net/http.(*persistConn).writeLoop"),
+	)
 
 	code := m.Run()
 

@@ -32,8 +32,6 @@ repos:
         args: [--config=./.golangci.toml]
         stages: [push]
       - id: go-mod-tidy
-      - id: go-generate
-        args: [./...]
       - id: go-build
         stages: [push]
   - repo: local

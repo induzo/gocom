@@ -3,12 +3,10 @@ package health
 import (
 	"context"
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -19,16 +17,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	leak := flag.Bool("leak", false, "use leak detector")
-	flag.Parse()
-
-	if *leak {
-		goleak.VerifyTestMain(m)
-
-		return
-	}
-
-	os.Exit(m.Run())
+	goleak.VerifyTestMain(m)
 }
 
 func TestTimeoutError(t *testing.T) {

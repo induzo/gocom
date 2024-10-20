@@ -205,22 +205,8 @@ release-specific: ## release selection module, gen-changelog, gen docs, commit a
 # tests #
 #########
 
-test-all: test-all-race test-all-leak ## launch tests for all modules
-
-test-all-race:
+test-all:
 	@go test -race -failfast $(ALL_MODULES_DOTDOTDOT)
-
-test-all-leak:
-	@( \
-		for module in $(ALL_MODULES_SPACE_SEP); do \
-			if [ -z $$module ]; then \
-				break; \
-			fi; \
-			pushd $$module > /dev/null && \
-			go test -leak -failfast ./...  && \
-			popd > /dev/null; \
-		done \
-	)
 
 coverage:
 	go test $(ALL_MODULES_DOTDOTDOT) -race -failfast -covermode=atomic -coverprofile=./coverage.out
@@ -232,29 +218,6 @@ test: ## launch tests for a selection module
 				break; \
 			fi; \
 			go test ./$$module/... -cover -race -covermode=atomic -failfast -coverprofile=./$$module/coverage.out; \
-			break; \
-		done \
-	)
-
-test-race: ## launch tests for a selection module with race detection
-	@( \
-		select module in $(ALL_MODULES_SPACE_SEP); do \
-			if [ -z $$module ]; then \
-				break; \
-			fi; \
-			go test ./$$module/... -cover -race; \
-			break; \
-		done \
-	)
-
-
-test-leak: ## launch tests for a selection module with leak detection (if enabled)
-	@( \
-		select module in $(ALL_MODULES_SPACE_SEP); do \
-			if [ -z $$module ]; then \
-				break; \
-			fi; \
-			go test ./$$module/... -leak; \
 			break; \
 		done \
 	)
