@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1729417570088,
+  "lastUpdate": 1729417800915,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -1890,6 +1890,54 @@ window.BENCHMARK_DATA = {
             "value": 308,
             "unit": "allocs/op",
             "extra": "452 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "f6bd4579f7a855e00e08b5f308f9ed0649c91fa1",
+          "message": "docs: update docs for module database/redisinit",
+          "timestamp": "2024-10-20T17:48:06+08:00",
+          "tree_id": "806c31c74a0e1e11d6fd15002126e5644f361d15",
+          "url": "https://github.com/induzo/gocom/commit/f6bd4579f7a855e00e08b5f308f9ed0649c91fa1"
+        },
+        "date": 1729417799978,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkConnPool",
+            "value": 2585969,
+            "unit": "ns/op\t   42866 B/op\t     308 allocs/op",
+            "extra": "456 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - ns/op",
+            "value": 2585969,
+            "unit": "ns/op",
+            "extra": "456 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - B/op",
+            "value": 42866,
+            "unit": "B/op",
+            "extra": "456 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - allocs/op",
+            "value": 308,
+            "unit": "allocs/op",
+            "extra": "456 times\n4 procs"
           }
         ]
       }
