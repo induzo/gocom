@@ -24,13 +24,16 @@ repos:
     hooks:
       - id: detect-secrets
         args: ["--baseline", ".secrets.baseline"]
+  - repo: local
+    hooks:
+      - id: golangci-lint
+        name: golangci-lint
+        entry: bash -c "make lint-all"
+        language: system
   - repo: https://github.com/dnephin/pre-commit-golang
     rev: v0.5.1
     hooks:
       - id: no-go-testing
-      - id: golangci-lint
-        args: [--config=./.golangci.toml]
-        stages: [push]
       - id: go-mod-tidy
       - id: go-build
         stages: [push]
