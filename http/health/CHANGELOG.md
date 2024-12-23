@@ -2,10 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/health/v1.1.10] - 2024-12-23
+
+### Bug Fixes
+
+- Add goleak systematically
+
+### Features
+
+- Release pgx/slog
+- Release pginit
+- Update deps health
+
 ## [http/health/v1.1.9] - 2024-08-20
 
 ### Documentation
 
+- Update CHANGELOG.md for http/health/v1.1.9
 - Update CHANGELOG.md for http/health/v1.1.9
 - Update CHANGELOG.md for http/health/v1.1.9
 
