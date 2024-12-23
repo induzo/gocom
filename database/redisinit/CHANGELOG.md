@@ -2,11 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/redisinit/v1.0.15] - 2024-12-23
+
+### Features
+
+- Release pgx/slog
+- Release pginit
+- Update deps redisinit
+
+## [database/redisinit/v1.0.14] - 2024-10-20
+
+### Bug Fixes
+
+- Add goleak systematically
+
+### Documentation
+
+- Update docs for module database/redisinit
+
+### Miscellaneous Tasks
+
+- Update deps redisinit
+
 ## [database/redisinit/v1.0.13] - 2024-09-15
 
 ### Documentation
 
 - Update CHANGELOG.md for database/redisinit/v1.0.3
+- Update CHANGELOG.md for database/redisinit/v1.0.13
 
 ### Features
 
