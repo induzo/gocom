@@ -2,7 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/pgx-slog/v1.0.16] - 2024-12-23
+
+### Features
+
+- Update pgx-slog
+
+## [database/pgx-slog/v1.0.15] - 2024-10-20
+
+### Bug Fixes
+
+- Add goleak systematically
+
+### Miscellaneous Tasks
+
+- Update pgx-slog
+
 ## [database/pgx-slog/v1.0.14] - 2024-09-15
+
+### Documentation
+
+- Update CHANGELOG.md for database/pgx-slog/v1.0.14
 
 ### Features
 
