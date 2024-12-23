@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0 # we use 0 here as we need it for gitguardian to inspect everything
       - name: Install trivy
         run: |
-          VERSION=0.56.2
+          VERSION=0.58.0
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/.local/bin v"$VERSION"
       - name: Run security scan with aquasecurity trivy
         run: make trivy-scan
@@ -35,7 +35,7 @@ jobs:
           git config --global url."https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com".insteadOf "https://github.com"
           make vuln-scan-all
       - name: GitGuardian scan
-        uses: GitGuardian/ggshield-action@v1.32.2
+        uses: GitGuardian/ggshield-action@v1.34.0
         env:
           GITHUB_PUSH_BEFORE_SHA: ${{ github.event.before }}
           GITHUB_PUSH_BASE_SHA: ${{ github.event.base }}
