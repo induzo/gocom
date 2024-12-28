@@ -99,6 +99,39 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 			expectErr:           false,
 		},
 		{
+			name: "happy path, with one after which does not exists",
+			hooks: []Hook{
+				{
+					Name: "happy1",
+					ShutdownFn: func(_ context.Context) error {
+						data = append(data, "happy1")
+
+						return nil
+					},
+				},
+				{
+					Name: "happy2",
+					ShutdownFn: func(_ context.Context) error {
+						data = append(data, "happy2")
+
+						return nil
+					},
+				},
+				{
+					Name: "happy3",
+					ShutdownFn: func(_ context.Context) error {
+						data = append(data, "happy3")
+
+						return nil
+					},
+					after: ptr("not exists"),
+				},
+			},
+			gracePeriodDuration: time.Second,
+			expectResult:        []string{"happy3", "happy2", "happy1"},
+			expectErr:           false,
+		},
+		{
 			name: "error path",
 			hooks: []Hook{
 				{
