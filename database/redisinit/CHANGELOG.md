@@ -2,15 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [database/redisinit/v1.0.15] - 2024-12-23
-
-### Features
-
-- Release pgx/slog
-- Release pginit
-- Update deps redisinit
-
-## [database/redisinit/v1.0.14] - 2024-10-20
+## [\database/redisinit/v1.0.16] - 2024-12-28
 
 ### Bug Fixes
 
@@ -18,34 +10,25 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update docs for module database/redisinit
-
-### Miscellaneous Tasks
-
-- Update deps redisinit
-
-## [database/redisinit/v1.0.13] - 2024-09-15
-
-### Documentation
-
+- Update CHANGELOG.md for database/redisinit/v1.0.12
 - Update CHANGELOG.md for database/redisinit/v1.0.3
 - Update CHANGELOG.md for database/redisinit/v1.0.13
+- Update docs for module database/redisinit
+- Update CHANGELOG.md for database/redisinit/v1.0.15
 
 ### Features
 
 - Upgrade pginit
 - Upgrade redisinit
-
-## [database/redisinit/v1.0.12] - 2024-08-20
-
-### Documentation
-
-- Update CHANGELOG.md for database/redisinit/v1.0.12
+- Release pgx/slog
+- Release pginit
+- Update deps redisinit
 
 ### Miscellaneous Tasks
 
 - Update go version for sec
 - Update deps
+- Update deps redisinit
 
 ## [database/redisinit/v1.0.11] - 2024-06-08
 
