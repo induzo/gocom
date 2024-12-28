@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [\database/redisinit/v1.0.16] - 2024-12-28
+## [database/redisinit/v1.0.16] - 2024-12-28
 
 ### Bug Fixes
 
@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - Update CHANGELOG.md for database/redisinit/v1.0.13
 - Update docs for module database/redisinit
 - Update CHANGELOG.md for database/redisinit/v1.0.15
+- Update CHANGELOG.md for \database/redisinit/v1.0.16
 
 ### Features
 
