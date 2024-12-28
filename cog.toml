@@ -10,3 +10,5 @@ path = "CHANGELOG.md"
 authors = []
 
 [bump_profiles]
+
+ignore_commits = ["bc3dd03b02de598d4516b13edaa4c1d11d18dd2c"] # pragma: allowlist secret
