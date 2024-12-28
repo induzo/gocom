@@ -18,12 +18,13 @@ const defaultGracePeriodDuration = 30 * time.Second
 type Hook struct {
 	Name       string
 	ShutdownFn func(ctx context.Context) error
-	after      *string
+	before     *string
 }
 
 // Shutdown provides a way to listen for signals and handle shutdown of an application gracefully.
 type Shutdown struct {
 	hooks               []Hook
+	hookNames           map[string]struct{}
 	mutex               *sync.Mutex
 	logger              *slog.Logger
 	gracePeriodDuration time.Duration
@@ -39,6 +40,7 @@ func New(logger *slog.Logger, opts ...Option) *Shutdown {
 		mutex:               &sync.Mutex{},
 		logger:              logger,
 		gracePeriodDuration: defaultGracePeriodDuration,
+		hookNames:           map[string]struct{}{},
 	}
 
 	for _, opt := range opts {
@@ -52,8 +54,8 @@ func New(logger *slog.Logger, opts ...Option) *Shutdown {
 func WithHooks(hooks []Hook) Option {
 	return func(shutdown *Shutdown) {
 		for _, hook := range hooks {
-			if hook.after != nil {
-				shutdown.Add(hook.Name, hook.ShutdownFn, After(*hook.after))
+			if hook.before != nil {
+				shutdown.Add(hook.Name, hook.ShutdownFn, Before(*hook.before))
 
 				continue
 			}
@@ -73,9 +75,11 @@ func WithGracePeriodDuration(gracePeriodDuration time.Duration) Option {
 
 type HookOption func(*Hook)
 
-func After(after string) HookOption {
+func Before(before string) HookOption {
 	return func(hook *Hook) {
-		hook.after = &after
+		if hook.before == nil && before != "" && before != hook.Name {
+			hook.before = &before
+		}
 	}
 }
 
@@ -93,28 +97,72 @@ func (s *Shutdown) Add(name string, shutdownFunc func(ctx context.Context) error
 		opt(&hook)
 	}
 
-	// find the place to insert the hook after the after hook if != nil
-	if hook.after != nil {
-		for i, h := range s.hooks {
-			if h.Name == *hook.after {
-				// we insert the hook before the hook we found, as we shutdown in FILO order
-				s.hooks = append(s.hooks[:i], append([]Hook{hook}, s.hooks[i:]...)...)
-
-				return
-			}
-		}
-	}
-
 	s.hooks = append(s.hooks, hook)
+	s.hookNames[name] = struct{}{}
 }
 
-// Hooks returns a copy of the shutdown hooks.
+// Hooks returns a copy of the shutdown hooks, taking into account the before option
 func (s *Shutdown) Hooks() []Hook {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
 	hooks := make([]Hook, 0, len(s.hooks))
-	hooks = append(hooks, s.hooks...)
+
+	hooksWithValidBefore := make([]Hook, 0, len(s.hooks))
+
+	// first append all hooks without before option
+	for _, hook := range s.hooks {
+		if hook.before != nil {
+			if _, ok := s.hookNames[*hook.before]; ok {
+				hooksWithValidBefore = append(hooksWithValidBefore, hook)
+
+				continue
+			}
+		}
+
+		hooks = append(hooks, hook)
+	}
+
+	// loop til there s no hooks with before options left
+	// insert all hooks with before option
+	rounds := 0
+
+	for len(hooksWithValidBefore) > 0 && rounds < len(hooksWithValidBefore)*2 {
+		rounds++
+
+		hook := hooksWithValidBefore[0]
+		beforeIndex := -1
+
+		// find the hook it should run before within the existing hooks
+		for i, beforeHook := range hooks {
+			if *hook.before == beforeHook.Name {
+				beforeIndex = i
+
+				break
+			}
+		}
+
+		// if we haven't found the hook it should run before, skip this iteration
+		if beforeIndex == -1 {
+			// move it at the end
+			hooksWithValidBefore = append(hooksWithValidBefore[1:], hook)
+
+			continue
+		}
+
+		// insert the hook at the correct index, after the before hook (as it is FILO)
+		hooks = append(hooks[:beforeIndex+1], append([]Hook{hook}, hooks[beforeIndex+1:]...)...)
+
+		// remove from hooksWithValidBefore
+		hooksWithValidBefore = append(hooksWithValidBefore[:0], hooksWithValidBefore[1:]...)
+	}
+
+	if rounds >= len(hooksWithValidBefore)*2 {
+		// append all remaining hooks with before option at the end
+		hooks = append(hooks, hooksWithValidBefore...)
+
+		s.logger.Warn("circular dependency detected in hooks, running them not in order")
+	}
 
 	return hooks
 }

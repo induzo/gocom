@@ -66,7 +66,7 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 			expectErr:           false,
 		},
 		{
-			name: "happy path, with one after",
+			name: "happy path, with one before",
 			hooks: []Hook{
 				{
 					Name: "happy1",
@@ -83,6 +83,7 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 
 						return nil
 					},
+					before: ptr("happy3"),
 				},
 				{
 					Name: "happy3",
@@ -91,7 +92,6 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 
 						return nil
 					},
-					after: ptr("happy2"),
 				},
 			},
 			gracePeriodDuration: time.Second,
@@ -99,7 +99,7 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 			expectErr:           false,
 		},
 		{
-			name: "happy path, with one after which does not exists",
+			name: "happy path, with one before which does not exists",
 			hooks: []Hook{
 				{
 					Name: "happy1",
@@ -116,6 +116,7 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 
 						return nil
 					},
+					before: ptr("not exists"),
 				},
 				{
 					Name: "happy3",
@@ -124,11 +125,112 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 
 						return nil
 					},
-					after: ptr("not exists"),
 				},
 			},
 			gracePeriodDuration: time.Second,
 			expectResult:        []string{"happy3", "happy2", "happy1"},
+			expectErr:           false,
+		},
+		{
+			name: "happy path, with 2 before",
+			hooks: []Hook{
+				{
+					Name: "happy1",
+					ShutdownFn: func(_ context.Context) error {
+						data = append(data, "happy1")
+
+						return nil
+					},
+					before: ptr("happy3"),
+				},
+				{
+					Name: "happy2",
+					ShutdownFn: func(_ context.Context) error {
+						data = append(data, "happy2")
+
+						return nil
+					},
+					before: ptr("happy3"),
+				},
+				{
+					Name: "happy3",
+					ShutdownFn: func(_ context.Context) error {
+						data = append(data, "happy3")
+
+						return nil
+					},
+				},
+			},
+			gracePeriodDuration: time.Second,
+			expectResult:        []string{"happy1", "happy2", "happy3"},
+			expectErr:           false,
+		},
+		{
+			name: "happy path, with 2 before",
+			hooks: []Hook{
+				{
+					Name: "happy1",
+					ShutdownFn: func(_ context.Context) error {
+						data = append(data, "happy1")
+
+						return nil
+					},
+					before: ptr("happy3"),
+				},
+				{
+					Name: "happy2",
+					ShutdownFn: func(_ context.Context) error {
+						data = append(data, "happy2")
+
+						return nil
+					},
+					before: ptr("happy3"),
+				},
+				{
+					Name: "happy3",
+					ShutdownFn: func(_ context.Context) error {
+						data = append(data, "happy3")
+
+						return nil
+					},
+				},
+			},
+			gracePeriodDuration: time.Second,
+			expectResult:        []string{"happy1", "happy2", "happy3"},
+			expectErr:           false,
+		},
+		{
+			name: "before with circular dependency",
+			hooks: []Hook{
+				{
+					Name: "happy1",
+					ShutdownFn: func(_ context.Context) error {
+						data = append(data, "happy1")
+
+						return nil
+					},
+					before: ptr("happy2"),
+				},
+				{
+					Name: "happy2",
+					ShutdownFn: func(_ context.Context) error {
+						data = append(data, "happy2")
+
+						return nil
+					},
+					before: ptr("happy1"),
+				},
+				{
+					Name: "happy3",
+					ShutdownFn: func(_ context.Context) error {
+						data = append(data, "happy3")
+
+						return nil
+					},
+				},
+			},
+			gracePeriodDuration: time.Second,
+			expectResult:        []string{"happy2", "happy1", "happy3"},
 			expectErr:           false,
 		},
 		{
