@@ -2,36 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
-## [database/pgx-slog/v1.0.16] - 2024-12-23
-
-### Features
-
-- Update pgx-slog
-
-## [database/pgx-slog/v1.0.15] - 2024-10-20
+## [database/pgx-slog/v1.0.17] - 2024-12-28
 
 ### Bug Fixes
 
 - Add goleak systematically
-
-### Miscellaneous Tasks
-
-- Update pgx-slog
-
-## [database/pgx-slog/v1.0.14] - 2024-09-15
+- Rebase commits
 
 ### Documentation
 
 - Update CHANGELOG.md for database/pgx-slog/v1.0.14
+- Update CHANGELOG.md for database/pgx-slog/v1.0.16
 
 ### Features
 
 - Upgrade pgx/slog
+- Update pgx-slog
+- Release pginit
 
 ### Miscellaneous Tasks
 
 - Update go version for sec
 - Update deps
+- Commit amends
+- Update pgx-slog
 
 ## [database/pgx-slog/v1.0.12] - 2024-06-08
 
