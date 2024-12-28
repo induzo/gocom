@@ -1,4 +1,4 @@
-default_stages: [commit, pre-push]
+default_stages: [pre-commit, pre-push]
 fail_fast: true
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -14,7 +14,7 @@ repos:
       - id: check-json
       - id: check-toml
   - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: v3.6.0
+    rev: v4.0.0
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]

@@ -9,7 +9,7 @@ on:
 jobs:
   check-conv-commits:
     timeout-minutes: 15
-    runs-on: [self-hosted, ubuntu, small]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
