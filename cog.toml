@@ -2,6 +2,7 @@ ignore_merge_commits = true
 branch_whitelist = []
 pre_bump_hooks = []
 post_bump_hooks = []
+from_latest_tag = true
 
 [commit_types]
 
