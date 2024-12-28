@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - Update CHANGELOG.md for database/pginit/v2.2.9
 - Update docs for module database/pginit
 - Update CHANGELOG.md for database/pginit/v2.2.11
+- Update CHANGELOG.md for database/pginit/v2.2.12
 
 ### Features
 
