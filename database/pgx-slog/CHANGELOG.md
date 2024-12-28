@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 
 - Update CHANGELOG.md for database/pgx-slog/v1.0.14
 - Update CHANGELOG.md for database/pgx-slog/v1.0.16
+- Update CHANGELOG.md for database/pgx-slog/v1.0.17
 
 ### Features
 
