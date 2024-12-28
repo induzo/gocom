@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1735381727953,
+  "lastUpdate": 1735382939033,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -1528,6 +1528,54 @@ window.BENCHMARK_DATA = {
           {
             "name": "BenchmarkShutdown - allocs/op",
             "value": 30,
+            "unit": "allocs/op",
+            "extra": "96 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "5fd26c62bd869719fd084086499c2e91cb693bd7",
+          "message": "test: add one more test to make sure we shutdown even if the after hook does not exist",
+          "timestamp": "2024-12-28T18:48:15+08:00",
+          "tree_id": "007f72f17c972b40b036510bbbb6cbbdca812da1",
+          "url": "https://github.com/induzo/gocom/commit/5fd26c62bd869719fd084086499c2e91cb693bd7"
+        },
+        "date": 1735382938527,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkShutdown",
+            "value": 12421941,
+            "unit": "ns/op\t    1958 B/op\t      31 allocs/op",
+            "extra": "96 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkShutdown - ns/op",
+            "value": 12421941,
+            "unit": "ns/op",
+            "extra": "96 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkShutdown - B/op",
+            "value": 1958,
+            "unit": "B/op",
+            "extra": "96 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkShutdown - allocs/op",
+            "value": 31,
             "unit": "allocs/op",
             "extra": "96 times\n4 procs"
           }
