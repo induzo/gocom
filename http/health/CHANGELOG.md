@@ -2,11 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [http/health/v1.1.10] - 2024-12-23
+## [http/health/v1.1.11] - 2024-12-28
 
 ### Bug Fixes
 
 - Add goleak systematically
+
+### Documentation
+
+- Update CHANGELOG.md for http/health/v1.1.10
 
 ### Features
 
