@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [shutdown/v1.3.0] - 2024-12-28
+
+### Bug Fixes
+
+- Add goleak systematically
+
+### Features
+
+- Release pginit
+- Update deps
+- Add an After hook option to allow the shutdown after a previously added hook
+
+### Miscellaneous Tasks
+
+- Update go version for sec
+
+## [shutdown/v1.2.5] - 2024-05-13
+
+### Documentation
+
+- Update CHANGELOG.md for shutdown/v1.2.5
+
 ## [shutdown/v1.2.4] - 2024-05-13
 
 ### Documentation
@@ -21,7 +43,7 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous Tasks
 
 - Update deps
-- Update to go 1.22.4
+- Update to go 1.22.3
 - Release
 
 ## [shutdown/v1.2.1] - 2024-01-12
