@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/writablecontext/v0.1.7] - 2024-12-28
+
+### Bug Fixes
+
+- Add goleak systematically
+
+### Features
+
+- Release pginit
+- Update deps
+
+### Miscellaneous Tasks
+
+- Update go version for sec
+
+## [http/middleware/writablecontext/v0.1.6] - 2024-05-13
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/writablecontext/v0.1.6
+
 ## [http/middleware/writablecontext/v0.1.5] - 2024-05-13
 
 ### Documentation
@@ -21,7 +42,7 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous Tasks
 
 - Update deps
-- Update to go 1.22.4
+- Update to go 1.22.3
 - Release
 
 ## [http/middleware/writablecontext/v0.1.2] - 2024-01-12
