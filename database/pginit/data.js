@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1735378960775,
+  "lastUpdate": 1735384741445,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -2082,6 +2082,54 @@ window.BENCHMARK_DATA = {
             "value": 308,
             "unit": "allocs/op",
             "extra": "487 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "2c71d7d413db3140ef6af5f3a0a1d038391f87f7",
+          "message": "docs(changelog): update CHANGELOG.md for database/pgx-slog/v1.0.17",
+          "timestamp": "2024-12-28T19:16:48+08:00",
+          "tree_id": "0ac241a9e2f08b312324485a837cca41ed5d5676",
+          "url": "https://github.com/induzo/gocom/commit/2c71d7d413db3140ef6af5f3a0a1d038391f87f7"
+        },
+        "date": 1735384740493,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkConnPool",
+            "value": 2429779,
+            "unit": "ns/op\t   42907 B/op\t     308 allocs/op",
+            "extra": "493 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - ns/op",
+            "value": 2429779,
+            "unit": "ns/op",
+            "extra": "493 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - B/op",
+            "value": 42907,
+            "unit": "B/op",
+            "extra": "493 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - allocs/op",
+            "value": 308,
+            "unit": "allocs/op",
+            "extra": "493 times\n4 procs"
           }
         ]
       }
