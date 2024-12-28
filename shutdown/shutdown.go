@@ -3,6 +3,7 @@ package shutdown
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -17,6 +18,7 @@ const defaultGracePeriodDuration = 30 * time.Second
 type Hook struct {
 	Name       string
 	ShutdownFn func(ctx context.Context) error
+	after      *string
 }
 
 // Shutdown provides a way to listen for signals and handle shutdown of an application gracefully.
@@ -49,8 +51,14 @@ func New(logger *slog.Logger, opts ...Option) *Shutdown {
 // WithHooks adds the hooks to be run as part of the graceful shutdown.
 func WithHooks(hooks []Hook) Option {
 	return func(shutdown *Shutdown) {
-		for _, h := range hooks {
-			shutdown.Add(h.Name, h.ShutdownFn)
+		for _, hook := range hooks {
+			if hook.after != nil {
+				shutdown.Add(hook.Name, hook.ShutdownFn, After(*hook.after))
+
+				continue
+			}
+
+			shutdown.Add(hook.Name, hook.ShutdownFn)
 		}
 	}
 }
@@ -63,14 +71,41 @@ func WithGracePeriodDuration(gracePeriodDuration time.Duration) Option {
 	}
 }
 
+type HookOption func(*Hook)
+
+func After(after string) HookOption {
+	return func(hook *Hook) {
+		hook.after = &after
+	}
+}
+
 // Add adds a shutdown hook to be run when the signal is received.
-func (s *Shutdown) Add(name string, fn func(ctx context.Context) error) {
+func (s *Shutdown) Add(name string, shutdownFunc func(ctx context.Context) error, hookOpts ...HookOption) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	s.hooks = append(s.hooks, Hook{
+
+	hook := Hook{
 		Name:       name,
-		ShutdownFn: fn,
-	})
+		ShutdownFn: shutdownFunc,
+	}
+
+	for _, opt := range hookOpts {
+		opt(&hook)
+	}
+
+	// find the place to insert the hook after the after hook if != nil
+	if hook.after != nil {
+		for i, h := range s.hooks {
+			if h.Name == *hook.after {
+				// we insert the hook before the hook we found, as we shutdown in FILO order
+				s.hooks = append(s.hooks[:i], append([]Hook{hook}, s.hooks[i:]...)...)
+
+				return
+			}
+		}
+	}
+
+	s.hooks = append(s.hooks, hook)
 }
 
 // Hooks returns a copy of the shutdown hooks.
@@ -97,7 +132,7 @@ func (s *Shutdown) Listen(ctx context.Context, signals ...os.Signal) error {
 	shutdownCtx, shutdownCancel := context.WithTimeout(ctx, s.gracePeriodDuration)
 	defer shutdownCancel()
 
-	sErr := newShutdownError()
+	var sErr error
 
 	hooks := s.Hooks()
 
@@ -117,20 +152,25 @@ loop:
 
 		select {
 		case <-shutdownCtx.Done():
-			sErr[hook.Name] = fmt.Errorf("%s did not shutdown within grace period of %v: %w",
-				hook.Name, s.gracePeriodDuration, shutdownCtx.Err())
+			sErr = errors.Join(
+				sErr,
+				fmt.Errorf(
+					"%s did not shutdown within grace period of %v: %w",
+					hook.Name, s.gracePeriodDuration, shutdownCtx.Err(),
+				),
+			)
 
 			break loop
 		case err := <-errChan:
 			if err != nil {
-				sErr[hook.Name] = err
+				sErr = errors.Join(sErr, fmt.Errorf("%s shutdown error: %w", hook.Name, err))
 			}
 		}
 	}
 
 	s.logger.Info(fmt.Sprintf("time taken for shutdown: %v", time.Since(start)))
 
-	if len(sErr) > 0 {
+	if sErr != nil {
 		return sErr
 	}
 

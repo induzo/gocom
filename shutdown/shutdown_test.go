@@ -22,6 +22,10 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 
 	data := make([]string, 0)
 
+	ptr := func(s string) *string {
+		return &s
+	}
+
 	tests := []struct {
 		name                string
 		hooks               []Hook
@@ -35,7 +39,7 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 				{
 					Name: "happy1",
 					ShutdownFn: func(_ context.Context) error {
-						data = append(data, "foo")
+						data = append(data, "happy1")
 
 						return nil
 					},
@@ -43,14 +47,55 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 				{
 					Name: "happy2",
 					ShutdownFn: func(_ context.Context) error {
-						data = append(data, "bar")
+						data = append(data, "happy2")
+
+						return nil
+					},
+				},
+				{
+					Name: "happy3",
+					ShutdownFn: func(_ context.Context) error {
+						data = append(data, "happy3")
 
 						return nil
 					},
 				},
 			},
 			gracePeriodDuration: time.Second,
-			expectResult:        []string{"bar", "foo"},
+			expectResult:        []string{"happy3", "happy2", "happy1"},
+			expectErr:           false,
+		},
+		{
+			name: "happy path, with one after",
+			hooks: []Hook{
+				{
+					Name: "happy1",
+					ShutdownFn: func(_ context.Context) error {
+						data = append(data, "happy1")
+
+						return nil
+					},
+				},
+				{
+					Name: "happy2",
+					ShutdownFn: func(_ context.Context) error {
+						data = append(data, "happy2")
+
+						return nil
+					},
+				},
+				{
+					Name: "happy3",
+					ShutdownFn: func(_ context.Context) error {
+						data = append(data, "happy3")
+
+						return nil
+					},
+					after: ptr("happy2"),
+				},
+			},
+			gracePeriodDuration: time.Second,
+			expectResult:        []string{"happy2", "happy3", "happy1"},
 			expectErr:           false,
 		},
 		{
@@ -123,7 +168,8 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 			shutdownHandler := New(
 				logger,
 				WithHooks(tt.hooks),
-				WithGracePeriodDuration(tt.gracePeriodDuration))
+				WithGracePeriodDuration(tt.gracePeriodDuration),
+			)
 
 			go func() {
 				time.Sleep(10 * time.Millisecond)
