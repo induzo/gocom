@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [database/pginit/v2.2.11] - 2024-12-23
+## [database/pginit/v2.2.12] - 2024-12-28
 
 ### Bug Fixes
 
@@ -10,32 +10,23 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update docs for module database/pginit
-
-### Features
-
-- Release pgx/slog
-
-### Miscellaneous Tasks
-
-- Update deps
-- Update deps pginit
-
-## [database/pginit/v2.2.9] - 2024-09-15
-
-### Documentation
-
 - Update CHANGELOG.md for database/pginit/v2.2.8
 - Update CHANGELOG.md for database/pginit/v2.2.9
+- Update docs for module database/pginit
+- Update CHANGELOG.md for database/pginit/v2.2.11
 
 ### Features
 
 - Upgrade pginit
+- Release pgx/slog
+- Update pgx-slog
 
 ### Miscellaneous Tasks
 
 - Update go version for sec
 - Update deps
+- Update deps
+- Update deps pginit
 
 ## [database/pginit/v2.2.7] - 2024-06-08
 
