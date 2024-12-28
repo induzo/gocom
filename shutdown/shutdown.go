@@ -127,7 +127,7 @@ func (s *Shutdown) Hooks() []Hook {
 	// insert all hooks with before option
 	rounds := 0
 
-	for len(hooksWithValidBefore) > 0 && rounds < len(hooksWithValidBefore)*2 {
+	for len(hooksWithValidBefore) > 0 && rounds <= factorial(len(hooksWithValidBefore)) {
 		rounds++
 
 		hook := hooksWithValidBefore[0]
@@ -157,7 +157,7 @@ func (s *Shutdown) Hooks() []Hook {
 		hooksWithValidBefore = append(hooksWithValidBefore[:0], hooksWithValidBefore[1:]...)
 	}
 
-	if rounds >= len(hooksWithValidBefore)*2 {
+	if len(hooksWithValidBefore) > 0 {
 		// append all remaining hooks with before option at the end
 		hooks = append(hooks, hooksWithValidBefore...)
 
@@ -165,6 +165,15 @@ func (s *Shutdown) Hooks() []Hook {
 	}
 
 	return hooks
+}
+
+// factorial calculates the factorial of n using iteration, for the worst case scenario
+func factorial(n int) int {
+	result := 1
+	for i := 2; i <= n; i++ {
+		result *= i
+	}
+	return result
 }
 
 // Listen waits for the signals provided and executes each shutdown hook sequentially in FILO order.

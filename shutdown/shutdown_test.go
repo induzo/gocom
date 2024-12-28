@@ -166,7 +166,7 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 			expectErr:           false,
 		},
 		{
-			name: "happy path, with 2 before",
+			name: "happy path, with 2 before the same",
 			hooks: []Hook{
 				{
 					Name: "happy1",
@@ -230,7 +230,7 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 				},
 			},
 			gracePeriodDuration: time.Second,
-			expectResult:        []string{"happy2", "happy1", "happy3"},
+			expectResult:        []string{"happy1", "happy2", "happy3"},
 			expectErr:           false,
 		},
 		{
