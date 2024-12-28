@@ -48,8 +48,8 @@ github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 h1:El6M4kTTCOh6aBiKaU
 github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510/go.mod h1:pupxD2MaaD3pAXIBCelhxNneeOaAeabZDe5s4K6zSpQ=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
-github.com/induzo/gocom/database/pgx-slog v1.0.16 h1:aGnEZJh78ZkL3b0xaZ+WxH14MhjGT0yT8kl/O94tzhs=
-github.com/induzo/gocom/database/pgx-slog v1.0.16/go.mod h1:0zn+RtS3oABmhXkOtf22QimyOREtiy4ylTgtqBF9o1o=
+github.com/induzo/gocom/database/pgx-slog v1.0.18 h1:i6Ahjp2fYyWiZAblE3veMtbw1sgcLssPwlBOmOiT9hY=
+github.com/induzo/gocom/database/pgx-slog v1.0.18/go.mod h1:X17sZBJj6v1tu1JTWaYyuuVZg1IHET3LFF6+AZ9kVtQ=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
 github.com/jackc/pgpassfile v1.0.0/go.mod h1:CEx0iS5ambNFdcRtxPj5JhEz+xB6uRky5eyVu/W2HEg=
 github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 h1:iCEnooe7UlwOQYpKFhBabPMi4aNAfoODPEFNiAnClxo=
