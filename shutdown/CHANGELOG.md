@@ -2,21 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
-## [shutdown/v1.3.0] - 2024-12-28
+## [shutdown/v1.3.1] - 2024-12-28
 
 ### Bug Fixes
 
 - Add goleak systematically
+
+### Documentation
+
+- Update CHANGELOG.md for shutdown/v1.3.0
 
 ### Features
 
 - Release pginit
 - Update deps
 - Add an After hook option to allow the shutdown after a previously added hook
+- Before hooks
 
 ### Miscellaneous Tasks
 
 - Update go version for sec
+
+### Testing
+
+- Add one more test to make sure we shutdown even if the after hook does not exist
 
 ## [shutdown/v1.2.5] - 2024-05-13
 
