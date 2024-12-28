@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [shutdown/v1.3.2] - 2024-12-28
+
+### Bug Fixes
+
+- Shutdown funcs with circ deps
+
 ## [shutdown/v1.3.1] - 2024-12-28
 
 ### Bug Fixes
@@ -11,6 +17,7 @@ All notable changes to this project will be documented in this file.
 ### Documentation
 
 - Update CHANGELOG.md for shutdown/v1.3.0
+- Update CHANGELOG.md for shutdown/v1.3.1
 
 ### Features
 
