@@ -5,6 +5,7 @@ use (
 	./database/pgx-slog
 	./database/redisinit
 	./http/health
+	./http/middleware/idempotency
 	./http/middleware/writablecontext
 	./shutdown
 )
