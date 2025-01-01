@@ -3,61 +3,16 @@ package idempotency
 import (
 	"bytes"
 	"crypto/sha256"
+	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"strings"
 )
 
-const defaultIdempotencyKeyHeader = "X-Idempotency-Key"
-
-type config struct {
-	store                Store
-	idempotencyKeyHeader string
-	whitelistedHeaders   []string
-	scopeExtractorFn     func(r *http.Request) string
-}
-
-func newDefaultConfig() *config {
-	return &config{
-		store:                NewInMemStore(),
-		idempotencyKeyHeader: defaultIdempotencyKeyHeader,
-		whitelistedHeaders:   []string{"Content-Type"},
-		scopeExtractorFn:     func(r *http.Request) string { return "" },
-	}
-}
-
-// WithStore sets the store to use for idempotency.
-func WithStore(store Store) func(*config) {
-	return func(c *config) {
-		c.store = store
-	}
-}
-
-// WithIdempotencyKeyHeader sets the header to use for idempotency keys.
-func WithIdempotencyKeyHeader(header string) func(*config) {
-	return func(c *config) {
-		c.idempotencyKeyHeader = header
-	}
-}
-
-// WithWhitelistedHeaders sets the headers to include in the request signature.
-func WithWhitelistedHeaders(headers ...string) func(*config) {
-	return func(c *config) {
-		c.whitelistedHeaders = headers
-	}
-}
-
-// WithScopeExtractor sets a function to extract a scope from the request.
-func WithScopeExtractor(fn func(r *http.Request) string) func(*config) {
-	return func(c *config) {
-		c.scopeExtractorFn = fn
-	}
-}
-
 // Middleware enforces idempotency on non-GET requests.
 // Requires X-Idempotency-Key for those methods.
-func NewMiddleware(options ...func(*config)) func(http.Handler) http.Handler {
+func NewMiddleware(store Store, options ...func(*config)) func(http.Handler) http.Handler {
 	conf := newDefaultConfig()
 
 	for _, opt := range options {
@@ -67,65 +22,111 @@ func NewMiddleware(options ...func(*config)) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// For idempotency, we typically skip read-only methods:
-			if r.Method == http.MethodGet || r.Method == http.MethodHead {
+			if r.Method == http.MethodGet || r.Method == http.MethodHead || r.Method == http.MethodOptions {
 				next.ServeHTTP(w, r)
+
 				return
 			}
 
 			// Check for the presence of the X-Idempotency-Key.
 			key := r.Header.Get(conf.idempotencyKeyHeader)
 			if key == "" {
-				http.Error(w, "Missing `"+conf.idempotencyKeyHeader+"` header", http.StatusBadRequest)
+				if conf.IdempotencyKeyIsOptional {
+					next.ServeHTTP(w, r)
+
+					return
+				}
+
+				conf.errorToHTTPFn(
+					w, r,
+					MissingIdempotencyKeyHeaderError{
+						ExpectedHeader: conf.idempotencyKeyHeader,
+						Method:         r.Method,
+						URL:            r.URL.String(),
+					},
+				)
+
 				return
 			}
 
 			// Build a signature from the request body + relevant headers.
-			requestSignature, err := buildRequestSignature(r, conf.whitelistedHeaders, conf.scopeExtractorFn)
-			if err != nil {
-				log.Printf("Error reading request body: %v", err)
-				http.Error(w, "Could not read request body", http.StatusInternalServerError)
+			requestSignature, errB := buildRequestSignature(r, conf.whitelistedHeaders, conf.scopeExtractorFn)
+			if errB != nil {
+				conf.errorToHTTPFn(w, r, fmt.Errorf("buildRequestSignature: %v", errB))
+
 				return
 			}
 
 			// Check if there's a stored response for this key.
 			ctx := r.Context()
-			if resp, ok, err := conf.store.GetStoredResponse(ctx, key); err == nil && ok {
+			resp, ok, errG := store.GetStoredResponse(ctx, key)
+			if errG != nil {
+				conf.errorToHTTPFn(w, r, errG)
+
+				return
+			}
+
+			if ok {
 				// If we have a stored response, verify the request signature matches.
 				if !bytes.Equal(resp.RequestSignature, requestSignature) {
-					http.Error(w, "Idempotency-Key used with different request payload", http.StatusBadRequest)
+					conf.errorToHTTPFn(
+						w, r,
+						MismatchedSignatureError{
+							Key:    key,
+							Method: r.Method,
+							URL:    r.URL.String(),
+						},
+					)
+
 					return
 				}
+
 				// If signature matches, replay the stored response.
 				replayResponse(w, resp)
-				return
-			} else if err != nil {
-				log.Printf("Error retrieving stored response: %v", err)
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+
 				return
 			}
 
 			// Not completed. Check if in flight.
-			if sig, ok, err := conf.store.GetInFlightSignature(ctx, key); err == nil && ok {
+			sig, ok, errGin := store.GetInFlightSignature(ctx, key)
+			if errGin != nil {
+				conf.errorToHTTPFn(w, r, fmt.Errorf("GetInFlightSignature: %v", errGin))
+
+				return
+			}
+
+			if ok {
 				// If in-flight, check if the request signature matches.
 				if !bytes.Equal(sig, requestSignature) {
-					http.Error(w, "Idempotency-Key used with different request payload", http.StatusBadRequest)
+					conf.errorToHTTPFn(
+						w, r,
+						MismatchedSignatureError{
+							Key:    key,
+							Method: r.Method,
+							URL:    r.URL.String(),
+						},
+					)
+
 					return
 				}
-				// If signature matches, return 409 to let the client know the request is still in flight.
-				http.Error(w, "Request still in-flight", http.StatusConflict)
-				return
-			} else if err != nil {
-				log.Printf("Error retrieving in-flight signature: %v", err)
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+
+				conf.errorToHTTPFn(
+					w, r,
+					RequestStillInFlightError{
+						Key:    key,
+						Method: r.Method,
+						URL:    r.URL.String(),
+						Sig:    string(sig),
+					},
+				)
+
 				return
 			}
 
 			// If not in-flight, mark as in-flight now.
-			if err := conf.store.InsertInFlight(ctx, key, requestSignature); err != nil {
-				// Could be a race condition if something got inserted concurrently,
-				// or a store error. Return 409 or 500 as appropriate.
-				log.Printf("Error inserting in-flight: %v", err)
-				http.Error(w, "Conflict or internal error", http.StatusConflict)
+			if err := store.InsertInFlight(ctx, key, requestSignature); err != nil {
+				conf.errorToHTTPFn(w, r, fmt.Errorf("InsertInFlight: %v", err))
+
 				return
 			}
 
@@ -133,12 +134,15 @@ func NewMiddleware(options ...func(*config)) func(http.Handler) http.Handler {
 			tw := newTeeResponseWriter(w)
 			defer func() {
 				// If there's a panic or something that prevents us from storing the final response,
-				// we might want to remove the in-flight marker. Depends on your use-case.
+				// we want to remove the in-flight marker.
 				if rcv := recover(); rcv != nil {
-					// Remove in-flight marker to allow a retry.
-					_ = conf.store.RemoveInFlight(ctx, key)
-					// Re-panic so that upper layers can handle the panic.
-					panic(rcv)
+					slog.Error(
+						"failed storing final response: panicked!",
+						slog.String("method", r.Method),
+						slog.String("url", r.URL.String()),
+						slog.String("idempotency-key", key),
+						slog.Any("err", rcv),
+					)
 				}
 			}()
 
@@ -146,16 +150,20 @@ func NewMiddleware(options ...func(*config)) func(http.Handler) http.Handler {
 			next.ServeHTTP(tw, r)
 
 			// Now we mark the request as completed with the stored response
-			err = conf.store.MarkComplete(ctx, key, &StoredResponse{
+			errMC := store.MarkComplete(ctx, key, &StoredResponse{
 				StatusCode:       tw.statusCode,
 				Headers:          tw.header(),
 				Body:             tw.body.Bytes(),
 				RequestSignature: requestSignature,
 			})
-			if err != nil {
-				log.Printf("Failed storing final response: %v", err)
-				// Possibly remove in-flight marker so the client can retry.
-				_ = conf.store.RemoveInFlight(ctx, key)
+			if errMC != nil {
+				slog.Error(
+					"failed storing final response",
+					slog.String("method", r.Method),
+					slog.String("url", r.URL.String()),
+					slog.String("idempotency-key", key),
+					slog.Any("err", errMC),
+				)
 			}
 		})
 	}

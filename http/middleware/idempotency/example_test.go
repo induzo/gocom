@@ -10,7 +10,7 @@ import (
 
 // Using NewMiddleware
 func ExampleNewMiddleware() {
-	idempotencyMiddleware := idempotency.NewMiddleware()
+	idempotencyMiddleware := idempotency.NewMiddleware(idempotency.NewInMemStore())
 
 	mux := http.NewServeMux()
 

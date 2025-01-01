@@ -6,21 +6,21 @@ import (
 	"sync"
 )
 
-type inMemStore struct {
+type InMemStore struct {
 	mu        sync.RWMutex
 	inFlight  map[string][]byte // key -> request signature
 	responses map[string]*StoredResponse
 }
 
 // NewInMemStore initializes an in-memory store.
-func NewInMemStore() *inMemStore {
-	return &inMemStore{
+func NewInMemStore() *InMemStore {
+	return &InMemStore{
 		inFlight:  make(map[string][]byte),
 		responses: make(map[string]*StoredResponse),
 	}
 }
 
-func (s *inMemStore) InsertInFlight(ctx context.Context, key string, requestSignature []byte) error {
+func (s *InMemStore) InsertInFlight(ctx context.Context, key string, requestSignature []byte) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -37,7 +37,7 @@ func (s *inMemStore) InsertInFlight(ctx context.Context, key string, requestSign
 	return nil
 }
 
-func (s *inMemStore) MarkComplete(ctx context.Context, key string, resp *StoredResponse) error {
+func (s *InMemStore) MarkComplete(ctx context.Context, key string, resp *StoredResponse) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -48,7 +48,7 @@ func (s *inMemStore) MarkComplete(ctx context.Context, key string, resp *StoredR
 	return nil
 }
 
-func (s *inMemStore) GetInFlightSignature(ctx context.Context, key string) ([]byte, bool, error) {
+func (s *InMemStore) GetInFlightSignature(ctx context.Context, key string) ([]byte, bool, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -56,7 +56,7 @@ func (s *inMemStore) GetInFlightSignature(ctx context.Context, key string) ([]by
 	return sig, ok, nil
 }
 
-func (s *inMemStore) GetStoredResponse(ctx context.Context, key string) (*StoredResponse, bool, error) {
+func (s *InMemStore) GetStoredResponse(ctx context.Context, key string) (*StoredResponse, bool, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -64,7 +64,7 @@ func (s *inMemStore) GetStoredResponse(ctx context.Context, key string) (*Stored
 	return resp, ok, nil
 }
 
-func (s *inMemStore) RemoveInFlight(ctx context.Context, key string) error {
+func (s *InMemStore) RemoveInFlight(ctx context.Context, key string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
