@@ -23,10 +23,11 @@ func TestInMemStoreInsertInFlight(t *testing.T) {
 	store := NewInMemStore()
 
 	tests := []struct {
-		name    string
-		key     string
-		sig     []byte
-		wantErr bool
+		name      string
+		key       string
+		sig       []byte
+		completed bool
+		wantErr   bool
 	}{
 		{
 			name:    "key does not exist",
@@ -40,10 +41,26 @@ func TestInMemStoreInsertInFlight(t *testing.T) {
 			sig:     []byte("signature"),
 			wantErr: true,
 		},
+		{
+			name:      "already completed",
+			key:       "key",
+			sig:       []byte("signature"),
+			completed: true,
+			wantErr:   true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.completed {
+				store.MarkComplete(context.Background(), tt.key, &StoredResponse{
+					StatusCode:       200,
+					Headers:          nil,
+					Body:             []byte("body"),
+					RequestSignature: []byte("signature"),
+				})
+			}
+
 			err := store.InsertInFlight(context.Background(), tt.key, tt.sig)
 
 			if err != nil && !tt.wantErr {

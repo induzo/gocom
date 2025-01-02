@@ -25,7 +25,6 @@ func (s *InMemStore) InsertInFlight(ctx context.Context, key string, requestSign
 	defer s.mu.Unlock()
 
 	// If we already have a marker or a stored response, we should decide
-	// how to handle. Typically you check outside of InsertInFlight before calling it.
 	if _, ok := s.inFlight[key]; ok {
 		return errors.New("already in-flight")
 	}
