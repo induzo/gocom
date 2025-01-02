@@ -253,6 +253,7 @@ linters = [
     "gochecknoglobals",
     "errorlint",
     "forcetypeassert",
+    "maintidx",
 ]
 
 [[issues.exclude-rules]]
