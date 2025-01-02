@@ -1,6 +1,9 @@
 package idempotency
 
-import "net/http"
+import (
+	"log/slog"
+	"net/http"
+)
 
 const defaultIdempotencyKeyHeader = "X-Idempotency-Key"
 
@@ -8,15 +11,17 @@ type config struct {
 	IdempotencyKeyIsOptional bool
 	idempotencyKeyHeader     string
 	whitelistedHeaders       []string
-	scopeExtractorFn         func(r *http.Request) string
-	errorToHTTPFn            func(http.ResponseWriter, *http.Request, error)
+	scopeExtractorFn         func(*http.Request) string
+	errorToHTTPFn            func(*slog.Logger, http.ResponseWriter, *http.Request, error)
+	logger                   *slog.Logger
 }
 
 func newDefaultConfig() *config {
 	return &config{
 		idempotencyKeyHeader: defaultIdempotencyKeyHeader,
 		whitelistedHeaders:   []string{"Content-Type"},
-		scopeExtractorFn:     func(r *http.Request) string { return "" },
+		scopeExtractorFn:     func(*http.Request) string { return "" },
 		errorToHTTPFn:        ErrorToHTTPJSONProblemDetail,
+		logger:               slog.Default(),
 	}
 }

@@ -6,9 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 type MissingIdempotencyKeyHeaderError struct {
@@ -25,11 +22,10 @@ type RequestStillInFlightError struct {
 	Method string
 	URL    string
 	Key    string
-	Sig    string
 }
 
 func (e RequestStillInFlightError) Error() string {
-	return fmt.Sprintf("request to `%s %s` `%s` `%s` still in flight", e.Method, e.URL, e.Key, string(e.Sig))
+	return fmt.Sprintf("request to `%s %s` `%s` still in flight", e.Method, e.URL, e.Key)
 }
 
 type MismatchedSignatureError struct {
@@ -54,9 +50,9 @@ type ProblemDetail struct {
 }
 
 // ErrorToHTTPJSONProblemDetail converts an error to a RFC9457 problem detail.
-func ErrorToHTTPJSONProblemDetail(writer http.ResponseWriter, req *http.Request, err error) {
+func ErrorToHTTPJSONProblemDetail(logger *slog.Logger, writer http.ResponseWriter, req *http.Request, err error) {
 	var pbDetail ProblemDetail
-	titler := cases.Title(language.English)
+
 	url := req.URL.String()
 
 	switch {
@@ -64,28 +60,28 @@ func ErrorToHTTPJSONProblemDetail(writer http.ResponseWriter, req *http.Request,
 		pbDetail = ProblemDetail{
 			HTTPStatusCode: http.StatusBadRequest,
 			Type:           "https://example.com/errors/missing-idempotency-key-header",
-			Title:          "Missing Idempotency Key Header",
-			Detail:         titler.String(err.Error()),
+			Title:          "missing idempotency key header",
+			Detail:         err.Error(),
 			Instance:       url,
 		}
 	case errors.As(err, &RequestStillInFlightError{}):
 		pbDetail = ProblemDetail{
 			HTTPStatusCode: http.StatusConflict,
 			Type:           "https://example.com/errors/request-already-in-flight",
-			Title:          "Request Already In Flight",
-			Detail:         titler.String(err.Error()),
-			Instance:       "https://example.com/errors/request-already-in-flight",
+			Title:          "request already in flight",
+			Detail:         err.Error(),
+			Instance:       url,
 		}
 	case errors.As(err, &MismatchedSignatureError{}):
 		pbDetail = ProblemDetail{
 			HTTPStatusCode: http.StatusBadRequest,
 			Type:           "https://example.com/errors/mismatched-signature",
-			Title:          "Mismatched Signature",
-			Detail:         titler.String(err.Error()),
+			Title:          "mismatched signature",
+			Detail:         err.Error(),
 			Instance:       url,
 		}
 	default:
-		slog.Error("unhandled error",
+		logger.Error("unhandled error",
 			slog.Any("err", err),
 			slog.String("method", req.Method),
 			slog.String("url", req.URL.String()),
@@ -94,8 +90,8 @@ func ErrorToHTTPJSONProblemDetail(writer http.ResponseWriter, req *http.Request,
 		pbDetail = ProblemDetail{
 			HTTPStatusCode: http.StatusInternalServerError,
 			Type:           "https://example.com/errors/internal-server-error",
-			Title:          "Internal Server Error",
-			Detail:         "An internal server error occurred.",
+			Title:          "internal server error",
+			Detail:         "an internal server error occurred.",
 			Instance:       url,
 		}
 	}
@@ -109,5 +105,12 @@ func ErrorToHTTPJSONProblemDetail(writer http.ResponseWriter, req *http.Request,
 
 	writer.Header().Set("Content-Type", "application/problem+json")
 	writer.WriteHeader(pbDetail.HTTPStatusCode)
-	writer.Write(resp)
+
+	if _, errW := writer.Write(resp); errW != nil {
+		logger.Error("failed writing response",
+			slog.String("method", req.Method),
+			slog.String("url", req.URL.String()),
+			slog.Any("err", errW),
+		)
+	}
 }

@@ -1,6 +1,9 @@
 package idempotency
 
-import "net/http"
+import (
+	"log/slog"
+	"net/http"
+)
 
 // WithIdempotencyKeyHeader sets the header to use for idempotency keys.
 func WithIdempotencyKeyHeader(header string) func(*config) {
@@ -31,8 +34,15 @@ func WithIdempotencyKeyIsOptional(optional bool) func(*config) {
 }
 
 // WithErrorToHTTP sets a function to convert errors to HTTP status codes and content.
-func WithErrorToHTTPFn(fn func(http.ResponseWriter, *http.Request, error)) func(*config) {
+func WithErrorToHTTPFn(fn func(*slog.Logger, http.ResponseWriter, *http.Request, error)) func(*config) {
 	return func(c *config) {
 		c.errorToHTTPFn = fn
+	}
+}
+
+// WithLogger sets the logger to use for logging.
+func WithLogger(logger *slog.Logger) func(*config) {
+	return func(c *config) {
+		c.logger = logger
 	}
 }

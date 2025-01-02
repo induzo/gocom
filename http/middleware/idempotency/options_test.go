@@ -1,6 +1,7 @@
 package idempotency
 
 import (
+	"log/slog"
 	"net/http"
 	"testing"
 )
@@ -37,7 +38,7 @@ func TestWithScopeExtractor(t *testing.T) {
 	// TestWithScopeExtractor tests the WithScopeExtractor option.
 	t.Parallel()
 
-	fn := func(r *http.Request) string {
+	fn := func(_ *http.Request) string {
 		return "scope"
 	}
 
@@ -69,7 +70,7 @@ func TestWithErrorToHTTPFn(t *testing.T) {
 	// TestWithErrorToHTTPFn tests the WithErrorToHTTPFn option.
 	t.Parallel()
 
-	fn := func(http.ResponseWriter, *http.Request, error) {}
+	fn := func(*slog.Logger, http.ResponseWriter, *http.Request, error) {}
 
 	opt := WithErrorToHTTPFn(fn)
 
@@ -78,5 +79,21 @@ func TestWithErrorToHTTPFn(t *testing.T) {
 
 	if cfg.errorToHTTPFn == nil {
 		t.Error("WithErrorToHTTPFn did not set the function")
+	}
+}
+
+func TestWithLogger(t *testing.T) {
+	// TestWithLogger tests the WithLogger option.
+	t.Parallel()
+
+	logger := &slog.Logger{}
+
+	opt := WithLogger(logger)
+
+	cfg := &config{}
+	opt(cfg)
+
+	if cfg.logger == nil {
+		t.Error("WithLogger did not set the logger")
 	}
 }

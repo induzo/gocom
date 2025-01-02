@@ -20,24 +20,25 @@ func NewInMemStore() *InMemStore {
 	}
 }
 
-func (s *InMemStore) InsertInFlight(ctx context.Context, key string, requestSignature []byte) error {
+func (s *InMemStore) InsertInFlight(_ context.Context, key string, requestSignature []byte) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	// If we already have a marker or a stored response, we should decide
-	// how to handle. Typically you check outside of InsertInFlight before calling it.
 	if _, ok := s.inFlight[key]; ok {
-		return errors.New("already in-flight")
+		return errors.New("already in-flight") //nolint:err113 // it's mostly for testing
 	}
+
 	if _, ok := s.responses[key]; ok {
-		return errors.New("already completed")
+		return errors.New("already completed") //nolint:err113 // it's mostly for testing
 	}
 
 	s.inFlight[key] = requestSignature
+
 	return nil
 }
 
-func (s *InMemStore) MarkComplete(ctx context.Context, key string, resp *StoredResponse) error {
+func (s *InMemStore) MarkComplete(_ context.Context, key string, resp *StoredResponse) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -45,29 +46,33 @@ func (s *InMemStore) MarkComplete(ctx context.Context, key string, resp *StoredR
 	// and store the final response.
 	delete(s.inFlight, key)
 	s.responses[key] = resp
+
 	return nil
 }
 
-func (s *InMemStore) GetInFlightSignature(ctx context.Context, key string) ([]byte, bool, error) {
+func (s *InMemStore) GetInFlightSignature(_ context.Context, key string) ([]byte, bool, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	sig, ok := s.inFlight[key]
+
 	return sig, ok, nil
 }
 
-func (s *InMemStore) GetStoredResponse(ctx context.Context, key string) (*StoredResponse, bool, error) {
+func (s *InMemStore) GetStoredResponse(_ context.Context, key string) (*StoredResponse, bool, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	resp, ok := s.responses[key]
+
 	return resp, ok, nil
 }
 
-func (s *InMemStore) RemoveInFlight(ctx context.Context, key string) error {
+func (s *InMemStore) RemoveInFlight(_ context.Context, key string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	delete(s.inFlight, key)
+
 	return nil
 }

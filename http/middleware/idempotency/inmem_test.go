@@ -23,27 +23,52 @@ func TestInMemStoreInsertInFlight(t *testing.T) {
 	store := NewInMemStore()
 
 	tests := []struct {
-		name    string
-		key     string
-		sig     []byte
-		wantErr bool
+		name      string
+		key       string
+		sig       []byte
+		exists    bool
+		completed bool
+		wantErr   bool
 	}{
 		{
 			name:    "key does not exist",
-			key:     "key",
+			key:     "keynothere",
 			sig:     []byte("signature"),
 			wantErr: false,
 		},
 		{
 			name:    "key exists",
-			key:     "key",
+			key:     "keyexists",
+			exists:  true,
 			sig:     []byte("signature"),
 			wantErr: true,
+		},
+		{
+			name:      "already completed",
+			key:       "keycompleted",
+			sig:       []byte("signature"),
+			completed: true,
+			wantErr:   true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if tt.completed {
+				store.MarkComplete(context.Background(), tt.key, &StoredResponse{
+					StatusCode:       200,
+					Headers:          nil,
+					Body:             []byte("body"),
+					RequestSignature: []byte("signature"),
+				})
+			}
+
+			if tt.exists {
+				store.InsertInFlight(context.Background(), tt.key, []byte("signature"))
+			}
+
 			err := store.InsertInFlight(context.Background(), tt.key, tt.sig)
 
 			if err != nil && !tt.wantErr {
@@ -89,6 +114,8 @@ func TestInMemStoreGetInFlightSignature(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			sig, ok, err := store.GetInFlightSignature(context.Background(), tt.key)
 
 			if err != nil && !tt.wantErr {
@@ -152,6 +179,8 @@ func TestInMemStoreGetStoredResponse(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			resp, ok, err := store.GetStoredResponse(context.Background(), tt.key)
 
 			if err != nil && !tt.wantErr {
@@ -209,6 +238,8 @@ func TestInMemStoreRemoveInFlight(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			err := store.RemoveInFlight(context.Background(), tt.key)
 
 			if err != nil && !tt.wantErr {

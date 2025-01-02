@@ -34,7 +34,7 @@ func BenchmarkNewLogger(b *testing.B) {
 
 	b.ResetTimer()
 
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_ = NewLogger(logger)
 	}
 }
@@ -136,7 +136,7 @@ func BenchmarkLogger_Log(b *testing.B) {
 
 	b.ResetTimer()
 
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		pl.Log(ctx, level, msg, data)
 	}
 }
