@@ -45,6 +45,7 @@ func Test_buildRequestFingerprint(t *testing.T) {
 
 			ctx := context.Background()
 
+			//nolint:fatcontext // This is a test
 			for k, v := range tt.context {
 				ctx = context.WithValue(ctx, k, v)
 			}
@@ -65,5 +66,4 @@ func Test_buildRequestFingerprint(t *testing.T) {
 			}
 		})
 	}
-
 }

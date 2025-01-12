@@ -1,24 +1,9 @@
 package idempotency
 
 import (
-	"log/slog"
 	"net/http"
 	"testing"
 )
-
-func TestWithIdempotencyKeyHeader(t *testing.T) {
-	// TestWithIdempotencyKeyHeader tests the WithIdempotencyKeyHeader option.
-	t.Parallel()
-
-	opt := WithIdempotencyKeyHeader("X-Id-Key")
-
-	cfg := &config{}
-	opt(cfg)
-
-	if cfg.idempotencyKeyHeader != "X-Id-Key" {
-		t.Error("WithIdempotencyKeyHeader did not set the header")
-	}
-}
 
 func TestWithOptionalIdempotencyKey(t *testing.T) {
 	// TestWithOptionalIdempotencyKey tests the WithOptionalIdempotencyKey option.
@@ -34,11 +19,39 @@ func TestWithOptionalIdempotencyKey(t *testing.T) {
 	}
 }
 
+func TestWithIdempotencyKeyHeader(t *testing.T) {
+	// TestWithIdempotencyKeyHeader tests the WithIdempotencyKeyHeader option.
+	t.Parallel()
+
+	opt := WithIdempotencyKeyHeader("X-Id-Key")
+
+	cfg := &config{}
+	opt(cfg)
+
+	if cfg.idempotencyKeyHeader != "X-Id-Key" {
+		t.Error("WithIdempotencyKeyHeader did not set the header")
+	}
+}
+
+func TestWithIdempotentReplayedHeader(t *testing.T) {
+	// TestWithIdempotentReplayedHeader tests the WithIdempotentReplayedHeader option.
+	t.Parallel()
+
+	opt := WithIdempotentReplayedHeader("X-Id-Replayed")
+
+	cfg := &config{}
+	opt(cfg)
+
+	if cfg.idempotentReplayedHeader != "X-Id-Replayed" {
+		t.Error("WithIdempotentReplayedHeader did not set the header")
+	}
+}
+
 func TestWithErrorToHTTPFn(t *testing.T) {
 	// TestWithErrorToHTTPFn tests the WithErrorToHTTPFn option.
 	t.Parallel()
 
-	fn := func(*slog.Logger, http.ResponseWriter, *http.Request, string, error) {}
+	fn := func(http.ResponseWriter, *http.Request, error) {}
 
 	opt := WithErrorToHTTPFn(fn)
 
@@ -47,22 +60,6 @@ func TestWithErrorToHTTPFn(t *testing.T) {
 
 	if cfg.errorToHTTPFn == nil {
 		t.Error("WithErrorToHTTPFn did not set the function")
-	}
-}
-
-func TestWithLogger(t *testing.T) {
-	// TestWithLogger tests the WithLogger option.
-	t.Parallel()
-
-	logger := &slog.Logger{}
-
-	opt := WithLogger(logger)
-
-	cfg := &config{}
-	opt(cfg)
-
-	if cfg.logger == nil {
-		t.Error("WithLogger did not set the logger")
 	}
 }
 

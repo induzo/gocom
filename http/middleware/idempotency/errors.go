@@ -1,41 +1,85 @@
 package idempotency
 
 import (
+	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 )
 
+type RequestContext struct {
+	KeyHeader string
+	Key       string
+}
+
+func (idrc RequestContext) String() string {
+	return "`" + idrc.KeyHeader + "`:`" + idrc.Key + "`"
+}
+
+func (idrc RequestContext) toAttrs() []slog.Attr {
+	return []slog.Attr{
+		slog.String("idempotency_key_header", idrc.KeyHeader),
+		slog.String("idempotency_key", idrc.Key),
+	}
+}
+
 type MissingIdempotencyKeyHeaderError struct {
-	Method         string
-	URL            string
-	ExpectedHeader string
+	RequestContext
 }
 
 func (e MissingIdempotencyKeyHeaderError) Error() string {
-	return fmt.Sprintf("missing idempotency key header `%s` for request to %s %s", e.ExpectedHeader, e.Method, e.URL)
+	return "missing idempotency key header `" + e.KeyHeader + "`"
 }
 
 type RequestInFlightError struct {
-	Method string
-	URL    string
-	Key    string
+	RequestContext
 }
 
 func (e RequestInFlightError) Error() string {
-	return fmt.Sprintf("request to `%s %s` `%s` still in flight", e.Method, e.URL, e.Key)
+	return "request with key " + e.RequestContext.String() + " still in flight"
 }
 
 type MismatchedSignatureError struct {
-	Method string
-	URL    string
-	Key    string
+	RequestContext
 }
 
 func (e MismatchedSignatureError) Error() string {
-	return fmt.Sprintf("mismatched signature for request to `%s %s` `%s`", e.Method, e.URL, e.Key)
+	return "mismatched signature for request with key " + e.RequestContext.String()
+}
+
+type StoreResponseError struct {
+	RequestContext
+	Err error
+}
+
+func (e StoreResponseError) Error() string {
+	return fmt.Sprintf("error storing response: %v", e.Err)
+}
+
+func (e StoreResponseError) toAttrs() []slog.Attr {
+	return append(e.RequestContext.toAttrs(), slog.Any("store_response_error", e.Err))
+}
+
+func (e StoreResponseError) Unwrap() error {
+	return e.Err
+}
+
+type GetStoredResponseError struct {
+	RequestContext
+	Err error
+}
+
+func (e GetStoredResponseError) Error() string {
+	return fmt.Sprintf("error getting stored response: %v", e.Err)
+}
+
+func (e GetStoredResponseError) toAttrs() []slog.Attr {
+	return append(e.RequestContext.toAttrs(), slog.Any("get_stored_response_error", e.Err))
+}
+
+func (e GetStoredResponseError) Unwrap() error {
+	return e.Err
 }
 
 // Conforming to RFC9457 (https://www.rfc-editor.org/rfc/rfc9457.html)
@@ -53,86 +97,107 @@ type ProblemDetail struct {
 // This is a sample errorToHTTPFn function that handles the specific errors encountered
 // You can add your own func and set it inside the config
 func ErrorToHTTPJSONProblemDetail(
-	logger *slog.Logger,
-	writer http.ResponseWriter,
+	respW http.ResponseWriter,
 	req *http.Request,
-	key string,
 	err error,
 ) {
 	var pbDetail ProblemDetail
 
-	method := http.MethodGet
 	url := ""
+	ctx := context.Background() //nolint:contextcheck // context.Background() is a valid default value
 
 	if req != nil {
-		method = req.Method
 		url = req.URL.String()
+		ctx = req.Context()
 	}
 
 	errorString := err.Error()
 
-	if logger == nil {
-		logger = slog.Default()
-	}
+	errorAttrs := []slog.Attr{}
 
-	switch {
-	case errors.As(err, &MissingIdempotencyKeyHeaderError{}):
+	defer func() {
+		// log an error with all the collected slog.Attrs
+		slog.LogAttrs(ctx, slog.LevelError, "idempotency error", errorAttrs...)
+	}()
+
+	//nolint:errorlint // we don't use errors.As because we need to handle the specific error types and use their methods
+	switch exactErr := err.(type) {
+	case MissingIdempotencyKeyHeaderError:
 		pbDetail = ProblemDetail{
 			HTTPStatusCode: http.StatusBadRequest,
-			Type:           "https://example.com/errors/missing-idempotency-key-header",
+			Type:           "errors/missing-idempotency-key-header",
 			Title:          "missing idempotency key header",
 			Detail:         errorString,
 			Instance:       url,
 		}
-	case errors.As(err, &RequestInFlightError{}):
+
+		errorAttrs = append(errorAttrs, slog.String("issue", "missing idempotency key header"))
+		errorAttrs = append(errorAttrs, exactErr.toAttrs()...)
+	case RequestInFlightError:
 		pbDetail = ProblemDetail{
 			HTTPStatusCode: http.StatusConflict,
-			Type:           "https://example.com/errors/request-already-in-flight",
+			Type:           "errors/request-already-in-flight",
 			Title:          "request already in flight",
 			Detail:         errorString,
 			Instance:       url,
 		}
-	case errors.As(err, &MismatchedSignatureError{}):
+
+		errorAttrs = append(errorAttrs, slog.Any("issue", exactErr))
+		errorAttrs = append(errorAttrs, exactErr.toAttrs()...)
+	case MismatchedSignatureError:
 		pbDetail = ProblemDetail{
 			HTTPStatusCode: http.StatusBadRequest,
-			Type:           "https://example.com/errors/mismatched-signature",
+			Type:           "errors/mismatched-signature",
 			Title:          "mismatched signature",
 			Detail:         errorString,
 			Instance:       url,
 		}
-	default:
-		logger.Error("unhandled error",
-			slog.Any("err", err),
-			slog.String("method", method),
-			slog.String("url", url),
-			slog.String("key", key),
-		)
 
+		errorAttrs = append(errorAttrs, slog.Any("issue", exactErr))
+		errorAttrs = append(errorAttrs, exactErr.toAttrs()...)
+	case GetStoredResponseError:
 		pbDetail = ProblemDetail{
 			HTTPStatusCode: http.StatusInternalServerError,
-			Type:           "https://example.com/errors/internal-server-error",
+			Type:           "errors/internal-server-error",
 			Title:          "internal server error",
 			Detail:         "an internal server error occurred.",
 			Instance:       url,
 		}
+
+		errorAttrs = append(errorAttrs, slog.Any("issue", exactErr))
+		errorAttrs = append(errorAttrs, exactErr.toAttrs()...)
+	case StoreResponseError:
+		// in case of a store response error, we want to log the error
+		// but not change the content already written to the response
+		errorAttrs = append(errorAttrs, slog.Any("issue", exactErr))
+		errorAttrs = append(errorAttrs, exactErr.toAttrs()...)
+
+		return
+	default:
+		pbDetail = ProblemDetail{
+			HTTPStatusCode: http.StatusInternalServerError,
+			Type:           "errors/internal-server-error",
+			Title:          "internal server error",
+			Detail:         "an internal server error occurred.",
+			Instance:       url,
+		}
+
+		errorAttrs = append(errorAttrs, slog.Any("issue", err))
 	}
 
 	resp, errJ := json.MarshalIndent(pbDetail, "", "  ")
 	if errJ != nil {
-		http.Error(writer, "internal server error", http.StatusInternalServerError)
+		errorAttrs = append(errorAttrs, slog.Any("err_marshal", errJ))
+
+		http.Error(respW, "internal server error", http.StatusInternalServerError)
 
 		return
 	}
 
-	writer.Header().Set("Content-Type", "application/problem+json")
-	writer.WriteHeader(pbDetail.HTTPStatusCode)
+	respW.Header().Set("Content-Type", "application/problem+json")
+	respW.WriteHeader(pbDetail.HTTPStatusCode)
 
-	if _, errW := writer.Write(resp); errW != nil {
-		logger.Error("failed writing response",
-			slog.String("method", method),
-			slog.String("url", url),
-			slog.String("key", key),
-			slog.Any("err", errW),
-		)
+	if _, errW := respW.Write(resp); errW != nil {
+		errorAttrs = append(errorAttrs, slog.Any("err_write", errW))
 	}
 }

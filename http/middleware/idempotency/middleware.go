@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"strings"
 )
@@ -19,7 +18,7 @@ func NewMiddleware(store Store, options ...func(*config)) func(http.Handler) htt
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(respW http.ResponseWriter, req *http.Request) {
-			if isReadOnlyMethod(req.Method) {
+			if isIdempotentMethod(req.Method) {
 				next.ServeHTTP(respW, req)
 
 				return
@@ -33,30 +32,46 @@ func NewMiddleware(store Store, options ...func(*config)) func(http.Handler) htt
 					return
 				}
 
-				handleMissingKey(conf, respW, req)
+				conf.errorToHTTPFn(respW, req,
+					MissingIdempotencyKeyHeaderError{
+						RequestContext{
+							KeyHeader: conf.idempotencyKeyHeader,
+						},
+					},
+				)
 
 				return
 			}
 
 			requestHash, errS := buildRequestHash(conf.fingerprinterFn, req)
 			if errS != nil {
-				conf.errorToHTTPFn(conf.logger, respW, req, key, errS)
+				conf.errorToHTTPFn(respW, req, errS)
 
 				return
 			}
 
-			if isFound := handleRequestWithIdempotency(conf, store, respW, req, key, requestHash); isFound {
+			if isFound := handleRequestWithIdempotency(
+				conf,
+				store,
+				key,
+				requestHash,
+				respW,
+				req,
+			); isFound {
 				return
 			}
 
 			// Try to lock the key to prevent concurrent requests
 			newCtx, unlock, errL := store.TryLock(req.Context(), key)
 			if errL != nil {
-				conf.errorToHTTPFn(conf.logger, respW, req, key, RequestInFlightError{
-					Key:    key,
-					Method: req.Method,
-					URL:    req.URL.String(),
-				})
+				conf.errorToHTTPFn(respW, req,
+					RequestInFlightError{
+						RequestContext{
+							KeyHeader: conf.idempotencyKeyHeader,
+							Key:       key,
+						},
+					},
+				)
 
 				return
 			}
@@ -68,104 +83,74 @@ func NewMiddleware(store Store, options ...func(*config)) func(http.Handler) htt
 
 			teeRespW := newTeeResponseWriter(respW)
 
-			defer handlePanic(conf, req, key)
-
 			next.ServeHTTP(teeRespW, req)
 
-			storeResponse(conf, store, req, key, teeRespW, requestHash)
+			//nolint:contextcheck // req.Context() is a valid value
+			if errSR := store.StoreResponse(req.Context(), key,
+				&StoredResponse{
+					StatusCode:  teeRespW.statusCode,
+					Header:      teeRespW.header(),
+					Body:        teeRespW.body.Bytes(),
+					RequestHash: requestHash,
+				},
+			); errSR != nil {
+				conf.errorToHTTPFn(respW, req, StoreResponseError{
+					RequestContext: RequestContext{
+						KeyHeader: conf.idempotencyKeyHeader,
+						Key:       key,
+					},
+					Err: errSR,
+				})
+
+				return
+			}
 		})
 	}
 }
 
-func isReadOnlyMethod(method string) bool {
-	return method == http.MethodGet || method == http.MethodHead || method == http.MethodOptions
-}
-
-func handleMissingKey(conf *config, respW http.ResponseWriter, req *http.Request) {
-	conf.errorToHTTPFn(
-		conf.logger, respW, req, conf.idempotencyKeyHeader,
-		MissingIdempotencyKeyHeaderError{
-			ExpectedHeader: conf.idempotencyKeyHeader,
-			Method:         req.Method,
-			URL:            req.URL.String(),
-		},
-	)
+func isIdempotentMethod(method string) bool {
+	return method != http.MethodPost &&
+		method != http.MethodPut &&
+		method != http.MethodPatch
 }
 
 func handleRequestWithIdempotency(
 	conf *config,
 	store Store,
+	key string,
+	requestHash []byte,
 	respW http.ResponseWriter,
 	req *http.Request,
-	key string,
-	requestSignature []byte,
 ) bool {
 	ctx := req.Context()
 
 	resp, exists, err := store.GetStoredResponse(ctx, key)
 	if err != nil {
-		conf.errorToHTTPFn(conf.logger, respW, req, key, err)
+		conf.errorToHTTPFn(respW, req, err)
 
 		return true
 	}
 
 	if exists {
-		if !bytes.Equal(resp.RequestSignature, requestSignature) {
-			conf.errorToHTTPFn(
-				conf.logger, respW, req, conf.idempotencyKeyHeader,
+		if !bytes.Equal(resp.RequestHash, requestHash) {
+			conf.errorToHTTPFn(respW, req,
 				MismatchedSignatureError{
-					Key:    key,
-					Method: req.Method,
-					URL:    req.URL.String(),
+					RequestContext{
+						KeyHeader: conf.idempotencyKeyHeader,
+						Key:       key,
+					},
 				},
 			)
 
 			return true
 		}
 
-		replayResponse(conf.logger, respW, resp)
+		replayResponse(conf, respW, resp)
 
 		return true
 	}
 
 	return false
-}
-
-func handlePanic(conf *config, req *http.Request, key string) {
-	if rcv := recover(); rcv != nil {
-		conf.logger.Error(
-			"failed storing final response: panicked!",
-			slog.String("method", req.Method),
-			slog.String("url", req.URL.String()),
-			slog.String("idempotency-key", key),
-			slog.Any("err", rcv),
-		)
-	}
-}
-
-func storeResponse(
-	conf *config,
-	store Store,
-	req *http.Request,
-	key string,
-	teeRespW *teeResponseWriter,
-	requestSignature []byte,
-) {
-	err := store.StoreResponse(req.Context(), key, &StoredResponse{
-		StatusCode:       teeRespW.statusCode,
-		Headers:          teeRespW.header(),
-		Body:             teeRespW.body.Bytes(),
-		RequestSignature: requestSignature,
-	})
-	if err != nil {
-		conf.logger.Error(
-			"failed storing final response",
-			slog.String("method", req.Method),
-			slog.String("url", req.URL.String()),
-			slog.String("idempotency-key", key),
-			slog.Any("err", err),
-		)
-	}
 }
 
 // buildRequestHash is the function that will take the request
@@ -185,9 +170,9 @@ func buildRequestHash(fingerprinter func(*http.Request) ([]byte, error), req *ht
 }
 
 // replayResponse writes a previously stored response to a ResponseWriter
-func replayResponse(logger *slog.Logger, respW http.ResponseWriter, resp *StoredResponse) {
+func replayResponse(conf *config, respW http.ResponseWriter, resp *StoredResponse) {
 	// Copy stored headers
-	for hdr, values := range resp.Headers {
+	for hdr, values := range resp.Header {
 		// We skip Content-Length because we might re-write it or let
 		// http do so. Or you can do w.Header().Set("Content-Length", strconv.Itoa(len(resp.Body))).
 		if strings.EqualFold(hdr, "content-length") {
@@ -199,14 +184,13 @@ func replayResponse(logger *slog.Logger, respW http.ResponseWriter, resp *Stored
 		}
 	}
 
+	respW.Header().Add(conf.idempotentReplayedHeader, "true")
+
 	respW.WriteHeader(resp.StatusCode)
 
 	if len(resp.Body) > 0 {
 		if _, errW := respW.Write(resp.Body); errW != nil {
-			logger.Error(
-				"failed writing response body",
-				slog.Any("err", errW),
-			)
+			conf.errorToHTTPFn(respW, nil, fmt.Errorf("failed writing replayed response body: %w", errW))
 		}
 	}
 }

@@ -7,11 +7,11 @@ import (
 
 // StoredResponse holds what we need to check and replay a response.
 type StoredResponse struct {
-	StatusCode       int
-	Signature        []byte
-	Headers          http.Header
-	Body             []byte
-	RequestSignature []byte // To verify the same request payload
+	StatusCode  int
+	Signature   []byte
+	Header      http.Header
+	Body        []byte
+	RequestHash []byte // To verify the same request payload
 }
 
 // Store is the interface we need to implement for:

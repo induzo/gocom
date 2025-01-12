@@ -1,25 +1,30 @@
 package idempotency
 
 import (
-	"log/slog"
 	"net/http"
 )
 
-const DefaultIdempotencyKeyHeader = "X-Idempotency-Key"
+const (
+	DefaultIdempotencyKeyHeader             = "X-Idempotency-Key"
+	DefaultIdempotentReplayedResponseHeader = "X-Idempotent-Replayed"
+)
+
+type ErrorToHTTPFn func(http.ResponseWriter, *http.Request, error)
 
 type config struct {
 	idempotencyKeyIsOptional bool
 	idempotencyKeyHeader     string
-	fingerprinterFn          func(req *http.Request) ([]byte, error)
-	errorToHTTPFn            func(*slog.Logger, http.ResponseWriter, *http.Request, string, error)
-	logger                   *slog.Logger
+	idempotentReplayedHeader string
+	fingerprinterFn          func(*http.Request) ([]byte, error)
+	errorToHTTPFn            ErrorToHTTPFn
 }
 
 func newDefaultConfig() *config {
 	return &config{
-		idempotencyKeyHeader: DefaultIdempotencyKeyHeader,
-		errorToHTTPFn:        ErrorToHTTPJSONProblemDetail,
-		logger:               slog.Default(),
-		fingerprinterFn:      buildRequestFingerprint,
+		idempotencyKeyIsOptional: false,
+		idempotencyKeyHeader:     DefaultIdempotencyKeyHeader,
+		idempotentReplayedHeader: DefaultIdempotentReplayedResponseHeader,
+		errorToHTTPFn:            ErrorToHTTPJSONProblemDetail,
+		fingerprinterFn:          buildRequestFingerprint,
 	}
 }

@@ -86,7 +86,7 @@ import (
 // Using NewMiddleware
 func main() {
 	ctx := context.Background()
-	idempotencyMiddleware := idempotency.NewMiddleware(idempotency.NewInMemStore())
+	idempotencyMiddleware := idempotency.NewMiddleware(idempotency.NewInMemStore(DefaultStorageResponseTTL))
 	mux := http.NewServeMux()
 
 	counter := int32(0)
@@ -236,7 +236,7 @@ type InMemStore struct {
 ### func [NewInMemStore](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L18>)
 
 ```go
-func NewInMemStore() *InMemStore
+func NewInMemStore(DefaultStorageResponseTTL) *InMemStore
 ```
 
 NewInMemStore initializes an in\-memory store.

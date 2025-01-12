@@ -58,16 +58,16 @@ func ExampleNewMiddleware() {
 	// Output:
 	// 400
 	// {
-	//   "type": "https://example.com/errors/missing-idempotency-key-header",
+	//   "type": "errors/missing-idempotency-key-header",
 	//   "title": "missing idempotency key header",
-	//   "detail": "missing idempotency key header `X-Idempotency-Key` for request to POST /",
+	//   "detail": "missing idempotency key header `X-Idempotency-Key`",
 	//   "instance": "/"
 	// }
 	// 409
 	// {
-	//   "type": "https://example.com/errors/request-already-in-flight",
+	//   "type": "errors/request-already-in-flight",
 	//   "title": "request already in flight",
-	//   "detail": "request to `POST /` `same-key` still in flight",
+	//   "detail": "request with key `X-Idempotency-Key`:`same-key` still in flight",
 	//   "instance": "/"
 	// }
 	// 200

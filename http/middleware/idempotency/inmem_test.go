@@ -85,10 +85,10 @@ func TestInMemStoreStoreResponse(t *testing.T) {
 			name: "key does not exist",
 			key:  "keynothere",
 			resp: &StoredResponse{
-				StatusCode:       http.StatusOK,
-				Headers:          nil,
-				Body:             []byte("body"),
-				RequestSignature: []byte("signature"),
+				StatusCode:  http.StatusOK,
+				Header:      nil,
+				Body:        []byte("body"),
+				RequestHash: []byte("signature"),
 			},
 
 			wantErr: false,
@@ -97,10 +97,10 @@ func TestInMemStoreStoreResponse(t *testing.T) {
 			name: "key exists",
 			key:  "doesKeyexist",
 			resp: &StoredResponse{
-				StatusCode:       http.StatusOK,
-				Headers:          nil,
-				Body:             []byte("body"),
-				RequestSignature: []byte("signature"),
+				StatusCode:  http.StatusOK,
+				Header:      nil,
+				Body:        []byte("body"),
+				RequestHash: []byte("signature"),
 			},
 			doesKeyExist: true,
 			wantErr:      true,
@@ -138,10 +138,10 @@ func TestInMemStoreGetStoredResponse(t *testing.T) {
 	store := NewInMemStore()
 
 	sampleStoredResponse := &StoredResponse{
-		StatusCode:       http.StatusOK,
-		Headers:          nil,
-		Body:             []byte("body"),
-		RequestSignature: []byte("signature"),
+		StatusCode:  http.StatusOK,
+		Header:      nil,
+		Body:        []byte("body"),
+		RequestHash: []byte("signature"),
 	}
 
 	tests := []struct {

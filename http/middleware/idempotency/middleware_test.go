@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -30,6 +30,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 	t.Parallel()
 
 	type req struct {
+		method  string
 		key     string
 		startAt time.Duration
 		body    string
@@ -42,18 +43,21 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 	}
 
 	testc := []struct {
-		name              string
-		reqProcessingTime time.Duration
-		reqws             []req
-		options           []func(*config)
-		expectedResp      map[int]resp
-		expectedCounter   int
+		name                             string
+		reqProcessingTime                time.Duration
+		reqws                            []req
+		options                          []func(*config)
+		withFaultyStoreResponseStore     bool
+		withFaultyGetStoredResponseStore bool
+		expectedResp                     map[int]resp
+		expectedCounter                  int
 	}{
 		{
 			name:              "1 request",
 			reqProcessingTime: 0,
 			reqws: []req{
 				{
+					method:  http.MethodPost,
 					key:     "onekey",
 					startAt: 0,
 					body:    "hola",
@@ -74,6 +78,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			reqProcessingTime: 0,
 			reqws: []req{
 				{
+					method:  http.MethodPost,
 					startAt: 0,
 					body:    "hola",
 				},
@@ -93,6 +98,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			reqProcessingTime: 0,
 			reqws: []req{
 				{
+					method:  http.MethodPost,
 					startAt: 0,
 					body:    "hola",
 				},
@@ -112,11 +118,13 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			reqProcessingTime: 100 * time.Millisecond,
 			reqws: []req{
 				{
+					method:  http.MethodPost,
 					key:     "samekey",
 					startAt: 0,
 					body:    "hola",
 				},
 				{
+					method:  http.MethodPost,
 					key:     "samekey",
 					startAt: 50 * time.Millisecond,
 					body:    "hola",
@@ -142,11 +150,13 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			reqProcessingTime: 0,
 			reqws: []req{
 				{
+					method:  http.MethodPost,
 					key:     "samekey",
 					startAt: 0,
 					body:    "hola",
 				},
 				{
+					method:  http.MethodPost,
 					key:     "samekey",
 					startAt: 20 * time.Millisecond,
 					body:    "hola",
@@ -172,11 +182,13 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			reqProcessingTime: 0,
 			reqws: []req{
 				{
+					method:  http.MethodPost,
 					key:     "firstkey",
 					startAt: 0,
 					body:    "hola",
 				},
 				{
+					method:  http.MethodPost,
 					key:     "secondkey",
 					startAt: 20 * time.Millisecond,
 					body:    "hola",
@@ -197,6 +209,147 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			},
 			expectedCounter: 2,
 		},
+		{
+			name:              "get request",
+			reqProcessingTime: 0,
+			reqws: []req{
+				{
+					method:  http.MethodGet,
+					key:     "getkey",
+					startAt: 0,
+					body:    "hola",
+				},
+				{
+					method:  http.MethodGet,
+					key:     "getkey",
+					startAt: 0,
+					body:    "hola",
+				},
+			},
+			options: nil,
+			expectedResp: map[int]resp{
+				0: {
+					key:    "getkey",
+					status: http.StatusOK,
+					body:   "hola",
+				},
+				1: {
+					key:    "getkey",
+					status: http.StatusOK,
+					body:   "hola",
+				},
+			},
+			expectedCounter: 2,
+		},
+		{
+			name:              "1 request with failing fingerprinter",
+			reqProcessingTime: 0,
+			reqws: []req{
+				{
+					method:  http.MethodPost,
+					key:     "onekey",
+					startAt: 0,
+					body:    "hola",
+				},
+			},
+			options: []func(*config){
+				WithFingerprinter(
+					func(_ *http.Request) ([]byte, error) {
+						return nil, errors.New("fingerprinter error")
+					},
+				),
+			},
+			expectedResp: map[int]resp{
+				0: {
+					key:    "onekey",
+					status: http.StatusInternalServerError,
+					body:   "internal server error",
+				},
+			},
+			expectedCounter: 0,
+		},
+		{
+			name:              "1 request that exists in store but with diff fingerprint",
+			reqProcessingTime: 0,
+			reqws: []req{
+				{
+					method:  http.MethodPost,
+					key:     "onekey",
+					startAt: 0,
+					body:    "hola",
+				},
+				{
+					method:  http.MethodPost,
+					key:     "onekey",
+					startAt: 10 * time.Millisecond,
+					body:    "hola",
+				},
+			},
+			options: []func(*config){
+				WithFingerprinter(
+					func(_ *http.Request) ([]byte, error) {
+						return []byte(time.Now().Format(time.RFC3339Nano)), nil
+					},
+				),
+			},
+			expectedResp: map[int]resp{
+				0: {
+					key:    "onekey",
+					status: http.StatusOK,
+					body:   "hola",
+				},
+				1: {
+					key:    "onekey",
+					status: http.StatusBadRequest,
+					body:   "MismatchedSignatureError",
+				},
+			},
+			expectedCounter: 1,
+		},
+		{
+			name:              "1 request with faulty store response issue",
+			reqProcessingTime: 0,
+			reqws: []req{
+				{
+					method:  http.MethodPost,
+					key:     "faultystorekey",
+					startAt: 0,
+					body:    "hola",
+				},
+			},
+			options:                      nil,
+			withFaultyStoreResponseStore: true,
+			expectedResp: map[int]resp{
+				0: {
+					key:    "onekey",
+					status: http.StatusOK,
+					body:   "hola",
+				},
+			},
+			expectedCounter: 1,
+		},
+		{
+			name:              "1 requests, with error getting stored response",
+			reqProcessingTime: 0,
+			reqws: []req{
+				{
+					method:  http.MethodPost,
+					key:     "samekey",
+					startAt: 0,
+					body:    "hola",
+				},
+			},
+			options:                          nil,
+			withFaultyGetStoredResponseStore: true,
+			expectedResp: map[int]resp{
+				0: {
+					key:    "samekey",
+					status: http.StatusInternalServerError,
+					body:   "internal server error",
+				},
+			},
+			expectedCounter: 0,
+		},
 	}
 
 	for _, tt := range testc {
@@ -205,7 +358,17 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 
 			options := append([]func(*config){WithErrorToHTTPFn(errorToString)}, tt.options...)
 
-			idempotencyMiddleware := NewMiddleware(NewInMemStore(), options...)
+			store := NewInMemStore()
+
+			if tt.withFaultyStoreResponseStore {
+				store.withActiveStoreResponseError()
+			}
+
+			if tt.withFaultyGetStoredResponseStore {
+				store.withActiveGetStoredResponseError()
+			}
+
+			idempotencyMiddleware := NewMiddleware(store, options...)
 
 			mux := http.NewServeMux()
 
@@ -238,7 +401,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 
 					time.Sleep(reqw.startAt)
 
-					status, body, err := sendPOSTReq(context.Background(), server, key, body)
+					status, body, err := sendReq(context.Background(), reqw.method, server, key, body)
 					if err != nil {
 						t.Errorf("SendPOSTReq: %v", err)
 					}
@@ -268,8 +431,91 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 	}
 }
 
-func sendPOSTReq(ctx context.Context, server *httptest.Server, key, reqBody string) (int, string, error) {
-	req, _ := http.NewRequestWithContext(ctx, http.MethodPost, server.URL, bytes.NewBufferString(reqBody))
+func TestReplayResponse(t *testing.T) {
+	t.Parallel()
+
+	store := NewInMemStore()
+
+	storedResp := &StoredResponse{
+		StatusCode: http.StatusOK,
+		Header: http.Header{
+			"Content-Type":   []string{"application/json"},
+			"Content-Length": []string{"4"},
+			"X-Test":         []string{"test"},
+		},
+		Body: []byte("body"),
+	}
+
+	store.responses.Store("key", storedResp)
+
+	respRec := httptest.NewRecorder()
+
+	replayResponse(&config{
+		idempotentReplayedHeader: DefaultIdempotentReplayedResponseHeader,
+		errorToHTTPFn:            errorToString,
+	}, respRec, storedResp)
+
+	resp := respRec.Result()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected status code %d, got %d", http.StatusOK, resp.StatusCode)
+	}
+
+	respBody, _ := io.ReadAll(resp.Body)
+
+	if !bytes.Equal(respBody, storedResp.Body) {
+		t.Errorf("expected body `%s`, got `%s`", storedResp.Body, resp.Body)
+	}
+
+	if len(resp.Header) != len(storedResp.Header) {
+		t.Errorf("expected header len %d, got %d", len(storedResp.Header), len(resp.Header))
+	}
+
+	for k, v := range storedResp.Header {
+		if k == "Content-Length" {
+			continue
+		}
+
+		if !reflect.DeepEqual(resp.Header[k], v) {
+			t.Errorf("expected header `%v`, got `%v`", v, resp.Header[k])
+		}
+	}
+}
+
+func TestTeeResponseWriterWriteHeader(t *testing.T) {
+	t.Parallel()
+
+	buf := new(bytes.Buffer)
+
+	tee := newTeeResponseWriter(httptest.NewRecorder())
+
+	tee.WriteHeader(http.StatusOK)
+
+	if tee.statusCode != http.StatusOK {
+		t.Errorf("expected status code %d, got %d", http.StatusOK, tee.statusCode)
+	}
+
+	if buf.Len() != 0 {
+		t.Errorf("expected buf len 0, got %d", buf.Len())
+	}
+}
+
+func TestTeeResponseWriterWrite(t *testing.T) {
+	t.Parallel()
+
+	buf := httptest.NewRecorder()
+
+	tee := newTeeResponseWriter(buf)
+
+	_, _ = tee.Write([]byte("hola"))
+
+	if buf.Body.Len() != 4 {
+		t.Errorf("expected buf len 4, got %d", buf.Body.Len())
+	}
+}
+
+func sendReq(ctx context.Context, method string, server *httptest.Server, key, reqBody string) (int, string, error) {
+	req, _ := http.NewRequestWithContext(ctx, method, server.URL, bytes.NewBufferString(reqBody))
 	req.Header.Set(DefaultIdempotencyKeyHeader, key)
 
 	resp, err := http.DefaultClient.Do(req)
@@ -288,10 +534,8 @@ func sendPOSTReq(ctx context.Context, server *httptest.Server, key, reqBody stri
 
 // errorToString write the error type returned
 func errorToString(
-	_ *slog.Logger,
 	writer http.ResponseWriter,
 	_ *http.Request,
-	_ string,
 	err error,
 ) {
 	switch {
@@ -302,6 +546,10 @@ func errorToString(
 		http.Error(writer, "RequestInFlightError", http.StatusConflict)
 	case errors.As(err, &MismatchedSignatureError{}):
 		http.Error(writer, "MismatchedSignatureError", http.StatusBadRequest)
+	case errors.As(err, &StoreResponseError{}):
+		http.Error(writer, "", http.StatusOK)
+	case errors.As(err, &GetStoredResponseError{}):
+		http.Error(writer, "internal server error", http.StatusInternalServerError)
 	default:
 		http.Error(
 			writer,
