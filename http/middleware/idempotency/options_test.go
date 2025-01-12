@@ -20,49 +20,17 @@ func TestWithIdempotencyKeyHeader(t *testing.T) {
 	}
 }
 
-func TestWithWhitelistedHeaders(t *testing.T) {
-	// TestWithWhitelistedHeaders tests the WithWhitelistedHeaders option.
+func TestWithOptionalIdempotencyKey(t *testing.T) {
+	// TestWithOptionalIdempotencyKey tests the WithOptionalIdempotencyKey option.
 	t.Parallel()
 
-	opt := WithWhitelistedHeaders("Content-Type", "Random-Header")
+	opt := WithOptionalIdempotencyKey()
 
 	cfg := &config{}
 	opt(cfg)
 
-	if len(cfg.whitelistedHeaders) != 2 {
-		t.Error("WithWhitelistedHeaders did not set the headers")
-	}
-}
-
-func TestWithScopeExtractor(t *testing.T) {
-	// TestWithScopeExtractor tests the WithScopeExtractor option.
-	t.Parallel()
-
-	fn := func(_ *http.Request) string {
-		return "scope"
-	}
-
-	opt := WithScopeExtractor(fn)
-
-	cfg := &config{}
-	opt(cfg)
-
-	if cfg.scopeExtractorFn(&http.Request{}) != "scope" {
-		t.Error("WithScopeExtractor did not set the function")
-	}
-}
-
-func TestWithIdempotencyKeyIsOptional(t *testing.T) {
-	// TestWithIdempotencyKeyIsOptional tests the WithIdempotencyKeyIsOptional option.
-	t.Parallel()
-
-	opt := WithIdempotencyKeyIsOptional(true)
-
-	cfg := &config{}
-	opt(cfg)
-
-	if !cfg.IdempotencyKeyIsOptional {
-		t.Error("WithIdempotencyKeyIsOptional did not set the optional flag")
+	if !cfg.idempotencyKeyIsOptional {
+		t.Error("WithOptionalIdempotencyKey did not set the optional flag")
 	}
 }
 
@@ -70,7 +38,7 @@ func TestWithErrorToHTTPFn(t *testing.T) {
 	// TestWithErrorToHTTPFn tests the WithErrorToHTTPFn option.
 	t.Parallel()
 
-	fn := func(*slog.Logger, http.ResponseWriter, *http.Request, error) {}
+	fn := func(*slog.Logger, http.ResponseWriter, *http.Request, string, error) {}
 
 	opt := WithErrorToHTTPFn(fn)
 
@@ -95,5 +63,21 @@ func TestWithLogger(t *testing.T) {
 
 	if cfg.logger == nil {
 		t.Error("WithLogger did not set the logger")
+	}
+}
+
+func TestWithFingerprinter(t *testing.T) {
+	// TestWithFingerprinter tests the WithFingerprinter option.
+	t.Parallel()
+
+	fn := func(*http.Request) ([]byte, error) { return nil, nil }
+
+	opt := WithFingerprinter(fn)
+
+	cfg := &config{}
+	opt(cfg)
+
+	if cfg.fingerprinterFn == nil {
+		t.Error("WithFingerprinter did not set the function")
 	}
 }

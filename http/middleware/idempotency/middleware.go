@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"fmt"
-	"io"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -26,9 +25,9 @@ func NewMiddleware(store Store, options ...func(*config)) func(http.Handler) htt
 				return
 			}
 
-			key := req.Header.Get(conf.idempotencyKeyHeader)
+			key := strings.TrimSpace(req.Header.Get(conf.idempotencyKeyHeader))
 			if key == "" {
-				if conf.IdempotencyKeyIsOptional {
+				if conf.idempotencyKeyIsOptional {
 					next.ServeHTTP(respW, req)
 
 					return
@@ -39,26 +38,33 @@ func NewMiddleware(store Store, options ...func(*config)) func(http.Handler) htt
 				return
 			}
 
-			requestSignature, err := buildRequestSignature(req, conf.whitelistedHeaders, conf.scopeExtractorFn)
-			if err != nil {
-				conf.errorToHTTPFn(conf.logger, respW, req, fmt.Errorf("buildRequestSignature: %w", err))
+			requestHash, errS := buildRequestHash(conf.fingerprinterFn, req)
+			if errS != nil {
+				conf.errorToHTTPFn(conf.logger, respW, req, key, errS)
 
 				return
 			}
 
-			if handleStoredResponse(conf, store, respW, req, key, requestSignature) {
+			if isFound := handleRequestWithIdempotency(conf, store, respW, req, key, requestHash); isFound {
 				return
 			}
 
-			if handleInFlightRequest(conf, store, respW, req, key, requestSignature) {
+			// Try to lock the key to prevent concurrent requests
+			newCtx, unlock, errL := store.TryLock(req.Context(), key)
+			if errL != nil {
+				conf.errorToHTTPFn(conf.logger, respW, req, key, RequestInFlightError{
+					Key:    key,
+					Method: req.Method,
+					URL:    req.URL.String(),
+				})
+
 				return
 			}
 
-			if err := store.InsertInFlight(req.Context(), key, requestSignature); err != nil {
-				conf.errorToHTTPFn(conf.logger, respW, req, fmt.Errorf("InsertInFlight: %w", err))
+			defer unlock()
 
-				return
-			}
+			// update the request context with the new context
+			req = req.WithContext(newCtx)
 
 			teeRespW := newTeeResponseWriter(respW)
 
@@ -66,7 +72,7 @@ func NewMiddleware(store Store, options ...func(*config)) func(http.Handler) htt
 
 			next.ServeHTTP(teeRespW, req)
 
-			markRequestComplete(conf, store, req, key, teeRespW, requestSignature)
+			storeResponse(conf, store, req, key, teeRespW, requestHash)
 		})
 	}
 }
@@ -77,7 +83,7 @@ func isReadOnlyMethod(method string) bool {
 
 func handleMissingKey(conf *config, respW http.ResponseWriter, req *http.Request) {
 	conf.errorToHTTPFn(
-		conf.logger, respW, req,
+		conf.logger, respW, req, conf.idempotencyKeyHeader,
 		MissingIdempotencyKeyHeaderError{
 			ExpectedHeader: conf.idempotencyKeyHeader,
 			Method:         req.Method,
@@ -86,7 +92,7 @@ func handleMissingKey(conf *config, respW http.ResponseWriter, req *http.Request
 	)
 }
 
-func handleStoredResponse(
+func handleRequestWithIdempotency(
 	conf *config,
 	store Store,
 	respW http.ResponseWriter,
@@ -98,7 +104,7 @@ func handleStoredResponse(
 
 	resp, exists, err := store.GetStoredResponse(ctx, key)
 	if err != nil {
-		conf.errorToHTTPFn(conf.logger, respW, req, err)
+		conf.errorToHTTPFn(conf.logger, respW, req, key, err)
 
 		return true
 	}
@@ -106,7 +112,7 @@ func handleStoredResponse(
 	if exists {
 		if !bytes.Equal(resp.RequestSignature, requestSignature) {
 			conf.errorToHTTPFn(
-				conf.logger, respW, req,
+				conf.logger, respW, req, conf.idempotencyKeyHeader,
 				MismatchedSignatureError{
 					Key:    key,
 					Method: req.Method,
@@ -118,52 +124,6 @@ func handleStoredResponse(
 		}
 
 		replayResponse(conf.logger, respW, resp)
-
-		return true
-	}
-
-	return false
-}
-
-func handleInFlightRequest(
-	conf *config,
-	store Store,
-	respW http.ResponseWriter,
-	req *http.Request,
-	key string,
-	requestSignature []byte,
-) bool {
-	ctx := req.Context()
-
-	sig, exists, err := store.GetInFlightSignature(ctx, key)
-	if err != nil {
-		conf.errorToHTTPFn(conf.logger, respW, req, fmt.Errorf("GetInFlightSignature: %w", err))
-
-		return true
-	}
-
-	if exists {
-		if !bytes.Equal(sig, requestSignature) {
-			conf.errorToHTTPFn(
-				conf.logger, respW, req,
-				MismatchedSignatureError{
-					Key:    key,
-					Method: req.Method,
-					URL:    req.URL.String(),
-				},
-			)
-
-			return true
-		}
-
-		conf.errorToHTTPFn(
-			conf.logger, respW, req,
-			RequestStillInFlightError{
-				Key:    key,
-				Method: req.Method,
-				URL:    req.URL.String(),
-			},
-		)
 
 		return true
 	}
@@ -183,7 +143,7 @@ func handlePanic(conf *config, req *http.Request, key string) {
 	}
 }
 
-func markRequestComplete(
+func storeResponse(
 	conf *config,
 	store Store,
 	req *http.Request,
@@ -191,7 +151,7 @@ func markRequestComplete(
 	teeRespW *teeResponseWriter,
 	requestSignature []byte,
 ) {
-	err := store.MarkComplete(req.Context(), key, &StoredResponse{
+	err := store.StoreResponse(req.Context(), key, &StoredResponse{
 		StatusCode:       teeRespW.statusCode,
 		Headers:          teeRespW.header(),
 		Body:             teeRespW.body.Bytes(),
@@ -208,45 +168,18 @@ func markRequestComplete(
 	}
 }
 
-// buildRequestSignature is an example function that reads the request body
-// and optionally includes some headers for a “payload fingerprint.”
-func buildRequestSignature(
-	req *http.Request,
-	whitelistedHeaders []string,
-	scopeExtractorFn func(r *http.Request) string,
-) ([]byte, error) {
-	var buf bytes.Buffer
-
-	// Copy the body so we can reuse it after hashing
-	bodyBytes, err := io.ReadAll(req.Body)
+// buildRequestHash is the function that will take the request
+//
+// and compute its hash
+func buildRequestHash(fingerprinter func(*http.Request) ([]byte, error), req *http.Request) ([]byte, error) {
+	// Compute the request fingerprint
+	fingerprint, err := fingerprinter(req)
 	if err != nil {
-		return nil, fmt.Errorf("buildRequestSignature: %w", err)
-	}
-
-	defer req.Body.Close()
-
-	// Put the body back into the request for the next handler
-	req.Body = io.NopCloser(bytes.NewReader(bodyBytes))
-
-	// Write the body into the buffer to incorporate it into the hash
-	buf.Write(bodyBytes)
-
-	// Optionally add some headers if you want them in the signature
-	// For instance, content-type or a specific custom header
-	for _, h := range whitelistedHeaders {
-		if v := req.Header.Get(h); v != "" {
-			buf.WriteString(h)
-			buf.WriteString(v)
-		}
-	}
-
-	// Optionally add a scope to the signature
-	if scope := scopeExtractorFn(req); scope != "" {
-		buf.WriteString(scope)
+		return nil, fmt.Errorf("failed to compute request fingerprint: %w", err)
 	}
 
 	// Compute a sha256 hash of the combined data
-	hash := sha256.Sum256(buf.Bytes())
+	hash := sha256.Sum256(fingerprint)
 
 	return hash[:], nil
 }

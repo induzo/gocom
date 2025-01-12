@@ -55,20 +55,6 @@ func ExampleNewMiddleware() {
 		time.Sleep(80 * time.Millisecond)
 	}
 
-	// add a request that does not have the same signature
-	wg.Add(1)
-
-	go func() {
-		defer wg.Done()
-
-		sendPOSTReq(ctx, server, "same-key", "diff-body")
-	}()
-
-	wg.Wait()
-
-	// add a request that does not have the same id key
-	sendPOSTReq(ctx, server, "diff-key", "")
-
 	// Output:
 	// 400
 	// {
@@ -88,24 +74,17 @@ func ExampleNewMiddleware() {
 	// Hello World! 1
 	// 200
 	// Hello World! 1
-	// 400
-	// {
-	//   "type": "https://example.com/errors/mismatched-signature",
-	//   "title": "mismatched signature",
-	//   "detail": "mismatched signature for request to `POST /` `same-key`",
-	//   "instance": "/"
-	// }
-	// 200
-	// Hello World! 2
 }
 
 func sendPOSTReq(ctx context.Context, server *httptest.Server, key, reqBody string) {
 	req, _ := http.NewRequestWithContext(ctx, http.MethodPost, server.URL, bytes.NewBufferString(reqBody))
-	req.Header.Set("X-Idempotency-Key", key)
+	req.Header.Set(idempotency.DefaultIdempotencyKeyHeader, key)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		fmt.Println(err)
+
+		return
 	}
 	defer resp.Body.Close()
 
@@ -114,6 +93,8 @@ func sendPOSTReq(ctx context.Context, server *httptest.Server, key, reqBody stri
 	body, errB := io.ReadAll(resp.Body)
 	if errB != nil {
 		fmt.Println(errB)
+
+		return
 	}
 
 	fmt.Println(string(body))

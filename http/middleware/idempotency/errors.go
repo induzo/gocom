@@ -18,13 +18,13 @@ func (e MissingIdempotencyKeyHeaderError) Error() string {
 	return fmt.Sprintf("missing idempotency key header `%s` for request to %s %s", e.ExpectedHeader, e.Method, e.URL)
 }
 
-type RequestStillInFlightError struct {
+type RequestInFlightError struct {
 	Method string
 	URL    string
 	Key    string
 }
 
-func (e RequestStillInFlightError) Error() string {
+func (e RequestInFlightError) Error() string {
 	return fmt.Sprintf("request to `%s %s` `%s` still in flight", e.Method, e.URL, e.Key)
 }
 
@@ -50,10 +50,30 @@ type ProblemDetail struct {
 }
 
 // ErrorToHTTPJSONProblemDetail converts an error to a RFC9457 problem detail.
-func ErrorToHTTPJSONProblemDetail(logger *slog.Logger, writer http.ResponseWriter, req *http.Request, err error) {
+// This is a sample errorToHTTPFn function that handles the specific errors encountered
+// You can add your own func and set it inside the config
+func ErrorToHTTPJSONProblemDetail(
+	logger *slog.Logger,
+	writer http.ResponseWriter,
+	req *http.Request,
+	key string,
+	err error,
+) {
 	var pbDetail ProblemDetail
 
-	url := req.URL.String()
+	method := http.MethodGet
+	url := ""
+
+	if req != nil {
+		method = req.Method
+		url = req.URL.String()
+	}
+
+	errorString := err.Error()
+
+	if logger == nil {
+		logger = slog.Default()
+	}
 
 	switch {
 	case errors.As(err, &MissingIdempotencyKeyHeaderError{}):
@@ -61,15 +81,15 @@ func ErrorToHTTPJSONProblemDetail(logger *slog.Logger, writer http.ResponseWrite
 			HTTPStatusCode: http.StatusBadRequest,
 			Type:           "https://example.com/errors/missing-idempotency-key-header",
 			Title:          "missing idempotency key header",
-			Detail:         err.Error(),
+			Detail:         errorString,
 			Instance:       url,
 		}
-	case errors.As(err, &RequestStillInFlightError{}):
+	case errors.As(err, &RequestInFlightError{}):
 		pbDetail = ProblemDetail{
 			HTTPStatusCode: http.StatusConflict,
 			Type:           "https://example.com/errors/request-already-in-flight",
 			Title:          "request already in flight",
-			Detail:         err.Error(),
+			Detail:         errorString,
 			Instance:       url,
 		}
 	case errors.As(err, &MismatchedSignatureError{}):
@@ -77,14 +97,15 @@ func ErrorToHTTPJSONProblemDetail(logger *slog.Logger, writer http.ResponseWrite
 			HTTPStatusCode: http.StatusBadRequest,
 			Type:           "https://example.com/errors/mismatched-signature",
 			Title:          "mismatched signature",
-			Detail:         err.Error(),
+			Detail:         errorString,
 			Instance:       url,
 		}
 	default:
 		logger.Error("unhandled error",
 			slog.Any("err", err),
-			slog.String("method", req.Method),
-			slog.String("url", req.URL.String()),
+			slog.String("method", method),
+			slog.String("url", url),
+			slog.String("key", key),
 		)
 
 		pbDetail = ProblemDetail{
@@ -108,8 +129,9 @@ func ErrorToHTTPJSONProblemDetail(logger *slog.Logger, writer http.ResponseWrite
 
 	if _, errW := writer.Write(resp); errW != nil {
 		logger.Error("failed writing response",
-			slog.String("method", req.Method),
-			slog.String("url", req.URL.String()),
+			slog.String("method", method),
+			slog.String("url", url),
+			slog.String("key", key),
 			slog.Any("err", errW),
 		)
 	}

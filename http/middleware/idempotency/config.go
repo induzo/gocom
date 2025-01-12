@@ -5,23 +5,21 @@ import (
 	"net/http"
 )
 
-const defaultIdempotencyKeyHeader = "X-Idempotency-Key"
+const DefaultIdempotencyKeyHeader = "X-Idempotency-Key"
 
 type config struct {
-	IdempotencyKeyIsOptional bool
+	idempotencyKeyIsOptional bool
 	idempotencyKeyHeader     string
-	whitelistedHeaders       []string
-	scopeExtractorFn         func(*http.Request) string
-	errorToHTTPFn            func(*slog.Logger, http.ResponseWriter, *http.Request, error)
+	fingerprinterFn          func(req *http.Request) ([]byte, error)
+	errorToHTTPFn            func(*slog.Logger, http.ResponseWriter, *http.Request, string, error)
 	logger                   *slog.Logger
 }
 
 func newDefaultConfig() *config {
 	return &config{
-		idempotencyKeyHeader: defaultIdempotencyKeyHeader,
-		whitelistedHeaders:   []string{"Content-Type"},
-		scopeExtractorFn:     func(*http.Request) string { return "" },
+		idempotencyKeyHeader: DefaultIdempotencyKeyHeader,
 		errorToHTTPFn:        ErrorToHTTPJSONProblemDetail,
 		logger:               slog.Default(),
+		fingerprinterFn:      buildRequestFingerprint,
 	}
 }

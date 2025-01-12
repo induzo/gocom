@@ -2,11 +2,11 @@ package idempotency
 
 import (
 	"context"
+	"net/http"
 	"testing"
 )
 
 func TestNewInMemStore(t *testing.T) {
-	// TestNewInMemStore tests the NewInMemStore function.
 	t.Parallel()
 
 	store := NewInMemStore()
@@ -16,19 +16,18 @@ func TestNewInMemStore(t *testing.T) {
 	}
 }
 
-func TestInMemStoreInsertInFlight(t *testing.T) {
-	// TestInMemStoreInsert tests the InMemStore.Insert method.
+func TestInMemStoreLock(t *testing.T) {
 	t.Parallel()
 
 	store := NewInMemStore()
 
 	tests := []struct {
-		name      string
-		key       string
-		sig       []byte
-		exists    bool
-		completed bool
-		wantErr   bool
+		name         string
+		key          string
+		sig          []byte
+		doesKeyExist bool
+		completed    bool
+		wantErr      bool
 	}{
 		{
 			name:    "key does not exist",
@@ -37,18 +36,11 @@ func TestInMemStoreInsertInFlight(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "key exists",
-			key:     "keyexists",
-			exists:  true,
-			sig:     []byte("signature"),
-			wantErr: true,
-		},
-		{
-			name:      "already completed",
-			key:       "keycompleted",
-			sig:       []byte("signature"),
-			completed: true,
-			wantErr:   true,
+			name:         "key exists",
+			key:          "doesKeyexist",
+			doesKeyExist: true,
+			sig:          []byte("signature"),
+			wantErr:      true,
 		},
 	}
 
@@ -56,59 +48,62 @@ func TestInMemStoreInsertInFlight(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			if tt.completed {
-				store.MarkComplete(context.Background(), tt.key, &StoredResponse{
-					StatusCode:       200,
-					Headers:          nil,
-					Body:             []byte("body"),
-					RequestSignature: []byte("signature"),
-				})
+			if tt.doesKeyExist {
+				store.locks.Store(tt.key, struct{}{})
 			}
 
-			if tt.exists {
-				store.InsertInFlight(context.Background(), tt.key, []byte("signature"))
+			_, cancel, err := store.TryLock(context.Background(), tt.key)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("error expected %t, got %v", tt.wantErr, err)
 			}
 
-			err := store.InsertInFlight(context.Background(), tt.key, tt.sig)
+			if cancel != nil {
+				cancel()
 
-			if err != nil && !tt.wantErr {
-				t.Errorf("unexpected error: %v", err)
-			}
-
-			if err == nil && tt.wantErr {
-				t.Error("expected error")
+				if _, ok := store.locks.Load(tt.key); ok {
+					t.Errorf("lock not removed for key %s", tt.key)
+				}
 			}
 		})
 	}
 }
 
-func TestInMemStoreGetInFlightSignature(t *testing.T) {
-	// TestInMemStoreGet tests the InMemStore.Get method.
+func TestInMemStoreStoreResponse(t *testing.T) {
 	t.Parallel()
 
 	store := NewInMemStore()
-	store.InsertInFlight(context.Background(), "key", []byte("signature"))
 
 	tests := []struct {
-		name    string
-		key     string
-		sig     []byte
-		ok      bool
-		wantErr bool
+		name         string
+		key          string
+		resp         *StoredResponse
+		doesKeyExist bool
+		wantErr      bool
 	}{
 		{
-			name:    "key exists",
-			key:     "key",
-			sig:     []byte("signature"),
-			ok:      true,
+			name: "key does not exist",
+			key:  "keynothere",
+			resp: &StoredResponse{
+				StatusCode:       http.StatusOK,
+				Headers:          nil,
+				Body:             []byte("body"),
+				RequestSignature: []byte("signature"),
+			},
+
 			wantErr: false,
 		},
 		{
-			name:    "key does not exist",
-			key:     "key2",
-			sig:     nil,
-			ok:      false,
-			wantErr: false,
+			name: "key exists",
+			key:  "doesKeyexist",
+			resp: &StoredResponse{
+				StatusCode:       http.StatusOK,
+				Headers:          nil,
+				Body:             []byte("body"),
+				RequestSignature: []byte("signature"),
+			},
+			doesKeyExist: true,
+			wantErr:      true,
 		},
 	}
 
@@ -116,64 +111,70 @@ func TestInMemStoreGetInFlightSignature(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			sig, ok, err := store.GetInFlightSignature(context.Background(), tt.key)
-
-			if err != nil && !tt.wantErr {
-				t.Errorf("unexpected error: %v", err)
+			if tt.doesKeyExist {
+				store.responses.Store(tt.key, struct{}{})
 			}
 
-			if err == nil && tt.wantErr {
-				t.Error("expected error")
+			err := store.StoreResponse(context.Background(), tt.key, tt.resp)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("error expected %t, got %v", tt.wantErr, err)
 			}
 
-			if ok != tt.ok {
-				t.Errorf("got ok %v, want %v", ok, tt.ok)
+			if tt.wantErr {
+				return
 			}
 
-			if string(sig) != string(tt.sig) {
-				t.Errorf("got sig %s, want %s", sig, tt.sig)
+			resp, ok := store.responses.Load(tt.key)
+			if !ok || resp == nil {
+				t.Errorf("response not stored for key %s", tt.key)
 			}
 		})
 	}
 }
 
 func TestInMemStoreGetStoredResponse(t *testing.T) {
-	// TestInMemStoreGet tests the InMemStore.Get method.
 	t.Parallel()
 
 	store := NewInMemStore()
-	store.MarkComplete(context.Background(), "key", &StoredResponse{
-		StatusCode:       200,
+
+	sampleStoredResponse := &StoredResponse{
+		StatusCode:       http.StatusOK,
 		Headers:          nil,
 		Body:             []byte("body"),
 		RequestSignature: []byte("signature"),
-	})
+	}
 
 	tests := []struct {
-		name    string
-		key     string
-		resp    *StoredResponse
-		ok      bool
-		wantErr bool
+		name           string
+		key            string
+		storedResponse any
+		expectedResp   *StoredResponse
+		ok             bool
+		wantErr        bool
 	}{
 		{
-			name: "key exists",
-			key:  "key",
-			resp: &StoredResponse{
-				StatusCode:       200,
-				Headers:          nil,
-				Body:             []byte("body"),
-				RequestSignature: []byte("signature"),
-			},
-			ok:      true,
-			wantErr: false,
+			name:           "key exists",
+			key:            "key",
+			storedResponse: sampleStoredResponse,
+			expectedResp:   sampleStoredResponse,
+			ok:             true,
+			wantErr:        false,
 		},
 		{
-			name:    "key does not exist",
-			key:     "key2",
-			resp:    nil,
-			ok:      false,
-			wantErr: false,
+			name:           "key does not exist",
+			key:            "key2",
+			storedResponse: nil,
+			expectedResp:   nil,
+			ok:             false,
+			wantErr:        false,
+		},
+		{
+			name:           "unexpected response type stored",
+			key:            "key3",
+			storedResponse: 1,
+			expectedResp:   nil,
+			ok:             false,
+			wantErr:        true,
 		},
 	}
 
@@ -181,73 +182,24 @@ func TestInMemStoreGetStoredResponse(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			resp, ok, err := store.GetStoredResponse(context.Background(), tt.key)
-
-			if err != nil && !tt.wantErr {
-				t.Errorf("unexpected error: %v", err)
+			if tt.storedResponse != nil {
+				store.responses.Store(tt.key, tt.storedResponse)
 			}
 
-			if err == nil && tt.wantErr {
-				t.Error("expected error")
+			resp, ok, err := store.GetStoredResponse(context.Background(), tt.key)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("error expected %t, got %v", tt.wantErr, err)
+
+				return
 			}
 
 			if ok != tt.ok {
 				t.Errorf("got ok %v, want %v", ok, tt.ok)
 			}
 
-			if resp != nil {
-				if resp.StatusCode != tt.resp.StatusCode {
-					t.Errorf("got status code %d, want %d", resp.StatusCode, tt.resp.StatusCode)
-				}
-
-				if string(resp.Body) != string(tt.resp.Body) {
-					t.Errorf("got body %s, want %s", resp.Body, tt.resp.Body)
-				}
-
-				if string(resp.RequestSignature) != string(tt.resp.RequestSignature) {
-					t.Errorf("got request signature %s, want %s", resp.RequestSignature, tt.resp.RequestSignature)
-				}
-			}
-		})
-	}
-}
-
-func TestInMemStoreRemoveInFlight(t *testing.T) {
-	// TestInMemStoreRemove tests the InMemStore.RemoveInFlight method.
-	t.Parallel()
-
-	store := NewInMemStore()
-	store.InsertInFlight(context.Background(), "key", []byte("signature"))
-
-	tests := []struct {
-		name    string
-		key     string
-		wantErr bool
-	}{
-		{
-			name:    "key exists",
-			key:     "key",
-			wantErr: false,
-		},
-		{
-			name:    "key does not exist",
-			key:     "key2",
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			err := store.RemoveInFlight(context.Background(), tt.key)
-
-			if err != nil && !tt.wantErr {
-				t.Errorf("unexpected error: %v", err)
-			}
-
-			if err == nil && tt.wantErr {
-				t.Error("expected error")
+			if resp != tt.expectedResp {
+				t.Errorf("got resp %v, want %v", resp, sampleStoredResponse)
 			}
 		})
 	}
