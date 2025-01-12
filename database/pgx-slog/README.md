@@ -10,12 +10,15 @@ Package slog provides a logger that writes to a go.uber.org/slog.Logger.
 
 ## Index
 
-- [type Logger](<#type-logger>)
-  - [func NewLogger(logger *slog.Logger) *Logger](<#func-newlogger>)
-  - [func (pl *Logger) Log(_ context.Context, level tracelog.LogLevel, msg string, data map[string]interface{})](<#func-logger-log>)
+- [type Logger](<#Logger>)
+  - [func NewLogger\(logger \*slog.Logger\) \*Logger](<#NewLogger>)
+  - [func \(pl \*Logger\) Log\(\_ context.Context, level tracelog.LogLevel, msg string, data map\[string\]interface\{\}\)](<#Logger.Log>)
 
 
-## type Logger
+<a name="Logger"></a>
+## type [Logger](<https://github.com/induzo/gocom/blob/main/database/pgx-slog/adapter.go#L11-L13>)
+
+
 
 ```go
 type Logger struct {
@@ -23,14 +26,19 @@ type Logger struct {
 }
 ```
 
-### func NewLogger
+<a name="NewLogger"></a>
+### func [NewLogger](<https://github.com/induzo/gocom/blob/main/database/pgx-slog/adapter.go#L15>)
 
 ```go
 func NewLogger(logger *slog.Logger) *Logger
 ```
 
+
+
 <details><summary>Example</summary>
 <p>
+
+
 
 ```go
 package main
@@ -62,7 +70,8 @@ func main() {
 </p>
 </details>
 
-### func \(\*Logger\) Log
+<a name="Logger.Log"></a>
+### func \(\*Logger\) [Log](<https://github.com/induzo/gocom/blob/main/database/pgx-slog/adapter.go#L19>)
 
 ```go
 func (pl *Logger) Log(_ context.Context, level tracelog.LogLevel, msg string, data map[string]interface{})
