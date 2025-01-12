@@ -1,6 +1,6 @@
 module github.com/induzo/gocom/http/middleware/idempotency
 
-go 1.22.4
+go 1.23
 
 require go.uber.org/goleak v1.3.0
 
