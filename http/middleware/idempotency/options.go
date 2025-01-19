@@ -38,3 +38,11 @@ func WithFingerprinter(fn func(*http.Request) ([]byte, error)) func(*config) {
 		c.fingerprinterFn = fn
 	}
 }
+
+// WithAffectedMethods sets the methods that are affected by idempotency.
+// By default, POST only are affected.
+func WithAffectedMethods(methods ...string) func(*config) {
+	return func(c *config) {
+		c.affectedMethods = methods
+	}
+}

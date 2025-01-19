@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 )
 
@@ -18,7 +19,7 @@ func NewMiddleware(store Store, options ...func(*config)) func(http.Handler) htt
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(respW http.ResponseWriter, req *http.Request) {
-			if isIdempotentMethod(req.Method) {
+			if !slices.Contains(conf.affectedMethods, req.Method) {
 				next.ServeHTTP(respW, req)
 
 				return
@@ -106,12 +107,6 @@ func NewMiddleware(store Store, options ...func(*config)) func(http.Handler) htt
 			}
 		})
 	}
-}
-
-func isIdempotentMethod(method string) bool {
-	return method != http.MethodPost &&
-		method != http.MethodPut &&
-		method != http.MethodPatch
 }
 
 func handleRequestWithIdempotency(
