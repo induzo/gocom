@@ -6,18 +6,23 @@
 import "github.com/induzo/gocom/http/middleware/idempotency"
 ```
 
-This package is an http middleware that does manage idempotency.
+Package idempotency provides an HTTP middleware for managing idempotency. Idempotency ensures that multiple identical requests have the same effect as making a single request, which is useful for operations like payment processing where duplicate requests could lead to unintended consequences. This package is an http middleware that does manage idempotency.
 
 ## Index
 
 - [Constants](<#constants>)
-- [func ErrorToHTTPJSONProblemDetail\(logger \*slog.Logger, writer http.ResponseWriter, req \*http.Request, key string, err error\)](<#ErrorToHTTPJSONProblemDetail>)
+- [func ErrorToHTTPJSONProblemDetail\(respW http.ResponseWriter, req \*http.Request, err error\)](<#ErrorToHTTPJSONProblemDetail>)
 - [func NewMiddleware\(store Store, options ...func\(\*config\)\) func\(http.Handler\) http.Handler](<#NewMiddleware>)
-- [func WithErrorToHTTPFn\(fn func\(\*slog.Logger, http.ResponseWriter, \*http.Request, string, error\)\) func\(\*config\)](<#WithErrorToHTTPFn>)
+- [func WithAffectedMethods\(methods ...string\) func\(\*config\)](<#WithAffectedMethods>)
+- [func WithErrorToHTTPFn\(fn func\(http.ResponseWriter, \*http.Request, error\)\) func\(\*config\)](<#WithErrorToHTTPFn>)
 - [func WithFingerprinter\(fn func\(\*http.Request\) \(\[\]byte, error\)\) func\(\*config\)](<#WithFingerprinter>)
 - [func WithIdempotencyKeyHeader\(header string\) func\(\*config\)](<#WithIdempotencyKeyHeader>)
-- [func WithLogger\(logger \*slog.Logger\) func\(\*config\)](<#WithLogger>)
+- [func WithIdempotentReplayedHeader\(header string\) func\(\*config\)](<#WithIdempotentReplayedHeader>)
 - [func WithOptionalIdempotencyKey\(\) func\(\*config\)](<#WithOptionalIdempotencyKey>)
+- [type ErrorToHTTPFn](<#ErrorToHTTPFn>)
+- [type GetStoredResponseError](<#GetStoredResponseError>)
+  - [func \(e GetStoredResponseError\) Error\(\) string](<#GetStoredResponseError.Error>)
+  - [func \(e GetStoredResponseError\) Unwrap\(\) error](<#GetStoredResponseError.Unwrap>)
 - [type InMemStore](<#InMemStore>)
   - [func NewInMemStore\(\) \*InMemStore](<#NewInMemStore>)
   - [func \(s \*InMemStore\) GetStoredResponse\(\_ context.Context, key string\) \(\*StoredResponse, bool, error\)](<#InMemStore.GetStoredResponse>)
@@ -28,9 +33,14 @@ This package is an http middleware that does manage idempotency.
 - [type MissingIdempotencyKeyHeaderError](<#MissingIdempotencyKeyHeaderError>)
   - [func \(e MissingIdempotencyKeyHeaderError\) Error\(\) string](<#MissingIdempotencyKeyHeaderError.Error>)
 - [type ProblemDetail](<#ProblemDetail>)
+- [type RequestContext](<#RequestContext>)
+  - [func \(idrc RequestContext\) String\(\) string](<#RequestContext.String>)
 - [type RequestInFlightError](<#RequestInFlightError>)
   - [func \(e RequestInFlightError\) Error\(\) string](<#RequestInFlightError.Error>)
 - [type Store](<#Store>)
+- [type StoreResponseError](<#StoreResponseError>)
+  - [func \(e StoreResponseError\) Error\(\) string](<#StoreResponseError.Error>)
+  - [func \(e StoreResponseError\) Unwrap\(\) error](<#StoreResponseError.Unwrap>)
 - [type StoredResponse](<#StoredResponse>)
 
 
@@ -39,14 +49,17 @@ This package is an http middleware that does manage idempotency.
 <a name="DefaultIdempotencyKeyHeader"></a>
 
 ```go
-const DefaultIdempotencyKeyHeader = "X-Idempotency-Key"
+const (
+    DefaultIdempotencyKeyHeader             = "X-Idempotency-Key"
+    DefaultIdempotentReplayedResponseHeader = "X-Idempotent-Replayed"
+)
 ```
 
 <a name="ErrorToHTTPJSONProblemDetail"></a>
-## func [ErrorToHTTPJSONProblemDetail](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L55-L61>)
+## func [ErrorToHTTPJSONProblemDetail](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L99-L103>)
 
 ```go
-func ErrorToHTTPJSONProblemDetail(logger *slog.Logger, writer http.ResponseWriter, req *http.Request, key string, err error)
+func ErrorToHTTPJSONProblemDetail(respW http.ResponseWriter, req *http.Request, err error)
 ```
 
 ErrorToHTTPJSONProblemDetail converts an error to a RFC9457 problem detail. This is a sample errorToHTTPFn function that handles the specific errors encountered You can add your own func and set it inside the config
@@ -86,7 +99,7 @@ import (
 // Using NewMiddleware
 func main() {
 	ctx := context.Background()
-	idempotencyMiddleware := idempotency.NewMiddleware(idempotency.NewInMemStore(DefaultStorageResponseTTL))
+	idempotencyMiddleware := idempotency.NewMiddleware(idempotency.NewInMemStore())
 	mux := http.NewServeMux()
 
 	counter := int32(0)
@@ -155,16 +168,16 @@ func sendPOSTReq(ctx context.Context, server *httptest.Server, key, reqBody stri
 ```
 400
 {
-  "type": "https://example.com/errors/missing-idempotency-key-header",
+  "type": "errors/missing-idempotency-key-header",
   "title": "missing idempotency key header",
-  "detail": "missing idempotency key header `X-Idempotency-Key` for request to POST /",
+  "detail": "missing idempotency key header `X-Idempotency-Key`",
   "instance": "/"
 }
 409
 {
-  "type": "https://example.com/errors/request-already-in-flight",
+  "type": "errors/request-already-in-flight",
   "title": "request already in flight",
-  "detail": "request to `POST /` `same-key` still in flight",
+  "detail": "request with key `X-Idempotency-Key`:`same-key` still in flight",
   "instance": "/"
 }
 200
@@ -176,17 +189,26 @@ Hello World! 1
 </p>
 </details>
 
-<a name="WithErrorToHTTPFn"></a>
-## func [WithErrorToHTTPFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L23>)
+<a name="WithAffectedMethods"></a>
+## func [WithAffectedMethods](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L44>)
 
 ```go
-func WithErrorToHTTPFn(fn func(*slog.Logger, http.ResponseWriter, *http.Request, string, error)) func(*config)
+func WithAffectedMethods(methods ...string) func(*config)
+```
+
+WithAffectedMethods sets the methods that are affected by idempotency. By default, POST only are affected.
+
+<a name="WithErrorToHTTPFn"></a>
+## func [WithErrorToHTTPFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L29>)
+
+```go
+func WithErrorToHTTPFn(fn func(http.ResponseWriter, *http.Request, error)) func(*config)
 ```
 
 WithErrorToHTTP sets a function to convert errors to HTTP status codes and content.
 
 <a name="WithFingerprinter"></a>
-## func [WithFingerprinter](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L37>)
+## func [WithFingerprinter](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L36>)
 
 ```go
 func WithFingerprinter(fn func(*http.Request) ([]byte, error)) func(*config)
@@ -195,7 +217,7 @@ func WithFingerprinter(fn func(*http.Request) ([]byte, error)) func(*config)
 WithFingerprinter sets a function to build a request fingerprint.
 
 <a name="WithIdempotencyKeyHeader"></a>
-## func [WithIdempotencyKeyHeader](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L9>)
+## func [WithIdempotencyKeyHeader](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L15>)
 
 ```go
 func WithIdempotencyKeyHeader(header string) func(*config)
@@ -203,17 +225,17 @@ func WithIdempotencyKeyHeader(header string) func(*config)
 
 WithIdempotencyKeyHeader sets the header to use for idempotency keys.
 
-<a name="WithLogger"></a>
-## func [WithLogger](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L30>)
+<a name="WithIdempotentReplayedHeader"></a>
+## func [WithIdempotentReplayedHeader](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L22>)
 
 ```go
-func WithLogger(logger *slog.Logger) func(*config)
+func WithIdempotentReplayedHeader(header string) func(*config)
 ```
 
-WithLogger sets the logger to use for logging.
+WithIdempotentReplayedHeader sets the header to use for idempotent replayed responses.
 
 <a name="WithOptionalIdempotencyKey"></a>
-## func [WithOptionalIdempotencyKey](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L16>)
+## func [WithOptionalIdempotencyKey](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L8>)
 
 ```go
 func WithOptionalIdempotencyKey() func(*config)
@@ -221,8 +243,47 @@ func WithOptionalIdempotencyKey() func(*config)
 
 WithOptionalIdempotencyKey sets the idempotency key to optional.
 
+<a name="ErrorToHTTPFn"></a>
+## type [ErrorToHTTPFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/config.go#L12>)
+
+
+
+```go
+type ErrorToHTTPFn func(http.ResponseWriter, *http.Request, error)
+```
+
+<a name="GetStoredResponseError"></a>
+## type [GetStoredResponseError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L68-L71>)
+
+
+
+```go
+type GetStoredResponseError struct {
+    RequestContext
+    Err error
+}
+```
+
+<a name="GetStoredResponseError.Error"></a>
+### func \(GetStoredResponseError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L73>)
+
+```go
+func (e GetStoredResponseError) Error() string
+```
+
+
+
+<a name="GetStoredResponseError.Unwrap"></a>
+### func \(GetStoredResponseError\) [Unwrap](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L81>)
+
+```go
+func (e GetStoredResponseError) Unwrap() error
+```
+
+
+
 <a name="InMemStore"></a>
-## type [InMemStore](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L11-L15>)
+## type [InMemStore](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L11-L16>)
 
 
 
@@ -233,16 +294,16 @@ type InMemStore struct {
 ```
 
 <a name="NewInMemStore"></a>
-### func [NewInMemStore](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L18>)
+### func [NewInMemStore](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L19>)
 
 ```go
-func NewInMemStore(DefaultStorageResponseTTL) *InMemStore
+func NewInMemStore() *InMemStore
 ```
 
 NewInMemStore initializes an in\-memory store.
 
 <a name="InMemStore.GetStoredResponse"></a>
-### func \(\*InMemStore\) [GetStoredResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L44>)
+### func \(\*InMemStore\) [GetStoredResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L56>)
 
 ```go
 func (s *InMemStore) GetStoredResponse(_ context.Context, key string) (*StoredResponse, bool, error)
@@ -251,7 +312,7 @@ func (s *InMemStore) GetStoredResponse(_ context.Context, key string) (*StoredRe
 
 
 <a name="InMemStore.StoreResponse"></a>
-### func \(\*InMemStore\) [StoreResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L36>)
+### func \(\*InMemStore\) [StoreResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L44>)
 
 ```go
 func (s *InMemStore) StoreResponse(_ context.Context, key string, resp *StoredResponse) error
@@ -260,7 +321,7 @@ func (s *InMemStore) StoreResponse(_ context.Context, key string, resp *StoredRe
 
 
 <a name="InMemStore.TryLock"></a>
-### func \(\*InMemStore\) [TryLock](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L25>)
+### func \(\*InMemStore\) [TryLock](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L34>)
 
 ```go
 func (s *InMemStore) TryLock(ctx context.Context, key string) (context.Context, context.CancelFunc, error)
@@ -269,20 +330,18 @@ func (s *InMemStore) TryLock(ctx context.Context, key string) (context.Context, 
 
 
 <a name="MismatchedSignatureError"></a>
-## type [MismatchedSignatureError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L31-L35>)
+## type [MismatchedSignatureError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L43-L45>)
 
 
 
 ```go
 type MismatchedSignatureError struct {
-    Method string
-    URL    string
-    Key    string
+    RequestContext
 }
 ```
 
 <a name="MismatchedSignatureError.Error"></a>
-### func \(MismatchedSignatureError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L37>)
+### func \(MismatchedSignatureError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L47>)
 
 ```go
 func (e MismatchedSignatureError) Error() string
@@ -291,20 +350,18 @@ func (e MismatchedSignatureError) Error() string
 
 
 <a name="MissingIdempotencyKeyHeaderError"></a>
-## type [MissingIdempotencyKeyHeaderError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L11-L15>)
+## type [MissingIdempotencyKeyHeaderError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L27-L29>)
 
 
 
 ```go
 type MissingIdempotencyKeyHeaderError struct {
-    Method         string
-    URL            string
-    ExpectedHeader string
+    RequestContext
 }
 ```
 
 <a name="MissingIdempotencyKeyHeaderError.Error"></a>
-### func \(MissingIdempotencyKeyHeaderError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L17>)
+### func \(MissingIdempotencyKeyHeaderError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L31>)
 
 ```go
 func (e MissingIdempotencyKeyHeaderError) Error() string
@@ -313,7 +370,7 @@ func (e MissingIdempotencyKeyHeaderError) Error() string
 
 
 <a name="ProblemDetail"></a>
-## type [ProblemDetail](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L42-L50>)
+## type [ProblemDetail](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L86-L94>)
 
 Conforming to RFC9457 \(https://www.rfc-editor.org/rfc/rfc9457.html\)
 
@@ -329,21 +386,40 @@ type ProblemDetail struct {
 }
 ```
 
+<a name="RequestContext"></a>
+## type [RequestContext](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L11-L14>)
+
+
+
+```go
+type RequestContext struct {
+    KeyHeader string
+    Key       string
+}
+```
+
+<a name="RequestContext.String"></a>
+### func \(RequestContext\) [String](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L16>)
+
+```go
+func (idrc RequestContext) String() string
+```
+
+
+
 <a name="RequestInFlightError"></a>
-## type [RequestInFlightError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L21-L25>)
+## type [RequestInFlightError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L35-L37>)
 
 
 
 ```go
 type RequestInFlightError struct {
-    Method string
-    URL    string
-    Key    string
+    RequestContext
 }
 ```
 
 <a name="RequestInFlightError.Error"></a>
-### func \(RequestInFlightError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L27>)
+### func \(RequestInFlightError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L39>)
 
 ```go
 func (e RequestInFlightError) Error() string
@@ -371,6 +447,36 @@ type Store interface {
 }
 ```
 
+<a name="StoreResponseError"></a>
+## type [StoreResponseError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L51-L54>)
+
+
+
+```go
+type StoreResponseError struct {
+    RequestContext
+    Err error
+}
+```
+
+<a name="StoreResponseError.Error"></a>
+### func \(StoreResponseError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L56>)
+
+```go
+func (e StoreResponseError) Error() string
+```
+
+
+
+<a name="StoreResponseError.Unwrap"></a>
+### func \(StoreResponseError\) [Unwrap](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L64>)
+
+```go
+func (e StoreResponseError) Unwrap() error
+```
+
+
+
 <a name="StoredResponse"></a>
 ## type [StoredResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/store.go#L9-L15>)
 
@@ -378,11 +484,11 @@ StoredResponse holds what we need to check and replay a response.
 
 ```go
 type StoredResponse struct {
-    StatusCode       int
-    Signature        []byte
-    Headers          http.Header
-    Body             []byte
-    RequestSignature []byte // To verify the same request payload
+    StatusCode  int
+    Signature   []byte
+    Header      http.Header
+    Body        []byte
+    RequestHash []byte // To verify the same request payload
 }
 ```
 
