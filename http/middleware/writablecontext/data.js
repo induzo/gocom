@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1735388660780,
+  "lastUpdate": 1737298979521,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -792,6 +792,54 @@ window.BENCHMARK_DATA = {
             "value": 5,
             "unit": "allocs/op",
             "extra": "2769775 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9deec515a7803c0ea74be4763a9a8de4b84fd91a",
+          "message": "feat(induzo/http/middleware/idempotency): new release\n\nfirst release",
+          "timestamp": "2025-01-19T23:02:25+08:00",
+          "tree_id": "35ff75ff2da2504331c6507021b75452335df59e",
+          "url": "https://github.com/induzo/gocom/commit/9deec515a7803c0ea74be4763a9a8de4b84fd91a"
+        },
+        "date": 1737298979241,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkFromRequest",
+            "value": 405.2,
+            "unit": "ns/op\t     718 B/op\t       5 allocs/op",
+            "extra": "2785888 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromRequest - ns/op",
+            "value": 405.2,
+            "unit": "ns/op",
+            "extra": "2785888 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromRequest - B/op",
+            "value": 718,
+            "unit": "B/op",
+            "extra": "2785888 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromRequest - allocs/op",
+            "value": 5,
+            "unit": "allocs/op",
+            "extra": "2785888 times\n4 procs"
           }
         ]
       }
