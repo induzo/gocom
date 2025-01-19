@@ -10,18 +10,21 @@ This package allows you to gracefully shutdown your app.
 
 ## Index
 
-- [type Hook](<#type-hook>)
-- [type Option](<#type-option>)
-  - [func WithGracePeriodDuration(gracePeriodDuration time.Duration) Option](<#func-withgraceperiodduration>)
-  - [func WithHooks(hooks []Hook) Option](<#func-withhooks>)
-- [type Shutdown](<#type-shutdown>)
-  - [func New(logger *slog.Logger, opts ...Option) *Shutdown](<#func-new>)
-  - [func (s *Shutdown) Add(name string, fn func(ctx context.Context) error)](<#func-shutdown-add>)
-  - [func (s *Shutdown) Hooks() []Hook](<#func-shutdown-hooks>)
-  - [func (s *Shutdown) Listen(ctx context.Context, signals ...os.Signal) error](<#func-shutdown-listen>)
+- [type Hook](<#Hook>)
+- [type HookOption](<#HookOption>)
+  - [func Before\(before string\) HookOption](<#Before>)
+- [type Option](<#Option>)
+  - [func WithGracePeriodDuration\(gracePeriodDuration time.Duration\) Option](<#WithGracePeriodDuration>)
+  - [func WithHooks\(hooks \[\]Hook\) Option](<#WithHooks>)
+- [type Shutdown](<#Shutdown>)
+  - [func New\(logger \*slog.Logger, opts ...Option\) \*Shutdown](<#New>)
+  - [func \(s \*Shutdown\) Add\(name string, shutdownFunc func\(ctx context.Context\) error, hookOpts ...HookOption\)](<#Shutdown.Add>)
+  - [func \(s \*Shutdown\) Hooks\(\) \[\]Hook](<#Shutdown.Hooks>)
+  - [func \(s \*Shutdown\) Listen\(ctx context.Context, signals ...os.Signal\) error](<#Shutdown.Listen>)
 
 
-## type Hook
+<a name="Hook"></a>
+## type [Hook](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L18-L22>)
 
 Hook is a shutdown hook that will be called when signal is received.
 
@@ -29,10 +32,30 @@ Hook is a shutdown hook that will be called when signal is received.
 type Hook struct {
     Name       string
     ShutdownFn func(ctx context.Context) error
+    // contains filtered or unexported fields
 }
 ```
 
-## type Option
+<a name="HookOption"></a>
+## type [HookOption](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L76>)
+
+
+
+```go
+type HookOption func(*Hook)
+```
+
+<a name="Before"></a>
+### func [Before](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L78>)
+
+```go
+func Before(before string) HookOption
+```
+
+
+
+<a name="Option"></a>
+## type [Option](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L34>)
 
 Option is the options type to configure Shutdown.
 
@@ -40,7 +63,8 @@ Option is the options type to configure Shutdown.
 type Option func(*Shutdown)
 ```
 
-### func WithGracePeriodDuration
+<a name="WithGracePeriodDuration"></a>
+### func [WithGracePeriodDuration](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L70>)
 
 ```go
 func WithGracePeriodDuration(gracePeriodDuration time.Duration) Option
@@ -48,7 +72,8 @@ func WithGracePeriodDuration(gracePeriodDuration time.Duration) Option
 
 WithGracePeriodDuration sets the grace period for all shutdown hooks to finish running. If not used, the default grace period is 30s.
 
-### func WithHooks
+<a name="WithHooks"></a>
+### func [WithHooks](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L54>)
 
 ```go
 func WithHooks(hooks []Hook) Option
@@ -56,7 +81,8 @@ func WithHooks(hooks []Hook) Option
 
 WithHooks adds the hooks to be run as part of the graceful shutdown.
 
-## type Shutdown
+<a name="Shutdown"></a>
+## type [Shutdown](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L25-L31>)
 
 Shutdown provides a way to listen for signals and handle shutdown of an application gracefully.
 
@@ -68,6 +94,8 @@ type Shutdown struct {
 
 <details><summary>Example</summary>
 <p>
+
+
 
 ```go
 package main
@@ -96,7 +124,7 @@ func main() {
 			[]shutdown.Hook{
 				{
 					Name: "do something",
-					ShutdownFn: func(ctx context.Context) error {
+					ShutdownFn: func(_ context.Context) error {
 						return nil
 					},
 				},
@@ -134,7 +162,8 @@ func main() {
 </p>
 </details>
 
-### func New
+<a name="New"></a>
+### func [New](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L37>)
 
 ```go
 func New(logger *slog.Logger, opts ...Option) *Shutdown
@@ -142,30 +171,31 @@ func New(logger *slog.Logger, opts ...Option) *Shutdown
 
 New returns a new Shutdown with the provided options.
 
-### func \(\*Shutdown\) Add
+<a name="Shutdown.Add"></a>
+### func \(\*Shutdown\) [Add](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L87>)
 
 ```go
-func (s *Shutdown) Add(name string, fn func(ctx context.Context) error)
+func (s *Shutdown) Add(name string, shutdownFunc func(ctx context.Context) error, hookOpts ...HookOption)
 ```
 
 Add adds a shutdown hook to be run when the signal is received.
 
-### func \(\*Shutdown\) Hooks
+<a name="Shutdown.Hooks"></a>
+### func \(\*Shutdown\) [Hooks](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L105>)
 
 ```go
 func (s *Shutdown) Hooks() []Hook
 ```
 
-Hooks returns a copy of the shutdown hooks.
+Hooks returns a copy of the shutdown hooks, taking into account the before option
 
-### func \(\*Shutdown\) Listen
+<a name="Shutdown.Listen"></a>
+### func \(\*Shutdown\) [Listen](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L183>)
 
 ```go
 func (s *Shutdown) Listen(ctx context.Context, signals ...os.Signal) error
 ```
 
 Listen waits for the signals provided and executes each shutdown hook sequentially in FILO order. It will immediately stop and return once the grace period has passed.
-
-
 
 Generated by [gomarkdoc](<https://github.com/princjef/gomarkdoc>)

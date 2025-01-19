@@ -202,10 +202,6 @@ desc = "please use errors from std lib"
 pkg = "gorm.io/gorm"
 desc = "please use pgx and learn sql"
 
-[[linters-settings.depguard.rules.main.deny]]
-pkg = "encoding/json"
-desc = "please use github.com/goccy/go-json instead"
-
 # [linters-settings.depguard.rules.test]
 # list-mode = "lax"
 
@@ -253,6 +249,7 @@ linters = [
     "gochecknoglobals",
     "errorlint",
     "forcetypeassert",
+    "maintidx",
 ]
 
 [[issues.exclude-rules]]
