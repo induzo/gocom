@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1737298974718,
+  "lastUpdate": 1737993461451,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -1762,6 +1762,54 @@ window.BENCHMARK_DATA = {
           {
             "name": "BenchmarkShutdown - B/op",
             "value": 1993,
+            "unit": "B/op",
+            "extra": "94 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkShutdown - allocs/op",
+            "value": 31,
+            "unit": "allocs/op",
+            "extra": "94 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b53b2184bead7ee0a4b79e2c83cfc454f7d7f097",
+          "message": "feat: induzo/http/middleware/idempostores/valkeydempotency\n\nhttp/middleware/idempostores/valkeydempotency",
+          "timestamp": "2025-01-27T23:57:08+08:00",
+          "tree_id": "7088bc1883298039a8e513cea4e2b7bd83cafe39",
+          "url": "https://github.com/induzo/gocom/commit/b53b2184bead7ee0a4b79e2c83cfc454f7d7f097"
+        },
+        "date": 1737993460876,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkShutdown",
+            "value": 12417121,
+            "unit": "ns/op\t    2008 B/op\t      31 allocs/op",
+            "extra": "94 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkShutdown - ns/op",
+            "value": 12417121,
+            "unit": "ns/op",
+            "extra": "94 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkShutdown - B/op",
+            "value": 2008,
             "unit": "B/op",
             "extra": "94 times\n4 procs"
           },
