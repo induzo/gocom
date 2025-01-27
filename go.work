@@ -1,12 +1,11 @@
-go 1.23
-
-toolchain go1.23.4
+go 1.23.5
 
 use (
 	./database/pginit
 	./database/pgx-slog
 	./database/redisinit
 	./http/health
+	./http/middleware/idempostores/valkeydempotency
 	./http/middleware/idempotency
 	./http/middleware/writablecontext
 	./shutdown
