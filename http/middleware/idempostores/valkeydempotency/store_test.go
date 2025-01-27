@@ -288,3 +288,39 @@ func TestStoreGetStoredResponse(t *testing.T) {
 		})
 	}
 }
+
+// bench
+func BenchmarkStoreStoreResponse(b *testing.B) {
+	b.ReportAllocs()
+
+	storeValkey, errNS := NewStore(
+		&valkeylock.LockerOption{
+			ClientOption:   valkey.ClientOption{InitAddress: []string{testValkeyPortHost}},
+			KeyMajority:    1,    // Use KeyMajority=1 if you have only one Valkey instance. Also make sure that all your `Locker`s share the same KeyMajority.
+			NoLoopTracking: true, // Enable this to have better performance if all your Valkey are >= 7.0.5.
+		},
+		1*time.Second,
+	)
+	if errNS != nil {
+		b.Fatalf("NewStore() error = %v", errNS)
+	}
+
+	defer storeValkey.Close()
+
+	b.ResetTimer()
+
+	for range b.N {
+		ctx := context.Background()
+
+		ctx, cancel, _ := storeValkey.TryLock(ctx, "key")
+
+		storeValkey.StoreResponse(ctx, "key", &idempotency.StoredResponse{
+			StatusCode:  http.StatusOK,
+			Header:      nil,
+			Body:        []byte("body"),
+			RequestHash: []byte("signature"),
+		})
+
+		cancel()
+	}
+}
