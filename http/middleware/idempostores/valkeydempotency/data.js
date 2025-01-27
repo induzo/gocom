@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1737993478010,
+  "lastUpdate": 1737993731323,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -48,6 +48,54 @@ window.BENCHMARK_DATA = {
             "value": 40,
             "unit": "allocs/op",
             "extra": "2510 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "0a3876ff1370f4bbb23baf9a0600319009d11982",
+          "message": "docs: add new module to readme",
+          "timestamp": "2025-01-28T00:00:53+08:00",
+          "tree_id": "207f6db7311a11ba849f7f241bf61aea250df829",
+          "url": "https://github.com/induzo/gocom/commit/0a3876ff1370f4bbb23baf9a0600319009d11982"
+        },
+        "date": 1737993730263,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkStoreStoreResponse",
+            "value": 468759,
+            "unit": "ns/op\t    2638 B/op\t      40 allocs/op",
+            "extra": "2408 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - ns/op",
+            "value": 468759,
+            "unit": "ns/op",
+            "extra": "2408 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - B/op",
+            "value": 2638,
+            "unit": "B/op",
+            "extra": "2408 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - allocs/op",
+            "value": 40,
+            "unit": "allocs/op",
+            "extra": "2408 times\n4 procs"
           }
         ]
       }
