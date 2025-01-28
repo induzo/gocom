@@ -12,13 +12,7 @@ Package idempotency provides an HTTP middleware for managing idempotency. Idempo
 
 - [Constants](<#constants>)
 - [func ErrorToHTTPJSONProblemDetail\(respW http.ResponseWriter, req \*http.Request, err error\)](<#ErrorToHTTPJSONProblemDetail>)
-- [func NewMiddleware\(store Store, options ...func\(\*config\)\) func\(http.Handler\) http.Handler](<#NewMiddleware>)
-- [func WithAffectedMethods\(methods ...string\) func\(\*config\)](<#WithAffectedMethods>)
-- [func WithErrorToHTTPFn\(fn func\(http.ResponseWriter, \*http.Request, error\)\) func\(\*config\)](<#WithErrorToHTTPFn>)
-- [func WithFingerprinter\(fn func\(\*http.Request\) \(\[\]byte, error\)\) func\(\*config\)](<#WithFingerprinter>)
-- [func WithIdempotencyKeyHeader\(header string\) func\(\*config\)](<#WithIdempotencyKeyHeader>)
-- [func WithIdempotentReplayedHeader\(header string\) func\(\*config\)](<#WithIdempotentReplayedHeader>)
-- [func WithOptionalIdempotencyKey\(\) func\(\*config\)](<#WithOptionalIdempotencyKey>)
+- [func NewMiddleware\(store Store, options ...Option\) func\(http.Handler\) http.Handler](<#NewMiddleware>)
 - [type ErrorToHTTPFn](<#ErrorToHTTPFn>)
 - [type GetStoredResponseError](<#GetStoredResponseError>)
   - [func \(e GetStoredResponseError\) Error\(\) string](<#GetStoredResponseError.Error>)
@@ -32,6 +26,13 @@ Package idempotency provides an HTTP middleware for managing idempotency. Idempo
   - [func \(e MismatchedSignatureError\) Error\(\) string](<#MismatchedSignatureError.Error>)
 - [type MissingIdempotencyKeyHeaderError](<#MissingIdempotencyKeyHeaderError>)
   - [func \(e MissingIdempotencyKeyHeaderError\) Error\(\) string](<#MissingIdempotencyKeyHeaderError.Error>)
+- [type Option](<#Option>)
+  - [func WithAffectedMethods\(methods ...string\) Option](<#WithAffectedMethods>)
+  - [func WithErrorToHTTPFn\(fn func\(http.ResponseWriter, \*http.Request, error\)\) Option](<#WithErrorToHTTPFn>)
+  - [func WithFingerprinter\(fn func\(\*http.Request\) \(\[\]byte, error\)\) Option](<#WithFingerprinter>)
+  - [func WithIdempotencyKeyHeader\(header string\) Option](<#WithIdempotencyKeyHeader>)
+  - [func WithIdempotentReplayedHeader\(header string\) Option](<#WithIdempotentReplayedHeader>)
+  - [func WithOptionalIdempotencyKey\(\) Option](<#WithOptionalIdempotencyKey>)
 - [type ProblemDetail](<#ProblemDetail>)
 - [type RequestContext](<#RequestContext>)
   - [func \(idrc RequestContext\) String\(\) string](<#RequestContext.String>)
@@ -68,7 +69,7 @@ ErrorToHTTPJSONProblemDetail converts an error to a RFC9457 problem detail. This
 ## func [NewMiddleware](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/middleware.go#L13>)
 
 ```go
-func NewMiddleware(store Store, options ...func(*config)) func(http.Handler) http.Handler
+func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handler
 ```
 
 Middleware enforces idempotency on non\-GET requests.
@@ -188,60 +189,6 @@ Hello World! 1
 
 </p>
 </details>
-
-<a name="WithAffectedMethods"></a>
-## func [WithAffectedMethods](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L44>)
-
-```go
-func WithAffectedMethods(methods ...string) func(*config)
-```
-
-WithAffectedMethods sets the methods that are affected by idempotency. By default, POST only are affected.
-
-<a name="WithErrorToHTTPFn"></a>
-## func [WithErrorToHTTPFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L29>)
-
-```go
-func WithErrorToHTTPFn(fn func(http.ResponseWriter, *http.Request, error)) func(*config)
-```
-
-WithErrorToHTTP sets a function to convert errors to HTTP status codes and content.
-
-<a name="WithFingerprinter"></a>
-## func [WithFingerprinter](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L36>)
-
-```go
-func WithFingerprinter(fn func(*http.Request) ([]byte, error)) func(*config)
-```
-
-WithFingerprinter sets a function to build a request fingerprint.
-
-<a name="WithIdempotencyKeyHeader"></a>
-## func [WithIdempotencyKeyHeader](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L15>)
-
-```go
-func WithIdempotencyKeyHeader(header string) func(*config)
-```
-
-WithIdempotencyKeyHeader sets the header to use for idempotency keys.
-
-<a name="WithIdempotentReplayedHeader"></a>
-## func [WithIdempotentReplayedHeader](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L22>)
-
-```go
-func WithIdempotentReplayedHeader(header string) func(*config)
-```
-
-WithIdempotentReplayedHeader sets the header to use for idempotent replayed responses.
-
-<a name="WithOptionalIdempotencyKey"></a>
-## func [WithOptionalIdempotencyKey](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L8>)
-
-```go
-func WithOptionalIdempotencyKey() func(*config)
-```
-
-WithOptionalIdempotencyKey sets the idempotency key to optional.
 
 <a name="ErrorToHTTPFn"></a>
 ## type [ErrorToHTTPFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/config.go#L12>)
@@ -368,6 +315,69 @@ func (e MissingIdempotencyKeyHeaderError) Error() string
 ```
 
 
+
+<a name="Option"></a>
+## type [Option](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L7>)
+
+
+
+```go
+type Option func(*config)
+```
+
+<a name="WithAffectedMethods"></a>
+### func [WithAffectedMethods](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L46>)
+
+```go
+func WithAffectedMethods(methods ...string) Option
+```
+
+WithAffectedMethods sets the methods that are affected by idempotency. By default, POST only are affected.
+
+<a name="WithErrorToHTTPFn"></a>
+### func [WithErrorToHTTPFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L31>)
+
+```go
+func WithErrorToHTTPFn(fn func(http.ResponseWriter, *http.Request, error)) Option
+```
+
+WithErrorToHTTP sets a function to convert errors to HTTP status codes and content.
+
+<a name="WithFingerprinter"></a>
+### func [WithFingerprinter](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L38>)
+
+```go
+func WithFingerprinter(fn func(*http.Request) ([]byte, error)) Option
+```
+
+WithFingerprinter sets a function to build a request fingerprint.
+
+<a name="WithIdempotencyKeyHeader"></a>
+### func [WithIdempotencyKeyHeader](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L17>)
+
+```go
+func WithIdempotencyKeyHeader(header string) Option
+```
+
+WithIdempotencyKeyHeader sets the header to use for idempotency keys.
+
+<a name="WithIdempotentReplayedHeader"></a>
+### func [WithIdempotentReplayedHeader](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L24>)
+
+```go
+func WithIdempotentReplayedHeader(header string) Option
+```
+
+WithIdempotentReplayedHeader sets the header to use for idempotent replayed responses.
+
+<a name="WithOptionalIdempotencyKey"></a>
+### func [WithOptionalIdempotencyKey](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L10>)
+
+```go
+func WithOptionalIdempotencyKey() Option
+```
+
+WithOptionalIdempotencyKey sets the idempotency key to optional.
 
 <a name="ProblemDetail"></a>
 ## type [ProblemDetail](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L86-L94>)
