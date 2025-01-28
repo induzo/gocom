@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/pgx-slog/v1.0.19] - 2025-01-28
+
+### Documentation
+
+- Update docs for module database/pgx-slog
+
+### Features
+
+- New release
+
+### Miscellaneous Tasks
+
+- Update deps
+
+### Testing
+
+- Add more coverage
+
+## [database/pgx-slog/v1.0.18] - 2024-12-28
+
+### Documentation
+
+- Update CHANGELOG.md for database/pgx-slog/v1.0.18
+
 ## [database/pgx-slog/v1.0.17] - 2024-12-28
 
 ### Bug Fixes
