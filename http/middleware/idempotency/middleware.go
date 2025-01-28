@@ -10,7 +10,7 @@ import (
 )
 
 // Middleware enforces idempotency on non-GET requests.
-func NewMiddleware(store Store, options ...func(*config)) func(http.Handler) http.Handler {
+func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handler {
 	conf := newDefaultConfig()
 
 	for _, opt := range options {

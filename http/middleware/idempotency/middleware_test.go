@@ -46,7 +46,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 		name                             string
 		reqProcessingTime                time.Duration
 		reqws                            []req
-		options                          []func(*config)
+		options                          []Option
 		withFaultyStoreResponseStore     bool
 		withFaultyGetStoredResponseStore bool
 		expectedResp                     map[int]resp
@@ -103,7 +103,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 					body:    "hola",
 				},
 			},
-			options: []func(*config){WithOptionalIdempotencyKey()},
+			options: []Option{WithOptionalIdempotencyKey()},
 			expectedResp: map[int]resp{
 				0: {
 					key:    "onekey",
@@ -252,7 +252,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 					body:    "hola",
 				},
 			},
-			options: []func(*config){
+			options: []Option{
 				WithFingerprinter(
 					func(_ *http.Request) ([]byte, error) {
 						return nil, errors.New("fingerprinter error")
@@ -285,7 +285,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 					body:    "hola",
 				},
 			},
-			options: []func(*config){
+			options: []Option{
 				WithFingerprinter(
 					func(_ *http.Request) ([]byte, error) {
 						return []byte(time.Now().Format(time.RFC3339Nano)), nil
@@ -356,7 +356,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			options := append([]func(*config){WithErrorToHTTPFn(errorToString)}, tt.options...)
+			options := append([]Option{WithErrorToHTTPFn(errorToString)}, tt.options...)
 
 			store := NewInMemStore()
 
