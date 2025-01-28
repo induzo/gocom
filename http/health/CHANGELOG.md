@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/health/v1.1.12] - 2025-01-28
+
+### Documentation
+
+- Update docs for module http/health
+
+### Features
+
+- New release
+
+### Miscellaneous Tasks
+
+- Update deps
+- Update deps
+
+### Testing
+
+- Add more coverage
+
 ## [http/health/v1.1.11] - 2024-12-28
 
 ### Bug Fixes
@@ -11,6 +30,7 @@ All notable changes to this project will be documented in this file.
 ### Documentation
 
 - Update CHANGELOG.md for http/health/v1.1.10
+- Update CHANGELOG.md for http/health/v1.1.11
 
 ### Features
 
