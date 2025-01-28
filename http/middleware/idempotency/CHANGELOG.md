@@ -2,13 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [http/middleware/idempotency/v0.1.0] - 2025-01-19
+## [http/middleware/idempotency/v0.1.1] - 2025-01-28
 
 ### Documentation
 
 - Update docs for module http/middleware/idempotency
 - Update docs for module http/middleware/idempotency
 - Add details in the package file
+- Update CHANGELOG.md for http/middleware/idempotency/v0.1.0
+- Update docs for module http/middleware/idempotency
 
 ### Features
 
@@ -18,6 +20,7 @@ All notable changes to this project will be documented in this file.
 - Benchmark
 - Add affected methods
 - New release
+- Add Option type for idempotency middleware
 
 ### Miscellaneous Tasks
 
