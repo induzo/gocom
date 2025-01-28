@@ -1,9 +1,9 @@
-name: "Bench http/middleware/idempostores/valkeydempotency"
+name: "Bench http/middleware/valkeydempotency"
 
 on:
   push:
     paths:
-      - "http/middleware/idempostores/valkeydempotency/**"
+      - "http/middleware/valkeydempotency/**"
       - ".github/workflows/**"
     branches: [main]
 
@@ -26,7 +26,7 @@ jobs:
           fetch-depth: 1
       # Run benchmark with `go test -bench` and stores the output to a file
       - name: Run benchmark
-        working-directory: http/middleware/idempostores/valkeydempotency
+        working-directory: http/middleware/valkeydempotency
         env:
           GOPRIVATE: "github.com/induzo/*"
         run: |
@@ -37,15 +37,15 @@ jobs:
         uses: benchmark-action/github-action-benchmark@v1
         with:
           tool: "go"
-          output-file-path: ./http/middleware/idempostores/valkeydempotency/bench-continuous.txt
+          output-file-path: ./http/middleware/valkeydempotency/bench-continuous.txt
           # Workflow will fail when an alert happens
           fail-on-alert: false
           # GitHub API token to make a commit comment
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # Enable alert commit comment
           comment-on-alert: true
-          benchmark-data-dir-path: ./http/middleware/idempostores/valkeydempotency/
+          benchmark-data-dir-path: ./http/middleware/valkeydempotency/
           # When cache is used
-          # external-data-json-path: ./cache/http/middleware/idempostores/valkeydempotency/benchmark-data.json
+          # external-data-json-path: ./cache/http/middleware/valkeydempotency/benchmark-data.json
           # Push and deploy GitHub pages branch automatically
           auto-push: true
