@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/pginit/v2.2.14] - 2025-01-28
+
+### Documentation
+
+- Update docs pginit and secrets baseline
+
+### Features
+
+- New release
+- Induzo/http/middleware/idempostores/valkeydempotency
+
+### Miscellaneous Tasks
+
+- Work sync
+- Update deps
+
+## [database/pginit/v2.2.13] - 2024-12-28
+
+### Documentation
+
+- Update CHANGELOG.md for database/pginit/v2.2.13
+
 ## [database/pginit/v2.2.12] - 2024-12-28
 
 ### Bug Fixes
