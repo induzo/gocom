@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1737993482622,
+  "lastUpdate": 1738051022704,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -1794,6 +1794,54 @@ window.BENCHMARK_DATA = {
             "value": 7,
             "unit": "allocs/op",
             "extra": "8746 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "5c7f76422ddd1049915e735244051148d006b083",
+          "message": "docs(changelog): update CHANGELOG.md for http/health/v1.1.12",
+          "timestamp": "2025-01-28T15:55:24+08:00",
+          "tree_id": "6037f2a6291e4114522f39b2f8b9a62e98a49aa2",
+          "url": "https://github.com/induzo/gocom/commit/5c7f76422ddd1049915e735244051148d006b083"
+        },
+        "date": 1738051021667,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkXxx",
+            "value": 118130,
+            "unit": "ns/op\t     177 B/op\t       7 allocs/op",
+            "extra": "10144 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkXxx - ns/op",
+            "value": 118130,
+            "unit": "ns/op",
+            "extra": "10144 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkXxx - B/op",
+            "value": 177,
+            "unit": "B/op",
+            "extra": "10144 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkXxx - allocs/op",
+            "value": 7,
+            "unit": "allocs/op",
+            "extra": "10144 times\n4 procs"
           }
         ]
       }
