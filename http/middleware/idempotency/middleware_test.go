@@ -323,7 +323,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 				0: {
 					key:    "onekey",
 					status: http.StatusOK,
-					body:   "hola",
+					body:   "holaStoreResponseError: error storing response: store error",
 				},
 			},
 			expectedCounter: 1,
@@ -542,14 +542,13 @@ func errorToString(
 	case errors.As(err, &MissingIdempotencyKeyHeaderError{}):
 		http.Error(writer, "MissingIdempotencyKeyHeaderError", http.StatusBadRequest)
 	case errors.As(err, &RequestInFlightError{}):
-		fmt.Println("inflight")
 		http.Error(writer, "RequestInFlightError", http.StatusConflict)
 	case errors.As(err, &MismatchedSignatureError{}):
 		http.Error(writer, "MismatchedSignatureError", http.StatusBadRequest)
 	case errors.As(err, &StoreResponseError{}):
-		http.Error(writer, "", http.StatusOK)
+		http.Error(writer, fmt.Sprintf("StoreResponseError: %v", err), http.StatusOK)
 	case errors.As(err, &GetStoredResponseError{}):
-		http.Error(writer, "internal server error", http.StatusInternalServerError)
+		http.Error(writer, fmt.Sprintf("internal server error: %v", err), http.StatusInternalServerError)
 	default:
 		http.Error(
 			writer,

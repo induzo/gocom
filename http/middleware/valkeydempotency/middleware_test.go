@@ -15,9 +15,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/induzo/gocom/http/middleware/idempotency"
 	"github.com/valkey-io/valkey-go"
 	"github.com/valkey-io/valkey-go/valkeylock"
+
+	"github.com/induzo/gocom/http/middleware/idempotency"
 )
 
 func TestNewMiddleware(t *testing.T) {
@@ -39,6 +40,18 @@ func TestNewMiddleware(t *testing.T) {
 
 	if idempotencyMiddleware == nil {
 		t.Error("NewMiddleware returned nil")
+	}
+
+	_, _, errF := NewMiddleware(
+		&valkeylock.LockerOption{
+			ClientOption:   valkey.ClientOption{InitAddress: []string{"zzz"}},
+			KeyMajority:    -1,   // Use KeyMajority=1 if you have only one Valkey instance. Also make sure that all your `Locker`s share the same KeyMajority.
+			NoLoopTracking: true, // Enable this to have better performance if all your Valkey are >= 7.0.5.
+		},
+		1*time.Second,
+	)
+	if errF == nil {
+		t.Fatalf("NewMiddleware: %v", errM)
 	}
 }
 
@@ -66,70 +79,69 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 		expectedResp      map[int]resp
 		expectedCounter   int
 	}{
-		// {
-		// 	name:              "1 request",
-		// 	reqProcessingTime: 0,
-		// 	reqws: []req{
-		// 		{
-		// 			method:  http.MethodPost,
-		// 			key:     "onekey",
-		// 			startAt: 0,
-		// 			body:    "hola",
-		// 		},
-		// 	},
-		// 	options: nil,
-		// 	expectedResp: map[int]resp{
-		// 		0: {
-		// 			key:    "onekey",
-		// 			status: http.StatusOK,
-		// 			body:   "hola",
-		// 		},
-		// 	},
-		// 	expectedCounter: 1,
-		// },
-		// {
-		// 	name:              "1 request, missing idempot header",
-		// 	reqProcessingTime: 0,
-		// 	reqws: []req{
-		// 		{
-		// 			method:  http.MethodPost,
-		// 			startAt: 0,
-		// 			body:    "hola",
-		// 		},
-		// 	},
-		// 	options: nil,
-		// 	expectedResp: map[int]resp{
-		// 		0: {
-		// 			key:    "",
-		// 			status: http.StatusBadRequest,
-		// 			body:   "MissingIdempotencyKeyHeaderError",
-		// 		},
-		// 	},
-		// 	expectedCounter: 0,
-		// },
-		// {
-		// 	name:              "1 request, missing idempot header, but optional",
-		// 	reqProcessingTime: 0,
-		// 	reqws: []req{
-		// 		{
-		// 			method:  http.MethodPost,
-		// 			startAt: 0,
-		// 			body:    "hola",
-		// 		},
-		// 	},
-		// 	options: []idempotency.Option{idempotency.WithOptionalIdempotencyKey()},
-		// 	expectedResp: map[int]resp{
-		// 		0: {
-		// 			key:    "onekey",
-		// 			status: http.StatusOK,
-		// 			body:   "hola",
-		// 		},
-		// 	},
-		// 	expectedCounter: 1,
-		// },
+		{
+			name:              "1 request",
+			reqProcessingTime: 0,
+			reqws: []req{
+				{
+					method:  http.MethodPost,
+					key:     "onekey",
+					startAt: 0,
+					body:    "hola",
+				},
+			},
+			options: nil,
+			expectedResp: map[int]resp{
+				0: {
+					key:    "onekey",
+					status: http.StatusOK,
+					body:   "hola",
+				},
+			},
+			expectedCounter: 1,
+		},
+		{
+			name:              "1 request, missing idempot header",
+			reqProcessingTime: 0,
+			reqws: []req{
+				{
+					method:  http.MethodPost,
+					startAt: 0,
+					body:    "hola",
+				},
+			},
+			options: nil,
+			expectedResp: map[int]resp{
+				0: {
+					key:    "",
+					status: http.StatusBadRequest,
+					body:   "MissingIdempotencyKeyHeaderError",
+				},
+			},
+			expectedCounter: 0,
+		},
+		{
+			name:              "1 request, missing idempot header, but optional",
+			reqProcessingTime: 0,
+			reqws: []req{
+				{
+					method:  http.MethodPost,
+					startAt: 0,
+					body:    "hola",
+				},
+			},
+			options: []idempotency.Option{idempotency.WithOptionalIdempotencyKey()},
+			expectedResp: map[int]resp{
+				0: {
+					status: http.StatusOK,
+					body:   "hola",
+				},
+			},
+			expectedCounter: 1,
+		},
 		{
 			name:              "2 concurrent requests",
-			reqProcessingTime: 100 * time.Millisecond,
+			reqProcessingTime: 1 * time.Second,
 			reqws: []req{
 				{
 					method:  http.MethodPost,
@@ -140,7 +152,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 				{
 					method:  http.MethodPost,
 					key:     "samekey",
-					startAt: 50 * time.Millisecond,
+					startAt: 5 * time.Millisecond,
 					body:    "hola",
 				},
 			},
@@ -159,167 +171,167 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			},
 			expectedCounter: 1,
 		},
-		// {
-		// 	name:              "2 requests, 1 after the other",
-		// 	reqProcessingTime: 0,
-		// 	reqws: []req{
-		// 		{
-		// 			method:  http.MethodPost,
-		// 			key:     "samekey",
-		// 			startAt: 0,
-		// 			body:    "hola",
-		// 		},
-		// 		{
-		// 			method:  http.MethodPost,
-		// 			key:     "samekey",
-		// 			startAt: 20 * time.Millisecond,
-		// 			body:    "hola",
-		// 		},
-		// 	},
-		// 	options: nil,
-		// 	expectedResp: map[int]resp{
-		// 		0: {
-		// 			key:    "samekey",
-		// 			status: http.StatusOK,
-		// 			body:   "hola",
-		// 		},
-		// 		1: {
-		// 			key:    "samekey",
-		// 			status: http.StatusOK,
-		// 			body:   "hola",
-		// 		},
-		// 	},
-		// 	expectedCounter: 1,
-		// },
-		// {
-		// 	name:              "2 totally diff requests",
-		// 	reqProcessingTime: 0,
-		// 	reqws: []req{
-		// 		{
-		// 			method:  http.MethodPost,
-		// 			key:     "firstkey",
-		// 			startAt: 0,
-		// 			body:    "hola",
-		// 		},
-		// 		{
-		// 			method:  http.MethodPost,
-		// 			key:     "secondkey",
-		// 			startAt: 20 * time.Millisecond,
-		// 			body:    "hola",
-		// 		},
-		// 	},
-		// 	options: nil,
-		// 	expectedResp: map[int]resp{
-		// 		0: {
-		// 			key:    "firstkey",
-		// 			status: http.StatusOK,
-		// 			body:   "hola",
-		// 		},
-		// 		1: {
-		// 			key:    "secondkey",
-		// 			status: http.StatusOK,
-		// 			body:   "hola",
-		// 		},
-		// 	},
-		// 	expectedCounter: 2,
-		// },
-		// {
-		// 	name:              "get request",
-		// 	reqProcessingTime: 0,
-		// 	reqws: []req{
-		// 		{
-		// 			method:  http.MethodGet,
-		// 			key:     "getkey",
-		// 			startAt: 0,
-		// 			body:    "hola",
-		// 		},
-		// 		{
-		// 			method:  http.MethodGet,
-		// 			key:     "getkey",
-		// 			startAt: 0,
-		// 			body:    "hola",
-		// 		},
-		// 	},
-		// 	options: nil,
-		// 	expectedResp: map[int]resp{
-		// 		0: {
-		// 			key:    "getkey",
-		// 			status: http.StatusOK,
-		// 			body:   "hola",
-		// 		},
-		// 		1: {
-		// 			key:    "getkey",
-		// 			status: http.StatusOK,
-		// 			body:   "hola",
-		// 		},
-		// 	},
-		// 	expectedCounter: 2,
-		// },
-		// {
-		// 	name:              "1 request with failing fingerprinter",
-		// 	reqProcessingTime: 0,
-		// 	reqws: []req{
-		// 		{
-		// 			method:  http.MethodPost,
-		// 			key:     "onekey",
-		// 			startAt: 0,
-		// 			body:    "hola",
-		// 		},
-		// 	},
-		// 	options: []idempotency.Option{
-		// 		idempotency.WithFingerprinter(
-		// 			func(_ *http.Request) ([]byte, error) {
-		// 				return nil, errors.New("fingerprinter error")
-		// 			},
-		// 		),
-		// 	},
-		// 	expectedResp: map[int]resp{
-		// 		0: {
-		// 			key:    "onekey",
-		// 			status: http.StatusInternalServerError,
-		// 			body:   "internal server error",
-		// 		},
-		// 	},
-		// 	expectedCounter: 0,
-		// },
-		// {
-		// 	name:              "1 request that exists in store but with diff fingerprint",
-		// 	reqProcessingTime: 0,
-		// 	reqws: []req{
-		// 		{
-		// 			method:  http.MethodPost,
-		// 			key:     "onekey",
-		// 			startAt: 0,
-		// 			body:    "hola",
-		// 		},
-		// 		{
-		// 			method:  http.MethodPost,
-		// 			key:     "onekey",
-		// 			startAt: 10 * time.Millisecond,
-		// 			body:    "hola",
-		// 		},
-		// 	},
-		// 	options: []idempotency.Option{
-		// 		idempotency.WithFingerprinter(
-		// 			func(_ *http.Request) ([]byte, error) {
-		// 				return []byte(time.Now().Format(time.RFC3339Nano)), nil
-		// 			},
-		// 		),
-		// 	},
-		// 	expectedResp: map[int]resp{
-		// 		0: {
-		// 			key:    "onekey",
-		// 			status: http.StatusOK,
-		// 			body:   "hola",
-		// 		},
-		// 		1: {
-		// 			key:    "onekey",
-		// 			status: http.StatusBadRequest,
-		// 			body:   "MismatchedSignatureError",
-		// 		},
-		// 	},
-		// 	expectedCounter: 1,
-		// },
+		{
+			name:              "2 requests, 1 after the other",
+			reqProcessingTime: 0,
+			reqws: []req{
+				{
+					method:  http.MethodPost,
+					key:     "req1",
+					startAt: 0,
+					body:    "hola",
+				},
+				{
+					method:  http.MethodPost,
+					key:     "req1",
+					startAt: 200 * time.Millisecond,
+					body:    "hola",
+				},
+			},
+			options: nil,
+			expectedResp: map[int]resp{
+				0: {
+					key:    "req1",
+					status: http.StatusOK,
+					body:   "hola",
+				},
+				1: {
+					key:    "req1",
+					status: http.StatusOK,
+					body:   "hola",
+				},
+			},
+			expectedCounter: 1,
+		},
+		{
+			name:              "2 totally diff requests",
+			reqProcessingTime: 0,
+			reqws: []req{
+				{
+					method:  http.MethodPost,
+					key:     "firstkey",
+					startAt: 0,
+					body:    "hola",
+				},
+				{
+					method:  http.MethodPost,
+					key:     "secondkey",
+					startAt: 20 * time.Millisecond,
+					body:    "hola",
+				},
+			},
+			options: nil,
+			expectedResp: map[int]resp{
+				0: {
+					key:    "firstkey",
+					status: http.StatusOK,
+					body:   "hola",
+				},
+				1: {
+					key:    "secondkey",
+					status: http.StatusOK,
+					body:   "hola",
+				},
+			},
+			expectedCounter: 2,
+		},
+		{
+			name:              "get request",
+			reqProcessingTime: 0,
+			reqws: []req{
+				{
+					method:  http.MethodGet,
+					key:     "getkey",
+					startAt: 0,
+					body:    "hola",
+				},
+				{
+					method:  http.MethodGet,
+					key:     "getkey",
+					startAt: 0,
+					body:    "hola",
+				},
+			},
+			options: nil,
+			expectedResp: map[int]resp{
+				0: {
+					key:    "getkey",
+					status: http.StatusOK,
+					body:   "hola",
+				},
+				1: {
+					key:    "getkey",
+					status: http.StatusOK,
+					body:   "hola",
+				},
+			},
+			expectedCounter: 2,
+		},
+		{
+			name:              "1 request with failing fingerprinter",
+			reqProcessingTime: 0,
+			reqws: []req{
+				{
+					method:  http.MethodPost,
+					key:     "onekey",
+					startAt: 0,
+					body:    "hola",
+				},
+			},
+			options: []idempotency.Option{
+				idempotency.WithFingerprinter(
+					func(_ *http.Request) ([]byte, error) {
+						return nil, errors.New("fingerprinter error")
+					},
+				),
+			},
+			expectedResp: map[int]resp{
+				0: {
+					key:    "onekey",
+					status: http.StatusInternalServerError,
+					body:   "internal server error",
+				},
+			},
+			expectedCounter: 0,
+		},
+		{
+			name:              "1 request that exists in store but with diff fingerprint",
+			reqProcessingTime: 0,
+			reqws: []req{
+				{
+					method:  http.MethodPost,
+					key:     "onekeysig",
+					startAt: 0,
+					body:    "hola",
+				},
+				{
+					method:  http.MethodPost,
+					key:     "onekeysig",
+					startAt: 10 * time.Millisecond,
+					body:    "hola",
+				},
+			},
+			options: []idempotency.Option{
+				idempotency.WithFingerprinter(
+					func(_ *http.Request) ([]byte, error) {
+						return []byte(time.Now().Format(time.RFC3339Nano)), nil
+					},
+				),
+			},
+			expectedResp: map[int]resp{
+				0: {
+					key:    "onekeysig",
+					status: http.StatusOK,
+					body:   "hola",
+				},
+				1: {
+					key:    "onekeysig",
+					status: http.StatusBadRequest,
+					body:   "MismatchedSignatureError",
+				},
+			},
+			expectedCounter: 1,
+		},
 	}
 
 	for idx, tt := range testc {
@@ -331,7 +343,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			idempotencyMiddleware, closeLock, errM := NewMiddleware(
 				&valkeylock.LockerOption{
 					ClientOption:   valkey.ClientOption{InitAddress: []string{testValkeyPortHost}},
-					KeyPrefix:      "valock_" + strconv.Itoa(idx) + "_",
+					KeyPrefix:      "valock_" + strconv.Itoa(idx),
 					KeyMajority:    1,    // Use KeyMajority=1 if you have only one Valkey instance. Also make sure that all your `Locker`s share the same KeyMajority.
 					NoLoopTracking: true, // Enable this to have better performance if all your Valkey are >= 7.0.5.
 				},
@@ -367,6 +379,8 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 
 			var wg sync.WaitGroup
 
+			ctx := context.Background()
+
 			for reqIdx, reqw := range tt.reqws {
 				wg.Add(1)
 
@@ -375,7 +389,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 
 					time.Sleep(reqw.startAt)
 
-					status, body, err := sendReq(context.Background(), reqw.method, server, key, body)
+					status, body, err := sendReq(ctx, reqw.method, server, key, body)
 					if err != nil {
 						t.Errorf("SendPOSTReq: %v", err)
 					}
@@ -433,14 +447,13 @@ func errorToString(
 	case errors.As(err, &idempotency.MissingIdempotencyKeyHeaderError{}):
 		http.Error(writer, "MissingIdempotencyKeyHeaderError", http.StatusBadRequest)
 	case errors.As(err, &idempotency.RequestInFlightError{}):
-		fmt.Println("inflight")
 		http.Error(writer, "RequestInFlightError", http.StatusConflict)
 	case errors.As(err, &idempotency.MismatchedSignatureError{}):
 		http.Error(writer, "MismatchedSignatureError", http.StatusBadRequest)
 	case errors.As(err, &idempotency.StoreResponseError{}):
-		http.Error(writer, "", http.StatusOK)
+		http.Error(writer, fmt.Sprintf("StoreResponseError: %v", err), http.StatusOK)
 	case errors.As(err, &idempotency.GetStoredResponseError{}):
-		http.Error(writer, "internal server error", http.StatusInternalServerError)
+		http.Error(writer, fmt.Sprintf("internal server error: %v", err), http.StatusInternalServerError)
 	default:
 		http.Error(
 			writer,
