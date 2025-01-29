@@ -3,7 +3,6 @@ package valkeydempotency
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 
@@ -50,7 +49,7 @@ func NewStore(lockerOption *valkeylock.LockerOption, ttl time.Duration) (*Store,
 
 func (sto *Store) TryLock(ctx context.Context, key string) (context.Context, context.CancelFunc, error) {
 	ctx, cancel, err := sto.locker.TryWithContext(ctx, key)
-	if err != nil && !errors.Is(err, valkeylock.ErrNotLocked) {
+	if err != nil {
 		return nil, nil, fmt.Errorf("failed to lock key %s: %w", key, err)
 	}
 

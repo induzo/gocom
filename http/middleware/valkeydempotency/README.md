@@ -3,7 +3,7 @@
 # valkeydempotency
 
 ```go
-import "github.com/induzo/gocom/http/middleware/idempostores/valkeydempotency"
+import "github.com/induzo/gocom/http/middleware/valkeydempotency"
 ```
 
 valkeydempotency is a package which implement the store interface for the idempotency package with valkey.
@@ -19,7 +19,7 @@ valkeydempotency is a package which implement the store interface for the idempo
 
 
 <a name="Store"></a>
-## type [Store](<https://github.com/induzo/gocom/blob/main/http/middleware/idempostores/valkeydempotency/store.go#L25-L29>)
+## type [Store](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L25-L29>)
 
 
 
@@ -30,7 +30,7 @@ type Store struct {
 ```
 
 <a name="NewStore"></a>
-### func [NewStore](<https://github.com/induzo/gocom/blob/main/http/middleware/idempostores/valkeydempotency/store.go#L37>)
+### func [NewStore](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L37>)
 
 ```go
 func NewStore(lockerOption *valkeylock.LockerOption, ttl time.Duration) (*Store, error)
@@ -39,7 +39,7 @@ func NewStore(lockerOption *valkeylock.LockerOption, ttl time.Duration) (*Store,
 
 
 <a name="Store.Close"></a>
-### func \(\*Store\) [Close](<https://github.com/induzo/gocom/blob/main/http/middleware/idempostores/valkeydempotency/store.go#L31>)
+### func \(\*Store\) [Close](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L31>)
 
 ```go
 func (sto *Store) Close() error
@@ -48,7 +48,7 @@ func (sto *Store) Close() error
 
 
 <a name="Store.GetStoredResponse"></a>
-### func \(\*Store\) [GetStoredResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/idempostores/valkeydempotency/store.go#L82>)
+### func \(\*Store\) [GetStoredResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L82>)
 
 ```go
 func (sto *Store) GetStoredResponse(ctx context.Context, key string) (*idempotency.StoredResponse, bool, error)
@@ -57,7 +57,7 @@ func (sto *Store) GetStoredResponse(ctx context.Context, key string) (*idempoten
 
 
 <a name="Store.StoreResponse"></a>
-### func \(\*Store\) [StoreResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/idempostores/valkeydempotency/store.go#L60>)
+### func \(\*Store\) [StoreResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L60>)
 
 ```go
 func (sto *Store) StoreResponse(ctx context.Context, key string, resp *idempotency.StoredResponse) error
@@ -66,7 +66,7 @@ func (sto *Store) StoreResponse(ctx context.Context, key string, resp *idempoten
 
 
 <a name="Store.TryLock"></a>
-### func \(\*Store\) [TryLock](<https://github.com/induzo/gocom/blob/main/http/middleware/idempostores/valkeydempotency/store.go#L51>)
+### func \(\*Store\) [TryLock](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L51>)
 
 ```go
 func (sto *Store) TryLock(ctx context.Context, key string) (context.Context, context.CancelFunc, error)

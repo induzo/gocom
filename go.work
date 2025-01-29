@@ -5,8 +5,8 @@ use (
 	./database/pgx-slog
 	./database/redisinit
 	./http/health
-	./http/middleware/idempostores/valkeydempotency
 	./http/middleware/idempotency
+	./http/middleware/valkeydempotency
 	./http/middleware/writablecontext
 	./shutdown
 )
