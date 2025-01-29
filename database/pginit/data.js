@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1738050860384,
+  "lastUpdate": 1738149051787,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -2370,6 +2370,54 @@ window.BENCHMARK_DATA = {
             "value": 308,
             "unit": "allocs/op",
             "extra": "494 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cdfa363cdec81d322ccc4115d69f26355d8837b2",
+          "message": "Merge pull request #14 from induzo/chore/refactor-valkeydempotency\n\nchore: refactor valkeydempotency",
+          "timestamp": "2025-01-29T19:09:45+08:00",
+          "tree_id": "20d55c9cfdbfb72b71e9815d201f1a8c549318af",
+          "url": "https://github.com/induzo/gocom/commit/cdfa363cdec81d322ccc4115d69f26355d8837b2"
+        },
+        "date": 1738149050814,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkConnPool",
+            "value": 2382873,
+            "unit": "ns/op\t   42919 B/op\t     308 allocs/op",
+            "extra": "495 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - ns/op",
+            "value": 2382873,
+            "unit": "ns/op",
+            "extra": "495 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - B/op",
+            "value": 42919,
+            "unit": "B/op",
+            "extra": "495 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - allocs/op",
+            "value": 308,
+            "unit": "allocs/op",
+            "extra": "495 times\n4 procs"
           }
         ]
       }
