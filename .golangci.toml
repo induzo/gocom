@@ -15,7 +15,8 @@ timeout = "15m"
 [linters]
 disable-all = true
 
-# golangci-lint linters --enable-all --disable=exhaustruct,exportloopref,funlen,godot,inamedparam,ireturn,musttag,tagliatelle,testpackage
+
+# golangci-lint linters --enable-all --disable=exhaustruct,funlen,godot,inamedparam,ireturn,musttag,tagliatelle,testpackage,exportloopref,tenv
 enable = [
     "asasalint",
     "asciicheck",
@@ -38,6 +39,7 @@ enable = [
     "errname",
     "errorlint",
     "exhaustive",
+    "exptostd",
     "fatcontext",
     "forbidigo",
     "forcetypeassert",
@@ -79,6 +81,7 @@ enable = [
     "nakedret",
     "nestif",
     "nilerr",
+    "nilnesserr",
     "nilnil",
     "nlreturn",
     "noctx",
@@ -101,7 +104,6 @@ enable = [
     "staticcheck",
     "stylecheck",
     "tagalign",
-    "tenv",
     "testableexamples",
     "testifylint",
     "thelper",
@@ -110,6 +112,7 @@ enable = [
     "unparam",
     "unused",
     "usestdlibvars",
+    "usetesting",
     "varnamelen",
     "wastedassign",
     "whitespace",
@@ -118,27 +121,28 @@ enable = [
     "zerologlint",
 
     # Disabled by your configuration linters:
-    # "exhaustruct",
-    # "funlen",
-    # "godot",
-    # "inamedparam",
-    # "ireturn",
-    # "musttag",
-    # "tagliatelle",
-    # "testpackage",
-    # "deadcode",
-    # "execinquery",
-    # "exhaustivestruct",
-    # "exportloopref",
-    # "golint",
-    # "gomnd",
-    # "ifshort",
-    # "interfacer",
-    # "maligned",
-    # "nosnakecase",
-    # "scopelint",
-    # "structcheck",
-    # "varcheck",
+    # exhaustruct: Checks if all structure fields are initialized.
+    # funlen: Checks for long functions. [fast]
+    # godot: Check if comments end in a period. [fast, auto-fix]
+    # inamedparam: Reports interfaces with unnamed method parameters. [fast]
+    # ireturn: Accept Interfaces, Return Concrete Types.
+    # musttag: Enforce field tags in (un)marshaled structs.
+    # tagliatelle: Checks the struct tags.
+    # testpackage: Linter that makes you use a separate _test package. [fast]
+    # deadcode [deprecated]: Deprecated. [fast]
+    # execinquery [deprecated]: Deprecated. [fast]
+    # exhaustivestruct [deprecated]: Deprecated. [fast]
+    # exportloopref [deprecated]: Deprecated.
+    # golint [deprecated]: Deprecated. [fast]
+    # gomnd [deprecated]: Deprecated. [fast]
+    # ifshort [deprecated]: Deprecated. [fast]
+    # interfacer [deprecated]: Deprecated. [fast]
+    # maligned [deprecated]: Deprecated. [fast]
+    # nosnakecase [deprecated]: Deprecated. [fast]
+    # scopelint [deprecated]: Deprecated. [fast]
+    # structcheck [deprecated]: Deprecated. [fast]
+    # tenv [deprecated]: Tenv is analyzer that detects using os.Setenv instead of t.Setenv since Go1.17.
+    # varcheck [deprecated]: Deprecated. [fast]
 ]
 
 [linters-settings.govet]
