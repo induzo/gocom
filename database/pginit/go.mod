@@ -7,7 +7,7 @@ toolchain go1.24.0
 require (
 	github.com/goccy/go-json v0.10.5
 	github.com/gofrs/uuid/v5 v5.3.1
-	github.com/induzo/gocom/database/pgx-slog v1.0.19
+	github.com/induzo/gocom/database/pgx-slog v1.0.20
 	github.com/jackc/pgx-gofrs-uuid v0.0.0-20230224015001-1d428863c2e2
 	github.com/jackc/pgx-shopspring-decimal v0.0.0-20220624020537-1d36b5a1853e
 	github.com/jackc/pgx/v5 v5.7.2
