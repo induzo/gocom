@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/redisinit/v1.0.17] - 2025-03-02
+
+### Documentation
+
+- Update docs for module database/redisinit
+
+### Features
+
+- New release
+- Induzo/http/middleware/idempostores/valkeydempotency
+
+### Miscellaneous Tasks
+
+- Work sync
+- Update deps
+- Update deps
+- Update deps
+
+### Testing
+
+- Add more coverage
+
 ## [database/redisinit/v1.0.16] - 2024-12-28
 
 ### Bug Fixes
@@ -16,6 +38,7 @@ All notable changes to this project will be documented in this file.
 - Update docs for module database/redisinit
 - Update CHANGELOG.md for database/redisinit/v1.0.15
 - Update CHANGELOG.md for \database/redisinit/v1.0.16
+- Update CHANGELOG.md for database/redisinit/v1.0.16
 
 ### Features
 
