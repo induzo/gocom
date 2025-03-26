@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/pgx-slog/v1.0.21] - 2025-03-26
+
+### Features
+
+- Upgrade deps
+
 ## [database/pgx-slog/v1.0.20] - 2025-03-02
+
+### Documentation
+
+- Update CHANGELOG.md for database/pgx-slog/v1.0.20
 
 ### Features
 
