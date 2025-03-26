@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/health/v1.1.14] - 2025-03-26
+
+### Features
+
+- Upgrade deps
+
 ## [http/health/v1.1.13] - 2025-03-02
+
+### Documentation
+
+- Update CHANGELOG.md for http/health/v1.1.13
 
 ### Miscellaneous Tasks
 
