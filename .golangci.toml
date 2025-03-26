@@ -1,261 +1,261 @@
-## START SECTION TO BE CONFIGURED WITH YOUR OWN REPO PATH
-
-[linters-settings.gci]
-sections = ["standard", "default", "prefix(github.com/induzo)"]
-
-[linters-settings.gofumpt]
-extra-rules = true
-module-path = "github.com/induzo"
-
-## END SECTION TO BE CONFIGURED WITH YOUR OWN REPO PATH
-
-[run]
-timeout = "15m"
+version = '2'
 
 [linters]
-disable-all = true
-
-
-# golangci-lint linters --enable-all --disable=exhaustruct,funlen,godot,inamedparam,ireturn,musttag,tagliatelle,testpackage,exportloopref,tenv
+default = 'none'
 enable = [
-    "asasalint",
-    "asciicheck",
-    "bidichk",
-    "bodyclose",
-    "canonicalheader",
-    "containedctx",
-    "contextcheck",
-    "copyloopvar",
-    "cyclop",
-    "decorder",
-    "depguard",
-    "dogsled",
-    "dupl",
-    "dupword",
-    "durationcheck",
-    "err113",
-    "errcheck",
-    "errchkjson",
-    "errname",
-    "errorlint",
-    "exhaustive",
-    "exptostd",
-    "fatcontext",
-    "forbidigo",
-    "forcetypeassert",
-    "gci",
-    "ginkgolinter",
-    "gocheckcompilerdirectives",
-    "gochecknoglobals",
-    "gochecknoinits",
-    "gochecksumtype",
-    "gocognit",
-    "goconst",
-    "gocritic",
-    "gocyclo",
-    "godox",
-    "gofmt",
-    "gofumpt",
-    "goheader",
-    "goimports",
-    "gomoddirectives",
-    "gomodguard",
-    "goprintffuncname",
-    "gosec",
-    "gosimple",
-    "gosmopolitan",
-    "govet",
-    "grouper",
-    "iface",
-    "importas",
-    "ineffassign",
-    "interfacebloat",
-    "intrange",
-    "lll",
-    "loggercheck",
-    "maintidx",
-    "makezero",
-    "mirror",
-    "misspell",
-    "mnd",
-    "nakedret",
-    "nestif",
-    "nilerr",
-    "nilnesserr",
-    "nilnil",
-    "nlreturn",
-    "noctx",
-    "nolintlint",
-    "nonamedreturns",
-    "nosprintfhostport",
-    "paralleltest",
-    "perfsprint",
-    "prealloc",
-    "predeclared",
-    "promlinter",
-    "protogetter",
-    "reassign",
-    "recvcheck",
-    "revive",
-    "rowserrcheck",
-    "sloglint",
-    "spancheck",
-    "sqlclosecheck",
-    "staticcheck",
-    "stylecheck",
-    "tagalign",
-    "testableexamples",
-    "testifylint",
-    "thelper",
-    "tparallel",
-    "unconvert",
-    "unparam",
-    "unused",
-    "usestdlibvars",
-    "usetesting",
-    "varnamelen",
-    "wastedassign",
-    "whitespace",
-    "wrapcheck",
-    "wsl",
-    "zerologlint",
-
-    # Disabled by your configuration linters:
-    # exhaustruct: Checks if all structure fields are initialized.
-    # funlen: Checks for long functions. [fast]
-    # godot: Check if comments end in a period. [fast, auto-fix]
-    # inamedparam: Reports interfaces with unnamed method parameters. [fast]
-    # ireturn: Accept Interfaces, Return Concrete Types.
-    # musttag: Enforce field tags in (un)marshaled structs.
-    # tagliatelle: Checks the struct tags.
-    # testpackage: Linter that makes you use a separate _test package. [fast]
-    # deadcode [deprecated]: Deprecated. [fast]
-    # execinquery [deprecated]: Deprecated. [fast]
-    # exhaustivestruct [deprecated]: Deprecated. [fast]
-    # exportloopref [deprecated]: Deprecated.
-    # golint [deprecated]: Deprecated. [fast]
-    # gomnd [deprecated]: Deprecated. [fast]
-    # ifshort [deprecated]: Deprecated. [fast]
-    # interfacer [deprecated]: Deprecated. [fast]
-    # maligned [deprecated]: Deprecated. [fast]
-    # nosnakecase [deprecated]: Deprecated. [fast]
-    # scopelint [deprecated]: Deprecated. [fast]
-    # structcheck [deprecated]: Deprecated. [fast]
-    # tenv [deprecated]: Tenv is analyzer that detects using os.Setenv instead of t.Setenv since Go1.17.
-    # varcheck [deprecated]: Deprecated. [fast]
+  'asasalint',
+  'asciicheck',
+  'bidichk',
+  'bodyclose',
+  'canonicalheader',
+  'containedctx',
+  'contextcheck',
+  'copyloopvar',
+  'cyclop',
+  'decorder',
+  'depguard',
+  'dogsled',
+  'dupl',
+  'dupword',
+  'durationcheck',
+  'err113',
+  'errcheck',
+  'errchkjson',
+  'errname',
+  'errorlint',
+  'exhaustive',
+  'exptostd',
+  'fatcontext',
+  'forbidigo',
+  'forcetypeassert',
+  'ginkgolinter',
+  'gocheckcompilerdirectives',
+  'gochecknoglobals',
+  'gochecknoinits',
+  'gochecksumtype',
+  'gocognit',
+  'goconst',
+  'gocritic',
+  'gocyclo',
+  'godox',
+  'goheader',
+  'gomoddirectives',
+  'gomodguard',
+  'goprintffuncname',
+  'gosec',
+  'gosmopolitan',
+  'govet',
+  'grouper',
+  'iface',
+  'importas',
+  'ineffassign',
+  'interfacebloat',
+  'intrange',
+  'lll',
+  'loggercheck',
+  'maintidx',
+  'makezero',
+  'mirror',
+  'misspell',
+  'mnd',
+  'nakedret',
+  'nestif',
+  'nilerr',
+  'nilnesserr',
+  'nilnil',
+  'nlreturn',
+  'noctx',
+  'nolintlint',
+  'nonamedreturns',
+  'nosprintfhostport',
+  'paralleltest',
+  'perfsprint',
+  'prealloc',
+  'predeclared',
+  'promlinter',
+  'protogetter',
+  'reassign',
+  'recvcheck',
+  'revive',
+  'rowserrcheck',
+  'sloglint',
+  'spancheck',
+  'sqlclosecheck',
+  'staticcheck',
+  'tagalign',
+  'testableexamples',
+  'testifylint',
+  'thelper',
+  'tparallel',
+  'unconvert',
+  'unparam',
+  'unused',
+  'usestdlibvars',
+  'usetesting',
+  'varnamelen',
+  'wastedassign',
+  'whitespace',
+  'wrapcheck',
+  'wsl',
+  'zerologlint'
 ]
 
-[linters-settings.govet]
+[linters.settings]
+[linters.settings.depguard]
+[linters.settings.depguard.rules]
+[linters.settings.depguard.rules.main]
+[[linters.settings.depguard.rules.main.deny]]
+pkg = 'github.com/sirupsen/logrus'
+desc = 'please use log/slog from std lib'
+
+[[linters.settings.depguard.rules.main.deny]]
+pkg = 'github.com/pkg/errors'
+desc = 'please use errors from std lib'
+
+[[linters.settings.depguard.rules.main.deny]]
+pkg = 'gorm.io/gorm'
+desc = 'please use pgx and learn sql'
+
+[linters.settings.depguard.rules.prevent_unmaintained_packages]
+[[linters.settings.depguard.rules.prevent_unmaintained_packages.deny]]
+pkg = 'io/ioutil'
+desc = 'replaced by io and os packages since Go 1.16: https://tip.golang.org/doc/go1.16#ioutil'
+
+[linters.settings.depguard.rules.test]
+[[linters.settings.depguard.rules.test.deny]]
+pkg = 'github.com/stretchr/testify/assert'
+desc = 'please use go table tests and simple ifs'
+
+[[linters.settings.depguard.rules.test.deny]]
+pkg = 'github.com/stretchr/testify/require'
+desc = 'please use go table tests and simple ifs'
+
+[[linters.settings.depguard.rules.test.deny]]
+pkg = 'github.com/stretchr/testify/suite'
+desc = 'please use go table tests and simple ifs'
+
+[linters.settings.errorlint]
+errorf = true
+
+[linters.settings.forbidigo]
+analyze-types = true
+
+[[linters.settings.forbidigo.forbid]]
+pattern = 'decimal.Decimal.Div$'
+msg = """
+Use 'x.DivRound(y, money.Precision)' instead of 'x.Div(y)'."""
+
+[[linters.settings.forbidigo.forbid]]
+pattern = 'decimal.Decimal.Pow$'
+msg = """
+Use 'decimal.PowWithPrecision(x, y, money.Precision)' instead of 'decimal.Pow(x, y)'."""
+
+[linters.settings.gocritic]
+disabled-checks = [
+  'whyNoLint',
+  'unnamedResult'
+]
+enabled-tags = [
+  'diagnostic',
+  'experimental',
+  'opinionated',
+  'performance',
+  'style'
+]
+
+[linters.settings.gosec]
+excludes = [
+  'G601'
+]
+
+[linters.settings.govet]
+disable = [
+  'fieldalignment'
+]
 enable-all = true
-disable = ["fieldalignment"]
 
-[linters-settings.gosec]
-excludes = ["G601"] # not necessary for golang > 1.22
+[linters.settings.nolintlint]
+require-explanation = true
+require-specific = true
 
-[linters-settings.revive]
-confidence = 0.0
-
-[linters-settings.prealloc]
+[linters.settings.prealloc]
 simple = false
 range-loops = true
 for-loops = true
 
-[linters-settings.gocritic]
-enabled-tags = [
-    "diagnostic",
-    "experimental",
-    "opinionated",
-    "performance",
-    "style",
-]
-disabled-checks = ["whyNoLint", "unnamedResult"]
+[linters.settings.revive]
+confidence = 0.0
 
-[linters-settings.errorlint]
-errorf = true
-
-[linters-settings.nolintlint]
-require-explanation = true
-require-specific = true
-
-[linters-settings.tagalign]
+[linters.settings.tagalign]
 align = false
 
-# [linters-settings.gomoddirectives]
-# replace-allow-list = ["github.com/crate-crypto/go-kzg-4844"]
-
-# depguard
-# [linters-settings.depguard.rules.prevent_unmaintained_packages]
-# list-mode = "strict"
-
-[[linters-settings.depguard.rules.prevent_unmaintained_packages.deny]]
-pkg = "io/ioutil"
-desc = "replaced by io and os packages since Go 1.16: https://tip.golang.org/doc/go1.16#ioutil"
-
-# [linters-settings.depguard.rules.main]
-# list-mode = "lax"
-
-[[linters-settings.depguard.rules.main.deny]]
-pkg = "github.com/sirupsen/logrus"
-desc =  "please use log/slog from std lib"
-
-[[linters-settings.depguard.rules.main.deny]]
-pkg = "github.com/pkg/errors"
-desc = "please use errors from std lib"
-
-[[linters-settings.depguard.rules.main.deny]]
-pkg = "gorm.io/gorm"
-desc = "please use pgx and learn sql"
-
-# [linters-settings.depguard.rules.test]
-# list-mode = "lax"
-
-[[linters-settings.depguard.rules.test.deny]]
-pkg = "github.com/stretchr/testify/assert"
-desc =  "please use go table tests and simple ifs"
-
-[[linters-settings.depguard.rules.test.deny]]
-pkg = "github.com/stretchr/testify/require"
-desc =  "please use go table tests and simple ifs"
-
-[[linters-settings.depguard.rules.test.deny]]
-pkg = "github.com/stretchr/testify/suite"
-desc =  "please use go table tests and simple ifs"
-
-
-[linters-settings.forbidigo]
-analyze-types = true
-
-[[linters-settings.forbidigo.forbid]]
-p = "decimal.Decimal.Div$"
-msg = "Use 'x.DivRound(y, money.Precision)' instead of 'x.Div(y)'."
-
-[[linters-settings.forbidigo.forbid]]
-p = "decimal.Decimal.Pow$"
-msg = "Use 'decimal.PowWithPrecision(x, y, money.Precision)' instead of 'decimal.Pow(x, y)'."
-
-[[issues.exclude-rules]]
-path = '(.+)_test\.go'
-linters = [
-    "funlen",
-    "goconst",
-    "interfacer",
-    "dupl",
-    "lll",
-    "err113",
-    "varnamelen",
-    "errcheck",
-    "gocritic",
-    "cyclop",
-    "wrapcheck",
-    "gocognit",
-    "contextcheck",
-    "nlreturn",
-    "gochecknoglobals",
-    "errorlint",
-    "forcetypeassert",
-    "maintidx",
+[linters.exclusions]
+generated = 'lax'
+presets = [
+  'comments',
+  'common-false-positives',
+  'legacy',
+  'std-error-handling'
+]
+paths = [
+  'third_party$',
+  'builtin$',
+  'examples$'
 ]
 
-[[issues.exclude-rules]]
-linters = ["lll"]
-source = "^//go:generate "
+[[linters.exclusions.rules]]
+linters = [
+  'contextcheck',
+  'cyclop',
+  'dupl',
+  'err113',
+  'errcheck',
+  'errorlint',
+  'forcetypeassert',
+  'funlen',
+  'gochecknoglobals',
+  'gocognit',
+  'goconst',
+  'gocritic',
+  'interfacer',
+  'lll',
+  'maintidx',
+  'nlreturn',
+  'varnamelen',
+  'wrapcheck'
+]
+path = '(.+)_test\.go'
+
+[[linters.exclusions.rules]]
+linters = [
+  'lll'
+]
+source = '^//go:generate '
+
+[formatters]
+enable = [
+  'gci',
+  'gofmt',
+  'gofumpt',
+  'goimports'
+]
+
+[formatters.settings]
+[formatters.settings.gci]
+sections = [
+  'standard',
+  'default',
+  'prefix(github.com/induzo)'
+]
+
+[formatters.settings.gofumpt]
+module-path = 'github.com/induzo'
+extra-rules = true
+
+[formatters.exclusions]
+generated = 'lax'
+paths = [
+  'third_party$',
+  'builtin$',
+  'examples$'
+]

@@ -229,5 +229,5 @@ func (tw *teeResponseWriter) Write(data []byte) (int, error) {
 // header returns the final response headers at the time this function is called.
 func (tw *teeResponseWriter) header() http.Header {
 	// We access the real underlying writer’s header
-	return tw.ResponseWriter.Header()
+	return tw.Header()
 }

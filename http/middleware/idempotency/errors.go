@@ -37,7 +37,7 @@ type RequestInFlightError struct {
 }
 
 func (e RequestInFlightError) Error() string {
-	return "request with key " + e.RequestContext.String() + " still in flight"
+	return "request with key " + e.String() + " still in flight"
 }
 
 type MismatchedSignatureError struct {
@@ -45,7 +45,7 @@ type MismatchedSignatureError struct {
 }
 
 func (e MismatchedSignatureError) Error() string {
-	return "mismatched signature for request with key " + e.RequestContext.String()
+	return "mismatched signature for request with key " + e.String()
 }
 
 type StoreResponseError struct {
