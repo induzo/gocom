@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1740901987675,
+  "lastUpdate": 1742971972359,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -144,6 +144,54 @@ window.BENCHMARK_DATA = {
             "value": 40,
             "unit": "allocs/op",
             "extra": "2576 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "2faa511684ac1e0f4388d886b153fc65a7056d52",
+          "message": "docs(changelog): update CHANGELOG.md for http/middleware/valkeydempotency/v0.1.4",
+          "timestamp": "2025-03-26T14:52:00+08:00",
+          "tree_id": "835e0266adddac9936be94a607eae51dda3e7d98",
+          "url": "https://github.com/induzo/gocom/commit/2faa511684ac1e0f4388d886b153fc65a7056d52"
+        },
+        "date": 1742971972036,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkStoreStoreResponse",
+            "value": 460991,
+            "unit": "ns/op\t    2639 B/op\t      40 allocs/op",
+            "extra": "2599 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - ns/op",
+            "value": 460991,
+            "unit": "ns/op",
+            "extra": "2599 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - B/op",
+            "value": 2639,
+            "unit": "B/op",
+            "extra": "2599 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - allocs/op",
+            "value": 40,
+            "unit": "allocs/op",
+            "extra": "2599 times\n4 procs"
           }
         ]
       }
