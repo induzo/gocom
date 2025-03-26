@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1738149053442,
+  "lastUpdate": 1742972493227,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -240,6 +240,54 @@ window.BENCHMARK_DATA = {
             "value": 11,
             "unit": "allocs/op",
             "extra": "342444 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "a5dbce3e161c8ac560f7d33fb5ec3ea6eef1684e",
+          "message": "chore: upgrade golangci-lint",
+          "timestamp": "2025-03-26T15:00:36+08:00",
+          "tree_id": "73a37f1a46cf6faef61e590ec54efacc2021d5b0",
+          "url": "https://github.com/induzo/gocom/commit/a5dbce3e161c8ac560f7d33fb5ec3ea6eef1684e"
+        },
+        "date": 1742972492686,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkMiddleware",
+            "value": 3825,
+            "unit": "ns/op\t    1472 B/op\t      11 allocs/op",
+            "extra": "299892 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMiddleware - ns/op",
+            "value": 3825,
+            "unit": "ns/op",
+            "extra": "299892 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMiddleware - B/op",
+            "value": 1472,
+            "unit": "B/op",
+            "extra": "299892 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMiddleware - allocs/op",
+            "value": 11,
+            "unit": "allocs/op",
+            "extra": "299892 times\n4 procs"
           }
         ]
       }
