@@ -2,11 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/pginit/v2.2.17] - 2025-03-26
+
+### Miscellaneous Tasks
+
+- Collateral updates
+- Update deps
+
 ## [database/pginit/v2.2.16] - 2025-03-02
 
 ### Documentation
 
 - Update CHANGELOG.md for database/pginit/v2.2.15
+- Update CHANGELOG.md for database/pginit/v2.2.16
 
 ### Miscellaneous Tasks
 
