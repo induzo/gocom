@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1742972044310,
+  "lastUpdate": 1745063654130,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -2040,6 +2040,54 @@ window.BENCHMARK_DATA = {
             "value": 20,
             "unit": "allocs/op",
             "extra": "349818 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "798786fec3c5e0c4c3c183b7cea9bbc271f0c1af",
+          "message": "docs(changelog): update CHANGELOG.md for http/middleware/valkeydempotency/v0.1.5",
+          "timestamp": "2025-04-19T19:53:23+08:00",
+          "tree_id": "ac87f0125ef2c4d174551db3b2e61e80a1648466",
+          "url": "https://github.com/induzo/gocom/commit/798786fec3c5e0c4c3c183b7cea9bbc271f0c1af"
+        },
+        "date": 1745063653197,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHealth",
+            "value": 3229,
+            "unit": "ns/op\t    1304 B/op\t      20 allocs/op",
+            "extra": "365119 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHealth - ns/op",
+            "value": 3229,
+            "unit": "ns/op",
+            "extra": "365119 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHealth - B/op",
+            "value": 1304,
+            "unit": "B/op",
+            "extra": "365119 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHealth - allocs/op",
+            "value": 20,
+            "unit": "allocs/op",
+            "extra": "365119 times\n4 procs"
           }
         ]
       }
