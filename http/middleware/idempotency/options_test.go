@@ -78,3 +78,79 @@ func TestWithFingerprinter(t *testing.T) {
 		t.Error("WithFingerprinter did not set the function")
 	}
 }
+
+func TestWithAffectedMethods(t *testing.T) {
+	// TestWithAffectedMethods tests the WithAffectedMethods option.
+	t.Parallel()
+
+	opt := WithAffectedMethods("GET", "POST")
+
+	cfg := &config{}
+	opt(cfg)
+
+	if len(cfg.affectedMethods) != 2 {
+		t.Error("WithAffectedMethods did not set the methods")
+	}
+}
+
+func TestWithIgnoredURLPaths(t *testing.T) {
+	// TestWithIgnoredURLs tests the WithIgnoredURLs option.
+	t.Parallel()
+
+	tests := []struct {
+		name              string
+		urls              []string
+		expectedURLParths []string
+	}{
+		{
+			name:              "single URL",
+			urls:              []string{"/ignored"},
+			expectedURLParths: []string{"/ignored"},
+		},
+		{
+			name:              "multiple URLs",
+			urls:              []string{"/ignored", "/also-ignored"},
+			expectedURLParths: []string{"/ignored", "/also-ignored"},
+		},
+		{
+			name:              "duplicate URLs",
+			urls:              []string{"/ignored", "/ignored"},
+			expectedURLParths: []string{"/ignored"},
+		},
+		{
+			name:              "empty URL",
+			urls:              []string{"/ignored", ""},
+			expectedURLParths: []string{"/ignored"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			opt := WithIgnoredURLPaths(test.urls...)
+			cfg := &config{}
+
+			opt(cfg)
+
+			if len(cfg.ignoredURLPaths) != len(test.expectedURLParths) {
+				t.Errorf("WithIgnoredURLPaths did not set the URLs correctly, got %v, want %v", cfg.ignoredURLPaths, test.expectedURLParths)
+			}
+
+			for _, expectedURL := range test.expectedURLParths {
+				found := false
+
+				for _, ignoredURL := range cfg.ignoredURLPaths {
+					if ignoredURL == expectedURL {
+						found = true
+						break
+					}
+				}
+
+				if !found {
+					t.Errorf("WithIgnoredURLPaths did not set the URL %s", expectedURL)
+				}
+			}
+		})
+	}
+}

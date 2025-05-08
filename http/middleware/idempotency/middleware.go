@@ -25,6 +25,12 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 				return
 			}
 
+			if slices.Contains(conf.ignoredURLPaths, strings.ToLower(req.URL.Path)) {
+				next.ServeHTTP(respW, req)
+
+				return
+			}
+
 			key := strings.TrimSpace(req.Header.Get(conf.idempotencyKeyHeader))
 			if key == "" {
 				if conf.idempotencyKeyIsOptional {
@@ -36,6 +42,9 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 				conf.errorToHTTPFn(respW, req,
 					MissingIdempotencyKeyHeaderError{
 						RequestContext{
+							URL:       req.URL.String(),
+							Method:    req.Method,
+							Key:       key,
 							KeyHeader: conf.idempotencyKeyHeader,
 						},
 					},
@@ -68,6 +77,8 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 				conf.errorToHTTPFn(respW, req,
 					RequestInFlightError{
 						RequestContext{
+							URL:       req.URL.String(),
+							Method:    req.Method,
 							KeyHeader: conf.idempotencyKeyHeader,
 							Key:       key,
 						},

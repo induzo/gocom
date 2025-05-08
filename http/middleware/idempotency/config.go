@@ -18,6 +18,7 @@ type config struct {
 	fingerprinterFn          func(*http.Request) ([]byte, error)
 	errorToHTTPFn            ErrorToHTTPFn
 	affectedMethods          []string
+	ignoredURLPaths          []string
 }
 
 func newDefaultConfig() *config {
@@ -28,5 +29,6 @@ func newDefaultConfig() *config {
 		errorToHTTPFn:            ErrorToHTTPJSONProblemDetail,
 		fingerprinterFn:          buildRequestFingerprint,
 		affectedMethods:          []string{http.MethodPost},
+		ignoredURLPaths:          []string{},
 	}
 }

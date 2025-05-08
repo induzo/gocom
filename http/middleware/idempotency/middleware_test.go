@@ -30,6 +30,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 	t.Parallel()
 
 	type req struct {
+		urlPath string
 		method  string
 		key     string
 		startAt time.Duration
@@ -57,6 +58,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			reqProcessingTime: 0,
 			reqws: []req{
 				{
+					urlPath: "test",
 					method:  http.MethodPost,
 					key:     "onekey",
 					startAt: 0,
@@ -78,6 +80,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			reqProcessingTime: 0,
 			reqws: []req{
 				{
+					urlPath: "test",
 					method:  http.MethodPost,
 					startAt: 0,
 					body:    "hola",
@@ -118,12 +121,14 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			reqProcessingTime: 100 * time.Millisecond,
 			reqws: []req{
 				{
+					urlPath: "test",
 					method:  http.MethodPost,
 					key:     "samekey",
 					startAt: 0,
 					body:    "hola",
 				},
 				{
+					urlPath: "test",
 					method:  http.MethodPost,
 					key:     "samekey",
 					startAt: 50 * time.Millisecond,
@@ -150,12 +155,14 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			reqProcessingTime: 0,
 			reqws: []req{
 				{
+					urlPath: "test",
 					method:  http.MethodPost,
 					key:     "samekey",
 					startAt: 0,
 					body:    "hola",
 				},
 				{
+					urlPath: "test",
 					method:  http.MethodPost,
 					key:     "samekey",
 					startAt: 20 * time.Millisecond,
@@ -182,12 +189,14 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			reqProcessingTime: 0,
 			reqws: []req{
 				{
+					urlPath: "test",
 					method:  http.MethodPost,
 					key:     "firstkey",
 					startAt: 0,
 					body:    "hola",
 				},
 				{
+					urlPath: "test",
 					method:  http.MethodPost,
 					key:     "secondkey",
 					startAt: 20 * time.Millisecond,
@@ -214,12 +223,14 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			reqProcessingTime: 0,
 			reqws: []req{
 				{
+					urlPath: "test",
 					method:  http.MethodGet,
 					key:     "getkey",
 					startAt: 0,
 					body:    "hola",
 				},
 				{
+					urlPath: "test",
 					method:  http.MethodGet,
 					key:     "getkey",
 					startAt: 0,
@@ -242,10 +253,47 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			expectedCounter: 2,
 		},
 		{
+			name:              "request on an ignored URL",
+			reqProcessingTime: 0,
+			reqws: []req{
+				{
+					urlPath: "/ignoredurl",
+					method:  http.MethodPost,
+					key:     "postkey",
+					startAt: 0,
+					body:    "hola",
+				},
+				{
+					urlPath: "/ignoredurl",
+					method:  http.MethodPost,
+					key:     "postkey",
+					startAt: 0,
+					body:    "hola",
+				},
+			},
+			options: []Option{
+				WithIgnoredURLPaths("/ignoredurl"),
+			},
+			expectedResp: map[int]resp{
+				0: {
+					key:    "getkey",
+					status: http.StatusOK,
+					body:   "hola",
+				},
+				1: {
+					key:    "getkey",
+					status: http.StatusOK,
+					body:   "hola",
+				},
+			},
+			expectedCounter: 2,
+		},
+		{
 			name:              "1 request with failing fingerprinter",
 			reqProcessingTime: 0,
 			reqws: []req{
 				{
+					urlPath: "test",
 					method:  http.MethodPost,
 					key:     "onekey",
 					startAt: 0,
@@ -273,12 +321,14 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			reqProcessingTime: 0,
 			reqws: []req{
 				{
+					urlPath: "test",
 					method:  http.MethodPost,
 					key:     "onekey",
 					startAt: 0,
 					body:    "hola",
 				},
 				{
+					urlPath: "test",
 					method:  http.MethodPost,
 					key:     "onekey",
 					startAt: 10 * time.Millisecond,
@@ -311,6 +361,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			reqProcessingTime: 0,
 			reqws: []req{
 				{
+					urlPath: "test",
 					method:  http.MethodPost,
 					key:     "faultystorekey",
 					startAt: 0,
@@ -333,6 +384,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			reqProcessingTime: 0,
 			reqws: []req{
 				{
+					urlPath: "test",
 					method:  http.MethodPost,
 					key:     "samekey",
 					startAt: 0,
@@ -401,7 +453,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 
 					time.Sleep(reqw.startAt)
 
-					status, body, err := sendReq(context.Background(), reqw.method, server, key, body)
+					status, body, err := sendReq(context.Background(), reqw.method, reqw.urlPath, server, key, body)
 					if err != nil {
 						t.Errorf("SendPOSTReq: %v", err)
 					}
@@ -514,8 +566,16 @@ func TestTeeResponseWriterWrite(t *testing.T) {
 	}
 }
 
-func sendReq(ctx context.Context, method string, server *httptest.Server, key, reqBody string) (int, string, error) {
-	req, _ := http.NewRequestWithContext(ctx, method, server.URL, bytes.NewBufferString(reqBody))
+func sendReq(ctx context.Context, method string, urlPath string, server *httptest.Server, key, reqBody string) (int, string, error) {
+	if len(urlPath) > 0 && urlPath[0] != '/' {
+		urlPath = "/" + urlPath
+	}
+
+	req, errR := http.NewRequestWithContext(ctx, method, server.URL+urlPath, bytes.NewBufferString(reqBody))
+	if errR != nil {
+		return 0, "", errR
+	}
+
 	req.Header.Set(DefaultIdempotencyKeyHeader, key)
 
 	resp, err := http.DefaultClient.Do(req)

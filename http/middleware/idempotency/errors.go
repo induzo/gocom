@@ -9,6 +9,8 @@ import (
 )
 
 type RequestContext struct {
+	URL       string
+	Method    string
 	KeyHeader string
 	Key       string
 }
@@ -19,6 +21,8 @@ func (idrc RequestContext) String() string {
 
 func (idrc RequestContext) toAttrs() []slog.Attr {
 	return []slog.Attr{
+		slog.String("url", idrc.URL),
+		slog.String("method", idrc.Method),
 		slog.String("idempotency_key_header", idrc.KeyHeader),
 		slog.String("idempotency_key", idrc.Key),
 	}
