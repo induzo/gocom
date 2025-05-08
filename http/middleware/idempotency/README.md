@@ -32,6 +32,7 @@ Package idempotency provides an HTTP middleware for managing idempotency. Idempo
   - [func WithFingerprinter\(fn func\(\*http.Request\) \(\[\]byte, error\)\) Option](<#WithFingerprinter>)
   - [func WithIdempotencyKeyHeader\(header string\) Option](<#WithIdempotencyKeyHeader>)
   - [func WithIdempotentReplayedHeader\(header string\) Option](<#WithIdempotentReplayedHeader>)
+  - [func WithIgnoredURLPaths\(urlPaths ...string\) Option](<#WithIgnoredURLPaths>)
   - [func WithOptionalIdempotencyKey\(\) Option](<#WithOptionalIdempotencyKey>)
 - [type ProblemDetail](<#ProblemDetail>)
 - [type RequestContext](<#RequestContext>)
@@ -57,7 +58,7 @@ const (
 ```
 
 <a name="ErrorToHTTPJSONProblemDetail"></a>
-## func [ErrorToHTTPJSONProblemDetail](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L99-L103>)
+## func [ErrorToHTTPJSONProblemDetail](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L103-L107>)
 
 ```go
 func ErrorToHTTPJSONProblemDetail(respW http.ResponseWriter, req *http.Request, err error)
@@ -200,7 +201,7 @@ type ErrorToHTTPFn func(http.ResponseWriter, *http.Request, error)
 ```
 
 <a name="GetStoredResponseError"></a>
-## type [GetStoredResponseError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L68-L71>)
+## type [GetStoredResponseError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L72-L75>)
 
 
 
@@ -212,7 +213,7 @@ type GetStoredResponseError struct {
 ```
 
 <a name="GetStoredResponseError.Error"></a>
-### func \(GetStoredResponseError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L73>)
+### func \(GetStoredResponseError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L77>)
 
 ```go
 func (e GetStoredResponseError) Error() string
@@ -221,7 +222,7 @@ func (e GetStoredResponseError) Error() string
 
 
 <a name="GetStoredResponseError.Unwrap"></a>
-### func \(GetStoredResponseError\) [Unwrap](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L81>)
+### func \(GetStoredResponseError\) [Unwrap](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L85>)
 
 ```go
 func (e GetStoredResponseError) Unwrap() error
@@ -277,7 +278,7 @@ func (s *InMemStore) TryLock(ctx context.Context, key string) (context.Context, 
 
 
 <a name="MismatchedSignatureError"></a>
-## type [MismatchedSignatureError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L43-L45>)
+## type [MismatchedSignatureError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L47-L49>)
 
 
 
@@ -288,7 +289,7 @@ type MismatchedSignatureError struct {
 ```
 
 <a name="MismatchedSignatureError.Error"></a>
-### func \(MismatchedSignatureError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L47>)
+### func \(MismatchedSignatureError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L51>)
 
 ```go
 func (e MismatchedSignatureError) Error() string
@@ -297,7 +298,7 @@ func (e MismatchedSignatureError) Error() string
 
 
 <a name="MissingIdempotencyKeyHeaderError"></a>
-## type [MissingIdempotencyKeyHeaderError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L27-L29>)
+## type [MissingIdempotencyKeyHeaderError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L31-L33>)
 
 
 
@@ -308,7 +309,7 @@ type MissingIdempotencyKeyHeaderError struct {
 ```
 
 <a name="MissingIdempotencyKeyHeaderError.Error"></a>
-### func \(MissingIdempotencyKeyHeaderError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L31>)
+### func \(MissingIdempotencyKeyHeaderError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L35>)
 
 ```go
 func (e MissingIdempotencyKeyHeaderError) Error() string
@@ -370,6 +371,15 @@ func WithIdempotentReplayedHeader(header string) Option
 
 WithIdempotentReplayedHeader sets the header to use for idempotent replayed responses.
 
+<a name="WithIgnoredURLPaths"></a>
+### func [WithIgnoredURLPaths](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L54>)
+
+```go
+func WithIgnoredURLPaths(urlPaths ...string) Option
+```
+
+WithIgnoredURLPaths sets the URL paths that are ignored by idempotency. By default, no URLs are ignored.
+
 <a name="WithOptionalIdempotencyKey"></a>
 ### func [WithOptionalIdempotencyKey](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L10>)
 
@@ -380,7 +390,7 @@ func WithOptionalIdempotencyKey() Option
 WithOptionalIdempotencyKey sets the idempotency key to optional.
 
 <a name="ProblemDetail"></a>
-## type [ProblemDetail](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L86-L94>)
+## type [ProblemDetail](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L90-L98>)
 
 Conforming to RFC9457 \(https://www.rfc-editor.org/rfc/rfc9457.html\)
 
@@ -397,19 +407,21 @@ type ProblemDetail struct {
 ```
 
 <a name="RequestContext"></a>
-## type [RequestContext](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L11-L14>)
+## type [RequestContext](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L11-L16>)
 
 
 
 ```go
 type RequestContext struct {
+    URL       string
+    Method    string
     KeyHeader string
     Key       string
 }
 ```
 
 <a name="RequestContext.String"></a>
-### func \(RequestContext\) [String](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L16>)
+### func \(RequestContext\) [String](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L18>)
 
 ```go
 func (idrc RequestContext) String() string
@@ -418,7 +430,7 @@ func (idrc RequestContext) String() string
 
 
 <a name="RequestInFlightError"></a>
-## type [RequestInFlightError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L35-L37>)
+## type [RequestInFlightError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L39-L41>)
 
 
 
@@ -429,7 +441,7 @@ type RequestInFlightError struct {
 ```
 
 <a name="RequestInFlightError.Error"></a>
-### func \(RequestInFlightError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L39>)
+### func \(RequestInFlightError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L43>)
 
 ```go
 func (e RequestInFlightError) Error() string
@@ -458,7 +470,7 @@ type Store interface {
 ```
 
 <a name="StoreResponseError"></a>
-## type [StoreResponseError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L51-L54>)
+## type [StoreResponseError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L55-L58>)
 
 
 
@@ -470,7 +482,7 @@ type StoreResponseError struct {
 ```
 
 <a name="StoreResponseError.Error"></a>
-### func \(StoreResponseError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L56>)
+### func \(StoreResponseError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L60>)
 
 ```go
 func (e StoreResponseError) Error() string
@@ -479,7 +491,7 @@ func (e StoreResponseError) Error() string
 
 
 <a name="StoreResponseError.Unwrap"></a>
-### func \(StoreResponseError\) [Unwrap](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L64>)
+### func \(StoreResponseError\) [Unwrap](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L68>)
 
 ```go
 func (e StoreResponseError) Unwrap() error
