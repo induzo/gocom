@@ -108,6 +108,8 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			); errSR != nil {
 				conf.errorToHTTPFn(respW, req, StoreResponseError{
 					RequestContext: RequestContext{
+						URL:       req.URL.String(),
+						Method:    req.Method,
 						KeyHeader: conf.idempotencyKeyHeader,
 						Key:       key,
 					},
@@ -142,6 +144,8 @@ func handleRequestWithIdempotency(
 			conf.errorToHTTPFn(respW, req,
 				MismatchedSignatureError{
 					RequestContext{
+						URL:       req.URL.String(),
+						Method:    req.Method,
 						KeyHeader: conf.idempotencyKeyHeader,
 						Key:       key,
 					},
