@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/idempotency/v0.2.0] - 2025-05-08
+
+### Features
+
+- New valkeydempotency
+- Add ignored url paths
+
+### Miscellaneous Tasks
+
+- Upgrade golangci-lint
+
 ## [http/middleware/idempotency/v0.1.1] - 2025-01-28
 
 ### Documentation
@@ -10,6 +21,8 @@ All notable changes to this project will be documented in this file.
 - Update docs for module http/middleware/idempotency
 - Add details in the package file
 - Update CHANGELOG.md for http/middleware/idempotency/v0.1.0
+- Update docs for module http/middleware/idempotency
+- Update CHANGELOG.md for http/middleware/idempotency/v0.1.1
 - Update docs for module http/middleware/idempotency
 
 ### Features
