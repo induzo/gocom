@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1745063718254,
+  "lastUpdate": 1748330894476,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -280,6 +280,54 @@ window.BENCHMARK_DATA = {
           {
             "name": "BenchmarkStoreStoreResponse - B/op",
             "value": 2639,
+            "unit": "B/op",
+            "extra": "2517 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - allocs/op",
+            "value": 40,
+            "unit": "allocs/op",
+            "extra": "2517 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "f223616d162299d3b8262dd95a5c442096a26e6b",
+          "message": "docs(changelog): update CHANGELOG.md for database/pginit/v2.2.20",
+          "timestamp": "2025-05-27T15:25:34+08:00",
+          "tree_id": "f2d4d077f0b8193f48666fd9709fc706425c2d0a",
+          "url": "https://github.com/induzo/gocom/commit/f223616d162299d3b8262dd95a5c442096a26e6b"
+        },
+        "date": 1748330893701,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkStoreStoreResponse",
+            "value": 459783,
+            "unit": "ns/op\t    2634 B/op\t      40 allocs/op",
+            "extra": "2517 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - ns/op",
+            "value": 459783,
+            "unit": "ns/op",
+            "extra": "2517 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - B/op",
+            "value": 2634,
             "unit": "B/op",
             "extra": "2517 times\n4 procs"
           },
