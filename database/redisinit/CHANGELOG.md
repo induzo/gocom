@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/redisinit/v1.0.20] - 2025-05-27
+
+### Miscellaneous Tasks
+
+- Deps
+
 ## [database/redisinit/v1.0.19] - 2025-04-19
+
+### Documentation
+
+- Update CHANGELOG.md for database/redisinit/v1.0.19
 
 ### Features
 
