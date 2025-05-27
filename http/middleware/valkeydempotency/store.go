@@ -33,10 +33,25 @@ func (sto *Store) Close() error {
 	return nil
 }
 
+type TTLIncorrectError struct {
+	ttl time.Duration
+	error
+}
+
+func (e *TTLIncorrectError) Error() string {
+	return fmt.Sprintf("ttl must be greater than 0, got %s", e.ttl)
+}
+
 func NewStore(lockerOption *valkeylock.LockerOption, ttl time.Duration) (*Store, error) {
 	locker, err := valkeylock.NewLocker(*lockerOption)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create valkey locker: %w", err)
+	}
+
+	if ttl <= 0 {
+		return nil, &TTLIncorrectError{
+			ttl: ttl,
+		}
 	}
 
 	return &Store{

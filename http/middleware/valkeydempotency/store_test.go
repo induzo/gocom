@@ -31,6 +31,12 @@ func TestNewStore(t *testing.T) {
 			},
 			ttl: 1 * time.Second,
 		},
+		{
+			name:         "error - ttl is zero",
+			lockerOption: &valkeylock.LockerOption{},
+			ttl:          0,
+			wantErr:      true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -43,7 +49,9 @@ func TestNewStore(t *testing.T) {
 				return
 			}
 
-			defer sto.Close()
+			if err == nil {
+				defer sto.Close()
+			}
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewStore() error = %v, wantErr %v", err, tt.wantErr)
@@ -322,5 +330,16 @@ func BenchmarkStoreStoreResponse(b *testing.B) {
 		})
 
 		cancel()
+	}
+}
+
+func TestTTLIncorrectError_Error(t *testing.T) {
+	t.Parallel()
+
+	ttl := 1 * time.Second
+	err := &TTLIncorrectError{ttl: ttl}
+
+	if err.Error() != "ttl must be greater than 0, got 1s" {
+		t.Errorf("expected error message to be 'ttl must be greater than 0, got 1s', got '%s'", err.Error())
 	}
 }
