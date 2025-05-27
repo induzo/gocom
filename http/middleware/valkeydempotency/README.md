@@ -17,6 +17,8 @@ valkeydempotency is a package which implement the store interface for the idempo
   - [func \(sto \*Store\) GetStoredResponse\(ctx context.Context, key string\) \(\*idempotency.StoredResponse, bool, error\)](<#Store.GetStoredResponse>)
   - [func \(sto \*Store\) StoreResponse\(ctx context.Context, key string, resp \*idempotency.StoredResponse\) error](<#Store.StoreResponse>)
   - [func \(sto \*Store\) TryLock\(ctx context.Context, key string\) \(context.Context, context.CancelFunc, error\)](<#Store.TryLock>)
+- [type TTLIncorrectError](<#TTLIncorrectError>)
+  - [func \(e \*TTLIncorrectError\) Error\(\) string](<#TTLIncorrectError.Error>)
 
 
 <a name="NewMiddleware"></a>
@@ -40,7 +42,7 @@ type Store struct {
 ```
 
 <a name="NewStore"></a>
-### func [NewStore](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L36>)
+### func [NewStore](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L45>)
 
 ```go
 func NewStore(lockerOption *valkeylock.LockerOption, ttl time.Duration) (*Store, error)
@@ -58,7 +60,7 @@ func (sto *Store) Close() error
 
 
 <a name="Store.GetStoredResponse"></a>
-### func \(\*Store\) [GetStoredResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L81>)
+### func \(\*Store\) [GetStoredResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L96>)
 
 ```go
 func (sto *Store) GetStoredResponse(ctx context.Context, key string) (*idempotency.StoredResponse, bool, error)
@@ -67,7 +69,7 @@ func (sto *Store) GetStoredResponse(ctx context.Context, key string) (*idempoten
 
 
 <a name="Store.StoreResponse"></a>
-### func \(\*Store\) [StoreResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L59>)
+### func \(\*Store\) [StoreResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L74>)
 
 ```go
 func (sto *Store) StoreResponse(ctx context.Context, key string, resp *idempotency.StoredResponse) error
@@ -76,10 +78,30 @@ func (sto *Store) StoreResponse(ctx context.Context, key string, resp *idempoten
 
 
 <a name="Store.TryLock"></a>
-### func \(\*Store\) [TryLock](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L50>)
+### func \(\*Store\) [TryLock](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L65>)
 
 ```go
 func (sto *Store) TryLock(ctx context.Context, key string) (context.Context, context.CancelFunc, error)
+```
+
+
+
+<a name="TTLIncorrectError"></a>
+## type [TTLIncorrectError](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L36-L39>)
+
+
+
+```go
+type TTLIncorrectError struct {
+    // contains filtered or unexported fields
+}
+```
+
+<a name="TTLIncorrectError.Error"></a>
+### func \(\*TTLIncorrectError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L41>)
+
+```go
+func (e *TTLIncorrectError) Error() string
 ```
 
 
