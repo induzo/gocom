@@ -2,7 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/valkeydempotency/v0.1.6] - 2025-05-27
+
+### Features
+
+- Add a test on ttl
+
+### Miscellaneous Tasks
+
+- Deps
+
 ## [http/middleware/valkeydempotency/v0.1.5] - 2025-04-19
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/valkeydempotency/v0.1.5
 
 ### Features
 
