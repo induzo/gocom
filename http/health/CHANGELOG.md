@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Documentation
 
 - Update CHANGELOG.md for http/health/v1.1.15
+- Update CHANGELOG.md for http/health/v1.1.15
 
 ### Features
 
