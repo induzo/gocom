@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1745063712230,
+  "lastUpdate": 1748331181360,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -2130,6 +2130,54 @@ window.BENCHMARK_DATA = {
             "value": 7,
             "unit": "allocs/op",
             "extra": "8518 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "ada0ff1f9dabdf9b574b1a9f9274ca43fbdf312f",
+          "message": "docs: update docs for module http/middleware/valkeydempotency",
+          "timestamp": "2025-05-27T15:32:03+08:00",
+          "tree_id": "d39d294730a8c6caa3a5d5727438c327d8a6b3b6",
+          "url": "https://github.com/induzo/gocom/commit/ada0ff1f9dabdf9b574b1a9f9274ca43fbdf312f"
+        },
+        "date": 1748331180764,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkXxx",
+            "value": 117042,
+            "unit": "ns/op\t     177 B/op\t       7 allocs/op",
+            "extra": "10430 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkXxx - ns/op",
+            "value": 117042,
+            "unit": "ns/op",
+            "extra": "10430 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkXxx - B/op",
+            "value": 177,
+            "unit": "B/op",
+            "extra": "10430 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkXxx - allocs/op",
+            "value": 7,
+            "unit": "allocs/op",
+            "extra": "10430 times\n4 procs"
           }
         ]
       }
