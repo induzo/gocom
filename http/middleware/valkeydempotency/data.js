@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1753804849657,
+  "lastUpdate": 1753805276778,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -480,6 +480,54 @@ window.BENCHMARK_DATA = {
             "value": 39,
             "unit": "allocs/op",
             "extra": "2353 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "0c8f79b4b351084faf0a0b86f1370d0771196a22",
+          "message": "docs(changelog): update CHANGELOG.md for database/redisinit/v1.0.22",
+          "timestamp": "2025-07-30T00:06:20+08:00",
+          "tree_id": "2c254c0f168dd4a44107b1a1ddb2c7b569d9b1db",
+          "url": "https://github.com/induzo/gocom/commit/0c8f79b4b351084faf0a0b86f1370d0771196a22"
+        },
+        "date": 1753805276164,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkStoreStoreResponse",
+            "value": 471524,
+            "unit": "ns/op\t    2692 B/op\t      39 allocs/op",
+            "extra": "2538 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - ns/op",
+            "value": 471524,
+            "unit": "ns/op",
+            "extra": "2538 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - B/op",
+            "value": 2692,
+            "unit": "B/op",
+            "extra": "2538 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - allocs/op",
+            "value": 39,
+            "unit": "allocs/op",
+            "extra": "2538 times\n4 procs"
           }
         ]
       }
