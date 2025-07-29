@@ -134,7 +134,11 @@ func TestWithIgnoredURLPaths(t *testing.T) {
 			opt(cfg)
 
 			if len(cfg.ignoredURLPaths) != len(test.expectedURLParths) {
-				t.Errorf("WithIgnoredURLPaths did not set the URLs correctly, got %v, want %v", cfg.ignoredURLPaths, test.expectedURLParths)
+				t.Errorf(
+					"WithIgnoredURLPaths did not set the URLs correctly, got %v, want %v",
+					cfg.ignoredURLPaths,
+					test.expectedURLParths,
+				)
 			}
 
 			for _, expectedURL := range test.expectedURLParths {

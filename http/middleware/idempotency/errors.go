@@ -57,15 +57,15 @@ type StoreResponseError struct {
 	Err error
 }
 
-func (e StoreResponseError) Error() string {
+func (e *StoreResponseError) Error() string {
 	return fmt.Sprintf("error storing response: %v", e.Err)
 }
 
-func (e StoreResponseError) toAttrs() []slog.Attr {
+func (e *StoreResponseError) toAttrs() []slog.Attr {
 	return append(e.RequestContext.toAttrs(), slog.Any("store_response_error", e.Err))
 }
 
-func (e StoreResponseError) Unwrap() error {
+func (e *StoreResponseError) Unwrap() error {
 	return e.Err
 }
 
@@ -74,15 +74,15 @@ type GetStoredResponseError struct {
 	Err error
 }
 
-func (e GetStoredResponseError) Error() string {
+func (e *GetStoredResponseError) Error() string {
 	return fmt.Sprintf("error getting stored response: %v", e.Err)
 }
 
-func (e GetStoredResponseError) toAttrs() []slog.Attr {
+func (e *GetStoredResponseError) toAttrs() []slog.Attr {
 	return append(e.RequestContext.toAttrs(), slog.Any("get_stored_response_error", e.Err))
 }
 
-func (e GetStoredResponseError) Unwrap() error {
+func (e *GetStoredResponseError) Unwrap() error {
 	return e.Err
 }
 
@@ -159,7 +159,7 @@ func ErrorToHTTPJSONProblemDetail(
 
 		errorAttrs = append(errorAttrs, slog.Any("issue", exactErr))
 		errorAttrs = append(errorAttrs, exactErr.toAttrs()...)
-	case GetStoredResponseError:
+	case *GetStoredResponseError:
 		pbDetail = ProblemDetail{
 			HTTPStatusCode: http.StatusInternalServerError,
 			Type:           "errors/internal-server-error",
@@ -170,7 +170,7 @@ func ErrorToHTTPJSONProblemDetail(
 
 		errorAttrs = append(errorAttrs, slog.Any("issue", exactErr))
 		errorAttrs = append(errorAttrs, exactErr.toAttrs()...)
-	case StoreResponseError:
+	case *StoreResponseError:
 		// in case of a store response error, we want to log the error
 		// but not change the content already written to the response
 		errorAttrs = append(errorAttrs, slog.Any("issue", exactErr))

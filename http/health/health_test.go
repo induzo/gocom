@@ -29,9 +29,13 @@ func TestTimeoutError(t *testing.T) {
 		expectedString string
 	}{
 		{
-			name:           "happy path",
-			err:            &TimeoutError{name: "test", timeElapsed: time.Second},
-			expectedString: fmt.Sprintf("health check function: %s timed out after %v", "test", time.Second),
+			name: "happy path",
+			err:  &TimeoutError{name: "test", timeElapsed: time.Second},
+			expectedString: fmt.Sprintf(
+				"health check function: %s timed out after %v",
+				"test",
+				time.Second,
+			),
 		},
 	}
 
@@ -55,9 +59,13 @@ func TestCheckError(t *testing.T) {
 		expectedString string
 	}{
 		{
-			name:           "happy path",
-			err:            &CheckError{name: "test", err: errors.New("err")},
-			expectedString: fmt.Sprintf("health check function: %s returned err: %v", "test", errors.New("err")),
+			name: "happy path",
+			err:  &CheckError{name: "test", err: errors.New("err")},
+			expectedString: fmt.Sprintf(
+				"health check function: %s returned err: %v",
+				"test",
+				errors.New("err"),
+			),
 		},
 	}
 

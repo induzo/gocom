@@ -374,7 +374,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 				0: {
 					key:    "onekey",
 					status: http.StatusOK,
-					body:   "holaStoreResponseError: error storing response: store error",
+					body:   "holaStoreResponseError: error storing response: StoreResponse: store error",
 				},
 			},
 			expectedCounter: 1,
@@ -453,7 +453,14 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 
 					time.Sleep(reqw.startAt)
 
-					status, body, err := sendReq(context.Background(), reqw.method, reqw.urlPath, server, key, body)
+					status, body, err := sendReq(
+						context.Background(),
+						reqw.method,
+						reqw.urlPath,
+						server,
+						key,
+						body,
+					)
 					if err != nil {
 						t.Errorf("SendPOSTReq: %v", err)
 					}
@@ -566,12 +573,22 @@ func TestTeeResponseWriterWrite(t *testing.T) {
 	}
 }
 
-func sendReq(ctx context.Context, method string, urlPath string, server *httptest.Server, key, reqBody string) (int, string, error) {
+func sendReq(
+	ctx context.Context,
+	method, urlPath string,
+	server *httptest.Server,
+	key, reqBody string,
+) (int, string, error) {
 	if len(urlPath) > 0 && urlPath[0] != '/' {
 		urlPath = "/" + urlPath
 	}
 
-	req, errR := http.NewRequestWithContext(ctx, method, server.URL+urlPath, bytes.NewBufferString(reqBody))
+	req, errR := http.NewRequestWithContext(
+		ctx,
+		method,
+		server.URL+urlPath,
+		bytes.NewBufferString(reqBody),
+	)
 	if errR != nil {
 		return 0, "", errR
 	}
@@ -598,6 +615,9 @@ func errorToString(
 	_ *http.Request,
 	err error,
 ) {
+	storeRespErr := &StoreResponseError{}
+
+	getRespErr := &GetStoredResponseError{}
 	switch {
 	case errors.As(err, &MissingIdempotencyKeyHeaderError{}):
 		http.Error(writer, "MissingIdempotencyKeyHeaderError", http.StatusBadRequest)
@@ -605,10 +625,14 @@ func errorToString(
 		http.Error(writer, "RequestInFlightError", http.StatusConflict)
 	case errors.As(err, &MismatchedSignatureError{}):
 		http.Error(writer, "MismatchedSignatureError", http.StatusBadRequest)
-	case errors.As(err, &StoreResponseError{}):
+	case errors.As(err, &storeRespErr):
 		http.Error(writer, fmt.Sprintf("StoreResponseError: %v", err), http.StatusOK)
-	case errors.As(err, &GetStoredResponseError{}):
-		http.Error(writer, fmt.Sprintf("internal server error: %v", err), http.StatusInternalServerError)
+	case errors.As(err, &getRespErr):
+		http.Error(
+			writer,
+			fmt.Sprintf("internal server error: %v", err),
+			http.StatusInternalServerError,
+		)
 	default:
 		http.Error(
 			writer,

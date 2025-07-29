@@ -106,7 +106,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 					RequestHash: requestHash,
 				},
 			); errSR != nil {
-				conf.errorToHTTPFn(respW, req, StoreResponseError{
+				conf.errorToHTTPFn(respW, req, &StoreResponseError{
 					RequestContext: RequestContext{
 						URL:       req.URL.String(),
 						Method:    req.Method,
@@ -166,7 +166,10 @@ func handleRequestWithIdempotency(
 // buildRequestHash is the function that will take the request
 //
 // and compute its hash
-func buildRequestHash(fingerprinter func(*http.Request) ([]byte, error), req *http.Request) ([]byte, error) {
+func buildRequestHash(
+	fingerprinter func(*http.Request) ([]byte, error),
+	req *http.Request,
+) ([]byte, error) {
 	// Compute the request fingerprint
 	fingerprint, err := fingerprinter(req)
 	if err != nil {
@@ -200,7 +203,11 @@ func replayResponse(conf *config, respW http.ResponseWriter, resp *StoredRespons
 
 	if len(resp.Body) > 0 {
 		if _, errW := respW.Write(resp.Body); errW != nil {
-			conf.errorToHTTPFn(respW, nil, fmt.Errorf("failed writing replayed response body: %w", errW))
+			conf.errorToHTTPFn(
+				respW,
+				nil,
+				fmt.Errorf("failed writing replayed response body: %w", errW),
+			)
 		}
 	}
 }

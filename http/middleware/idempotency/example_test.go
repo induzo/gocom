@@ -77,7 +77,12 @@ func ExampleNewMiddleware() {
 }
 
 func sendPOSTReq(ctx context.Context, server *httptest.Server, key, reqBody string) {
-	req, _ := http.NewRequestWithContext(ctx, http.MethodPost, server.URL, bytes.NewBufferString(reqBody))
+	req, _ := http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		server.URL,
+		bytes.NewBufferString(reqBody),
+	)
 	req.Header.Set(idempotency.DefaultIdempotencyKeyHeader, key)
 
 	resp, err := http.DefaultClient.Do(req)

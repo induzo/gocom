@@ -135,7 +135,8 @@ func (h *Health) Handler() http.Handler {
 				ErrorMessage: err.Error(),
 			}
 
-			logger.Error(
+			logger.ErrorContext(
+				req.Context(),
 				"health check failed",
 				slog.String("path", req.URL.Path),
 				slog.String("method", req.Method),
@@ -147,7 +148,8 @@ func (h *Health) Handler() http.Handler {
 			if err := json.NewEncoder(respW).EncodeContext(req.Context(), responseBody); err != nil {
 				respW.WriteHeader(http.StatusInternalServerError)
 
-				logger.Error(
+				logger.ErrorContext(
+					req.Context(),
 					"write response body",
 					slog.String("path", req.URL.Path),
 					slog.String("method", req.Method),

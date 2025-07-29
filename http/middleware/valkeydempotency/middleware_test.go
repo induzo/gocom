@@ -338,7 +338,9 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			options := append([]idempotency.Option{idempotency.WithErrorToHTTPFn(errorToString)}, tt.options...)
+			options := append(
+				[]idempotency.Option{idempotency.WithErrorToHTTPFn(errorToString)},
+				tt.options...)
 
 			idempotencyMiddleware, closeLock, errM := NewMiddleware(
 				&valkeylock.LockerOption{
@@ -419,7 +421,12 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 	}
 }
 
-func sendReq(ctx context.Context, method string, server *httptest.Server, key, reqBody string) (int, string, error) {
+func sendReq(
+	ctx context.Context,
+	method string,
+	server *httptest.Server,
+	key, reqBody string,
+) (int, string, error) {
 	req, _ := http.NewRequestWithContext(ctx, method, server.URL, bytes.NewBufferString(reqBody))
 	req.Header.Set(idempotency.DefaultIdempotencyKeyHeader, key)
 
@@ -443,6 +450,9 @@ func errorToString(
 	_ *http.Request,
 	err error,
 ) {
+	storeRespErr := &idempotency.StoreResponseError{}
+
+	getRespErr := &idempotency.GetStoredResponseError{}
 	switch {
 	case errors.As(err, &idempotency.MissingIdempotencyKeyHeaderError{}):
 		http.Error(writer, "MissingIdempotencyKeyHeaderError", http.StatusBadRequest)
@@ -450,10 +460,14 @@ func errorToString(
 		http.Error(writer, "RequestInFlightError", http.StatusConflict)
 	case errors.As(err, &idempotency.MismatchedSignatureError{}):
 		http.Error(writer, "MismatchedSignatureError", http.StatusBadRequest)
-	case errors.As(err, &idempotency.StoreResponseError{}):
+	case errors.As(err, &storeRespErr):
 		http.Error(writer, fmt.Sprintf("StoreResponseError: %v", err), http.StatusOK)
-	case errors.As(err, &idempotency.GetStoredResponseError{}):
-		http.Error(writer, fmt.Sprintf("internal server error: %v", err), http.StatusInternalServerError)
+	case errors.As(err, &getRespErr):
+		http.Error(
+			writer,
+			fmt.Sprintf("internal server error: %v", err),
+			http.StatusInternalServerError,
+		)
 	default:
 		http.Error(
 			writer,

@@ -56,7 +56,10 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Could not start resource: %s", errP)
 	}
 
-	connStr = fmt.Sprintf("postgres://postgres:postgres@%s/datawarehouse?sslmode=disable", net.JoinHostPort(resource.GetBoundIP("5432/tcp"), resource.GetPort("5432/tcp")))
+	connStr = fmt.Sprintf(
+		"postgres://postgres:postgres@%s/datawarehouse?sslmode=disable",
+		net.JoinHostPort(resource.GetBoundIP("5432/tcp"), resource.GetPort("5432/tcp")),
+	)
 
 	resource.Expire(60) // Tell docker to hard kill the container in 60 seconds
 
@@ -165,7 +168,11 @@ func TestConnPool(t *testing.T) {
 			}
 
 			if db.Config().MaxConnLifetime != tt.wantMaxConnLifetime {
-				t.Errorf("expected (%v) but got (%v)", tt.wantMaxConnLifetime, db.Config().MaxConnLifetime)
+				t.Errorf(
+					"expected (%v) but got (%v)",
+					tt.wantMaxConnLifetime,
+					db.Config().MaxConnLifetime,
+				)
 			}
 		})
 	}
@@ -366,7 +373,8 @@ func TestConnPool_WithCustomDataTypes(t *testing.T) {
 
 			var u uuid.UUID
 
-			err = db.QueryRow(context.Background(), "select 'b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5'::uuid").Scan(&u)
+			err = db.QueryRow(context.Background(), "select 'b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5'::uuid").
+				Scan(&u)
 			if err != nil && !tt.expectErrUUID {
 				t.Errorf("expected no err: %s", err)
 			}
@@ -425,13 +433,19 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 			}
 			defer tx.Rollback(ctx)
 
-			_, err = tx.Exec(ctx, "CREATE TABLE IF NOT EXISTS uuid_decimal(uuid uuid, price numeric, PRIMARY KEY (uuid))")
+			_, err = tx.Exec(
+				ctx,
+				"CREATE TABLE IF NOT EXISTS uuid_decimal(uuid uuid, price numeric, PRIMARY KEY (uuid))",
+			)
 			if err != nil {
 				t.Errorf("expected no error but got: %v", err)
 			}
 
 			// create
-			row := tx.QueryRow(ctx, "INSERT INTO uuid_decimal(uuid, price) VALUES('b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5', 10.888888888888) RETURNING uuid, price")
+			row := tx.QueryRow(
+				ctx,
+				"INSERT INTO uuid_decimal(uuid, price) VALUES('b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5', 10.888888888888) RETURNING uuid, price",
+			)
 
 			r := struct {
 				uuid  uuid.UUID
@@ -442,7 +456,11 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 			}
 
 			if r.uuid.String() != "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5" {
-				t.Errorf("expected %s but got: %s", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5", r.uuid.String())
+				t.Errorf(
+					"expected %s but got: %s",
+					"b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
+					r.uuid.String(),
+				)
 			}
 
 			if r.price.Cmp(tenPointEight) != 0 {
@@ -472,7 +490,11 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 				}
 
 				if r.uuid.String() != "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5" {
-					t.Errorf("expected %s but got: %s", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5", r.uuid.String())
+					t.Errorf(
+						"expected %s but got: %s",
+						"b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
+						r.uuid.String(),
+					)
 				}
 
 				if r.price.Cmp(tenPointEight) != 0 {
@@ -487,7 +509,11 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 			}
 
 			// update
-			row = tx.QueryRow(ctx, "UPDATE uuid_decimal SET price = 11.00 WHERE uuid = $1 RETURNING uuid, price", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5")
+			row = tx.QueryRow(
+				ctx,
+				"UPDATE uuid_decimal SET price = 11.00 WHERE uuid = $1 RETURNING uuid, price",
+				"b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
+			)
 			if err := row.Scan(&r.uuid, &r.price); err != nil {
 				t.Errorf("expected no error but got: %v, (%+v)", err, row)
 			}
@@ -497,7 +523,11 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 			}
 
 			// delete
-			row = tx.QueryRow(ctx, "DELETE FROM uuid_decimal WHERE uuid = $1 RETURNING uuid, price", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5")
+			row = tx.QueryRow(
+				ctx,
+				"DELETE FROM uuid_decimal WHERE uuid = $1 RETURNING uuid, price",
+				"b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
+			)
 			if err := row.Scan(&r.uuid, &r.price); err != nil {
 				t.Errorf("expected no error but got: %v, (%+v)", err, row)
 			}
@@ -506,7 +536,11 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 				t.Error("inserted data doesn't match with input")
 			}
 
-			row = tx.QueryRow(ctx, "SELECT * FROM uuid_decimal WHERE uuid = $1", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5")
+			row = tx.QueryRow(
+				ctx,
+				"SELECT * FROM uuid_decimal WHERE uuid = $1",
+				"b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
+			)
 			if err := row.Scan(&r.uuid, &r.price); err != nil && !errors.Is(err, pgx.ErrNoRows) {
 				t.Errorf("expected no error but got: %v, (%+v)", err, row)
 			}
@@ -568,13 +602,19 @@ func TestConnPoolWithCustomTypesGoogle_CRUD(t *testing.T) {
 
 			defer tx.Rollback(ctx)
 
-			_, err = tx.Exec(ctx, "CREATE TABLE IF NOT EXISTS uuid_decimal(uuid uuid, price numeric, PRIMARY KEY (uuid))")
+			_, err = tx.Exec(
+				ctx,
+				"CREATE TABLE IF NOT EXISTS uuid_decimal(uuid uuid, price numeric, PRIMARY KEY (uuid))",
+			)
 			if err != nil {
 				t.Errorf("expected no error but got: %v", err)
 			}
 
 			// create
-			row := tx.QueryRow(ctx, "INSERT INTO uuid_decimal(uuid, price) VALUES('b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5', 10.888888888888) RETURNING uuid, price")
+			row := tx.QueryRow(
+				ctx,
+				"INSERT INTO uuid_decimal(uuid, price) VALUES('b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5', 10.888888888888) RETURNING uuid, price",
+			)
 
 			r := struct {
 				uuid  uuid.UUID
@@ -586,7 +626,11 @@ func TestConnPoolWithCustomTypesGoogle_CRUD(t *testing.T) {
 			}
 
 			if r.uuid.String() != "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5" {
-				t.Errorf("expected %s but got: %s", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5", r.uuid.String())
+				t.Errorf(
+					"expected %s but got: %s",
+					"b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
+					r.uuid.String(),
+				)
 			}
 
 			if r.price.Cmp(tenPointEight) != 0 {
@@ -616,7 +660,11 @@ func TestConnPoolWithCustomTypesGoogle_CRUD(t *testing.T) {
 				}
 
 				if r.uuid.String() != "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5" {
-					t.Errorf("expected %s but got: %s", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5", r.uuid.String())
+					t.Errorf(
+						"expected %s but got: %s",
+						"b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
+						r.uuid.String(),
+					)
 				}
 
 				if r.price.Cmp(tenPointEight) != 0 {
@@ -631,7 +679,11 @@ func TestConnPoolWithCustomTypesGoogle_CRUD(t *testing.T) {
 			}
 
 			// update
-			row = tx.QueryRow(ctx, "UPDATE uuid_decimal SET price = 11.00 WHERE uuid = $1 RETURNING uuid, price", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5")
+			row = tx.QueryRow(
+				ctx,
+				"UPDATE uuid_decimal SET price = 11.00 WHERE uuid = $1 RETURNING uuid, price",
+				"b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
+			)
 			if err := row.Scan(&r.uuid, &r.price); err != nil {
 				t.Errorf("expected no error but got: %v, (%+v)", err, row)
 			}
@@ -641,7 +693,11 @@ func TestConnPoolWithCustomTypesGoogle_CRUD(t *testing.T) {
 			}
 
 			// delete
-			row = tx.QueryRow(ctx, "DELETE FROM uuid_decimal WHERE uuid = $1 RETURNING uuid, price", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5")
+			row = tx.QueryRow(
+				ctx,
+				"DELETE FROM uuid_decimal WHERE uuid = $1 RETURNING uuid, price",
+				"b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
+			)
 			if err := row.Scan(&r.uuid, &r.price); err != nil {
 				t.Errorf("expected no error but got: %v, (%+v)", err, row)
 			}
@@ -650,7 +706,11 @@ func TestConnPoolWithCustomTypesGoogle_CRUD(t *testing.T) {
 				t.Error("inserted data doesn't match with input")
 			}
 
-			row = tx.QueryRow(ctx, "SELECT * FROM uuid_decimal WHERE uuid = $1", "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5")
+			row = tx.QueryRow(
+				ctx,
+				"SELECT * FROM uuid_decimal WHERE uuid = $1",
+				"b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
+			)
 			if err := row.Scan(&r.uuid, &r.price); err != nil && !errors.Is(err, pgx.ErrNoRows) {
 				t.Errorf("expected no error but got: %v, (%+v)", err, row)
 			}

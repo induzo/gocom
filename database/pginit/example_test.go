@@ -12,7 +12,9 @@ import (
 
 //nolint:testableexamples // cannot run without db
 func ExamplePGInit_ConnPool() {
-	pgi, err := pginit.New("postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m")
+	pgi, err := pginit.New(
+		"postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m",
+	)
 	if err != nil {
 		log.Fatalf("init pgi config: %v", err)
 	}
@@ -64,7 +66,9 @@ func ExamplePGInit_ConnPool_withlogger() {
 //
 //nolint:testableexamples // cannot run without db
 func ExampleConnPoolHealthCheck() {
-	pgi, err := pginit.New("postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m")
+	pgi, err := pginit.New(
+		"postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m",
+	)
 	if err != nil {
 		log.Fatalf("init pgi config: %v", err)
 	}

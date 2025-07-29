@@ -340,6 +340,9 @@ func TestTTLIncorrectError_Error(t *testing.T) {
 	err := &TTLIncorrectError{ttl: ttl}
 
 	if err.Error() != "ttl must be greater than 0, got 1s" {
-		t.Errorf("expected error message to be 'ttl must be greater than 0, got 1s', got '%s'", err.Error())
+		t.Errorf(
+			"expected error message to be 'ttl must be greater than 0, got 1s', got '%s'",
+			err.Error(),
+		)
 	}
 }

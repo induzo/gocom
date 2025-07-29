@@ -57,7 +57,7 @@ func WithIgnoredURLPaths(urlPaths ...string) Option {
 		urlPathsMap := make(map[string]struct{})
 
 		for _, url := range urlPaths {
-			if len(url) == 0 {
+			if url == "" {
 				continue
 			}
 

@@ -157,5 +157,10 @@ func BenchmarkFromRequest(b *testing.B) {
 }
 
 func TestMain(m *testing.M) {
-	goleak.VerifyTestMain(m, goleak.IgnoreAnyFunction("github.com/testcontainers/testcontainers-go.(*Reaper).Connect.func1"))
+	goleak.VerifyTestMain(
+		m,
+		goleak.IgnoreAnyFunction(
+			"github.com/testcontainers/testcontainers-go.(*Reaper).Connect.func1",
+		),
+	)
 }

@@ -167,7 +167,7 @@ func TestErrorToHTTPJSONProblemDetail(t *testing.T) {
 		},
 		{
 			name: "store response",
-			err: StoreResponseError{
+			err: &StoreResponseError{
 				RequestContext: RequestContext{
 					Key:       "key",
 					KeyHeader: DefaultIdempotencyKeyHeader,
@@ -179,7 +179,7 @@ func TestErrorToHTTPJSONProblemDetail(t *testing.T) {
 		},
 		{
 			name: "get stored response",
-			err: GetStoredResponseError{
+			err: &GetStoredResponseError{
 				RequestContext: RequestContext{
 					Key:       "key",
 					KeyHeader: DefaultIdempotencyKeyHeader,

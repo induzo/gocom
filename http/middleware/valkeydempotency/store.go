@@ -35,7 +35,6 @@ func (sto *Store) Close() error {
 
 type TTLIncorrectError struct {
 	ttl time.Duration
-	error
 }
 
 func (e *TTLIncorrectError) Error() string {
@@ -62,7 +61,10 @@ func NewStore(lockerOption *valkeylock.LockerOption, ttl time.Duration) (*Store,
 		nil
 }
 
-func (sto *Store) TryLock(ctx context.Context, key string) (context.Context, context.CancelFunc, error) {
+func (sto *Store) TryLock(
+	ctx context.Context,
+	key string,
+) (context.Context, context.CancelFunc, error) {
 	ctx, cancel, err := sto.locker.TryWithContext(ctx, key)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to lock key %s: %w", key, err)
@@ -71,7 +73,11 @@ func (sto *Store) TryLock(ctx context.Context, key string) (context.Context, con
 	return ctx, cancel, nil
 }
 
-func (sto *Store) StoreResponse(ctx context.Context, key string, resp *idempotency.StoredResponse) error {
+func (sto *Store) StoreResponse(
+	ctx context.Context,
+	key string,
+	resp *idempotency.StoredResponse,
+) error {
 	// serialize the response
 	serializedResp, errM := json.Marshal(resp)
 	if errM != nil {
@@ -93,7 +99,10 @@ func (sto *Store) StoreResponse(ctx context.Context, key string, resp *idempoten
 	return nil
 }
 
-func (sto *Store) GetStoredResponse(ctx context.Context, key string) (*idempotency.StoredResponse, bool, error) {
+func (sto *Store) GetStoredResponse(
+	ctx context.Context,
+	key string,
+) (*idempotency.StoredResponse, bool, error) {
 	var storedResp idempotency.StoredResponse
 
 	respB, err := sto.client.Do(

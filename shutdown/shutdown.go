@@ -84,7 +84,11 @@ func Before(before string) HookOption {
 }
 
 // Add adds a shutdown hook to be run when the signal is received.
-func (s *Shutdown) Add(name string, shutdownFunc func(ctx context.Context) error, hookOpts ...HookOption) {
+func (s *Shutdown) Add(
+	name string,
+	shutdownFunc func(ctx context.Context) error,
+	hookOpts ...HookOption,
+) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -161,7 +165,10 @@ func (s *Shutdown) Hooks() []Hook {
 		// append all remaining hooks with before option at the end
 		hooks = append(hooks, hooksWithValidBefore...)
 
-		s.logger.Warn("circular dependency detected in hooks, running them not in order")
+		s.logger.WarnContext(
+			context.Background(),
+			"circular dependency detected in hooks, running them not in order",
+		)
 	}
 
 	return hooks
@@ -193,13 +200,13 @@ func (s *Shutdown) Listen(ctx context.Context, signals ...os.Signal) error {
 
 	var sErr error
 
-	hooks := s.Hooks()
+	hooks := s.Hooks() //nolint:contextcheck // we are not using the context here, so it is safe to ignore
 
 loop:
 	for i := range hooks {
 		hook := hooks[len(hooks)-1-i]
 
-		s.logger.Info(hook.Name + " is shutting down")
+		s.logger.InfoContext(ctx, hook.Name+" is shutting down")
 
 		errChan := make(chan error, 1)
 
@@ -227,7 +234,7 @@ loop:
 		}
 	}
 
-	s.logger.Info(fmt.Sprintf("time taken for shutdown: %v", time.Since(start)))
+	s.logger.InfoContext(ctx, fmt.Sprintf("time taken for shutdown: %v", time.Since(start)))
 
 	if sErr != nil {
 		return sErr
