@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1753805609837,
+  "lastUpdate": 1753805690966,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -1128,6 +1128,54 @@ window.BENCHMARK_DATA = {
             "value": 5,
             "unit": "allocs/op",
             "extra": "2826199 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "793a82fa6955d0097d981f5a10a89f3cb70d043e",
+          "message": "ci(secscan): update trivy version",
+          "timestamp": "2025-07-30T00:13:57+08:00",
+          "tree_id": "216ed369d8f6668b21acaf25621837ab6d88e84d",
+          "url": "https://github.com/induzo/gocom/commit/793a82fa6955d0097d981f5a10a89f3cb70d043e"
+        },
+        "date": 1753805689939,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkFromRequest",
+            "value": 398.2,
+            "unit": "ns/op\t     723 B/op\t       5 allocs/op",
+            "extra": "2866046 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromRequest - ns/op",
+            "value": 398.2,
+            "unit": "ns/op",
+            "extra": "2866046 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromRequest - B/op",
+            "value": 723,
+            "unit": "B/op",
+            "extra": "2866046 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromRequest - allocs/op",
+            "value": 5,
+            "unit": "allocs/op",
+            "extra": "2866046 times\n4 procs"
           }
         ]
       }
