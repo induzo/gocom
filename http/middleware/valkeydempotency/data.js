@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1750748260476,
+  "lastUpdate": 1753804849657,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -432,6 +432,54 @@ window.BENCHMARK_DATA = {
             "value": 40,
             "unit": "allocs/op",
             "extra": "2516 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "8f09a6ab37a4ba74790730544127aff6286e4b63",
+          "message": "chore: lint-all fixes",
+          "timestamp": "2025-07-29T23:59:18+08:00",
+          "tree_id": "1f4411b69dfcbc3425dcb09fc9e732f963117571",
+          "url": "https://github.com/induzo/gocom/commit/8f09a6ab37a4ba74790730544127aff6286e4b63"
+        },
+        "date": 1753804849248,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkStoreStoreResponse",
+            "value": 477616,
+            "unit": "ns/op\t    2697 B/op\t      39 allocs/op",
+            "extra": "2353 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - ns/op",
+            "value": 477616,
+            "unit": "ns/op",
+            "extra": "2353 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - B/op",
+            "value": 2697,
+            "unit": "B/op",
+            "extra": "2353 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - allocs/op",
+            "value": 39,
+            "unit": "allocs/op",
+            "extra": "2353 times\n4 procs"
           }
         ]
       }
