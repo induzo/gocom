@@ -5,7 +5,7 @@ go 1.23.5
 require (
 	github.com/induzo/gocom/http/middleware/idempotency v0.2.1
 	github.com/ory/dockertest/v3 v3.12.0
-	github.com/valkey-io/valkey-go v1.0.61
+	github.com/valkey-io/valkey-go v1.0.63
 	go.uber.org/goleak v1.3.0
 )
 
