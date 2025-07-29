@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1753805616068,
+  "lastUpdate": 1753805707290,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -2472,6 +2472,54 @@ window.BENCHMARK_DATA = {
             "value": 20,
             "unit": "allocs/op",
             "extra": "339529 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "793a82fa6955d0097d981f5a10a89f3cb70d043e",
+          "message": "ci(secscan): update trivy version",
+          "timestamp": "2025-07-30T00:13:57+08:00",
+          "tree_id": "216ed369d8f6668b21acaf25621837ab6d88e84d",
+          "url": "https://github.com/induzo/gocom/commit/793a82fa6955d0097d981f5a10a89f3cb70d043e"
+        },
+        "date": 1753805705822,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHealth",
+            "value": 3237,
+            "unit": "ns/op\t    1368 B/op\t      20 allocs/op",
+            "extra": "357415 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHealth - ns/op",
+            "value": 3237,
+            "unit": "ns/op",
+            "extra": "357415 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHealth - B/op",
+            "value": 1368,
+            "unit": "B/op",
+            "extra": "357415 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHealth - allocs/op",
+            "value": 20,
+            "unit": "allocs/op",
+            "extra": "357415 times\n4 procs"
           }
         ]
       }
