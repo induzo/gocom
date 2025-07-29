@@ -31,7 +31,7 @@ jobs:
             ~/.cache/golangci-lint
           key: ${{ runner.os }}-golangci-lint-${{ hashFiles('**/go.work.sum') }}
           restore-keys: |
-            ${{ runner.os }}-golangci-lint-
+            ${{ runner.os }}-golangci-lint-${{ hashFiles('**/go.work.sum') }}
       - name: Checkout code
         uses: actions/checkout@v4
         with:

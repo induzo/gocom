@@ -23,7 +23,7 @@ jobs:
             ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.work.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+             ${{ runner.os }}-go-${{ hashFiles('**/go.work.sum') }}
       - name: Checkout code
         uses: actions/checkout@v4
         with:
