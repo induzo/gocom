@@ -16,7 +16,10 @@ func ExampleNewLogger() {
 	textAdapter := slog.NewTextHandler(io.Discard, nil)
 	logger := slog.New(textAdapter)
 
-	pgxPool, _ := pgxpool.New(context.Background(), "postgres://postgres:postgres@localhost:5432/datawarehouse")
+	pgxPool, _ := pgxpool.New(
+		context.Background(),
+		"postgres://postgres:postgres@localhost:5432/datawarehouse", // pragma: allowlist secret
+	)
 
 	pgxPool.Config().ConnConfig.Tracer = &tracelog.TraceLog{
 		Logger:   slogadapter.NewLogger(logger),

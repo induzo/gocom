@@ -2,21 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [database/pgx-slog/v1.0.24] - 2025-06-24
-
-### Miscellaneous Tasks
-
-- Update deps
-
-## [database/pgx-slog/v1.0.23] - 2025-05-27
+## [database/pgx-slog/v1.0.23] - 2025-07-29
 
 ### Documentation
 
 - Update CHANGELOG.md for database/pgx-slog/v1.0.23
+- Update CHANGELOG.md for database/pgx-slog/v1.0.24
 
 ### Features
 
 - Update deps
+
+### Miscellaneous Tasks
+
+- Update deps
+- Update deps go work sync
 
 ## [database/pgx-slog/v1.0.22] - 2025-04-19
 
