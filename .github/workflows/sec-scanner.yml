@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  TRIVY_VERSION: "v0.64.1"
+  TRIVY_VERSION: "0.64.1"
 
 jobs:
   sec-scan:
