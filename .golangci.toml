@@ -1,114 +1,123 @@
 version = '2'
 
-# golangci-lint linters --disable=exhaustruct,funlen,godot,inamedparam,ireturn,musttag,tagliatelle,testpackage
+# to be activated in another PR
+[issues]
+fix = true
+
+# golangci-lint linters --disable=exhaustruct,funlen,godot,inamedparam,ireturn,musttag,tagliatelle,testpackage,wsl,funcorder,embeddedstructfieldcheck
 [linters]
 default = 'none'
 enable = [
-    'asasalint',
-    'asciicheck',
-    'bidichk',
-    'bodyclose',
-    'canonicalheader',
-    'containedctx',
-    'contextcheck',
-    'copyloopvar',
-    'cyclop',
-    'decorder',
-    'depguard',
-    'dogsled',
-    'dupl',
-    'dupword',
-    'durationcheck',
-    'err113',
-    'errcheck',
-    'errchkjson',
-    'errname',
-    'errorlint',
-    'exhaustive',
-    'exptostd',
-    'fatcontext',
-    'forbidigo',
-    'forcetypeassert',
-    'ginkgolinter',
-    'gocheckcompilerdirectives',
-    'gochecknoglobals',
-    'gochecknoinits',
-    'gochecksumtype',
-    'gocognit',
-    'goconst',
-    'gocritic',
-    'gocyclo',
-    'godox',
-    'goheader',
-    'gomoddirectives',
-    'gomodguard',
-    'goprintffuncname',
-    'gosec',
-    'gosmopolitan',
-    'govet',
-    'grouper',
-    'iface',
-    'importas',
-    'ineffassign',
-    'interfacebloat',
-    'intrange',
-    'lll',
-    'loggercheck',
-    'maintidx',
-    'makezero',
-    'mirror',
-    'misspell',
-    'mnd',
-    'nakedret',
-    'nestif',
-    'nilerr',
-    'nilnesserr',
-    'nilnil',
-    'nlreturn',
-    'noctx',
-    'nolintlint',
-    'nonamedreturns',
-    'nosprintfhostport',
-    'paralleltest',
-    'perfsprint',
-    'prealloc',
-    'predeclared',
-    'promlinter',
-    'protogetter',
-    'reassign',
-    'recvcheck',
-    'revive',
-    'rowserrcheck',
-    'sloglint',
-    'spancheck',
-    'sqlclosecheck',
-    'staticcheck',
-    'tagalign',
-    'testableexamples',
-    'testifylint',
-    'thelper',
-    'tparallel',
-    'unconvert',
-    'unparam',
-    'unused',
-    'usestdlibvars',
-    'usetesting',
-    'varnamelen',
-    'wastedassign',
-    'whitespace',
-    'wrapcheck',
-    'wsl',
-    'zerologlint',
+  'arangolint',
+  'asasalint',
+  'asciicheck',
+  'bidichk',
+  'bodyclose',
+  'canonicalheader',
+  'containedctx',
+  'contextcheck',
+  'copyloopvar',
+  'cyclop',
+  'decorder',
+  'depguard',
+  'dogsled',
+  'dupl',
+  'dupword',
+  'durationcheck',
+  'err113',
+  'errcheck',
+  'errchkjson',
+  'errname',
+  'errorlint',
+  'exhaustive',
+  'exptostd',
+  'fatcontext',
+  'forbidigo',
+  'forcetypeassert',
+  'ginkgolinter',
+  'gocheckcompilerdirectives',
+  'gochecknoglobals',
+  'gochecknoinits',
+  'gochecksumtype',
+  'gocognit',
+  'goconst',
+  'gocritic',
+  'gocyclo',
+  'godox',
+  'goheader',
+  'gomoddirectives',
+  'gomodguard',
+  'goprintffuncname',
+  'gosec',
+  'gosmopolitan',
+  'govet',
+  'grouper',
+  'iface',
+  'importas',
+  'ineffassign',
+  'interfacebloat',
+  'intrange',
+  'lll',
+  'loggercheck',
+  'maintidx',
+  'makezero',
+  'mirror',
+  'misspell',
+  'mnd',
+  'nakedret',
+  'nestif',
+  'nilerr',
+  'nilnesserr',
+  'nilnil',
+  'nlreturn',
+  'noctx',
+  'nolintlint',
+  'nonamedreturns',
+  'nosprintfhostport',
+  'paralleltest',
+  'perfsprint',
+  'prealloc',
+  'predeclared',
+  'promlinter',
+  'protogetter',
+  'reassign',
+  'revive',
+  'rowserrcheck',
+  'sloglint',
+  'spancheck',
+  'sqlclosecheck',
+  'staticcheck',
+  'tagalign',
+  'testableexamples',
+  'testifylint',
+  'thelper',
+  'tparallel',
+  'unconvert',
+  'unparam',
+  'unused',
+  'usestdlibvars',
+  'usetesting',
+  'varnamelen',
+  'wastedassign',
+  'whitespace',
+  'wrapcheck',
+  'wsl_v5',
+  'zerologlint',
 
-    # Disabled by your configuration linters:
-    # exhaustruct: Checks if all structure fields are initialized.
-    # funlen: Checks for long functions. [fast]
-    # godot: Check if comments end in a period. [fast, auto-fix]
-    # inamedparam: Reports interfaces with unnamed method parameters. [fast]
-    # ireturn: Accept Interfaces, Return Concrete Types.
-    # musttag: Enforce field tags in (un)marshaled structs.
-    # tagliatelle: Checks the struct tags.
-    # testpackage: Linter that makes you use a separate _test package. [fast]
+  #  Disabled by your configuration linters:
+  #  embeddedstructfieldcheck: Embedded types should be at the top of the field list of a struct, and there must be an empty line separating embedded fields from regular fields. [fast]
+  #  exhaustruct: Checks if all structure fields are initialized.
+  #  funcorder: Checks the order of functions, methods, and constructors. [fast]
+  #  funlen: Checks for long functions. [fast]
+  #  godot: Check if comments end in a period. [fast, auto-fix]
+  #  inamedparam: Reports interfaces with unnamed method parameters. [fast]
+  #  ireturn: Accept Interfaces, Return Concrete Types.
+  #  musttag: Enforce field tags in (un)marshaled structs.
+  #  noinlineerr: Disallows inline error handling (`if err := ...; err != nil {`).
+  #  recvcheck: Checks for receiver type consistency.
+  #  tagliatelle: Checks the struct tags.
+  #  testpackage: Linter that makes you use a separate _test package. [fast]
+  #  wsl [deprecated]: Add or remove empty lines. [fast, auto-fix]
 ]
 
 [linters.settings]
@@ -118,14 +127,6 @@ enable = [
 [[linters.settings.depguard.rules.main.deny]]
 pkg = 'github.com/sirupsen/logrus'
 desc = 'please use log/slog from std lib'
-
-[[linters.settings.depguard.rules.main.deny]]
-pkg = 'github.com/pkg/errors'
-desc = 'please use errors from std lib'
-
-[[linters.settings.depguard.rules.main.deny]]
-pkg = 'gorm.io/gorm'
-desc = 'please use pgx and learn sql'
 
 [linters.settings.depguard.rules.prevent_unmaintained_packages]
 [[linters.settings.depguard.rules.prevent_unmaintained_packages.deny]]
@@ -181,9 +182,12 @@ excludes = [
 
 [linters.settings.govet]
 disable = [
-  'fieldalignment'
+  'fieldalignment',
 ]
 enable-all = true
+
+[linters.settings.staticcheck]
+checks = ['all', '-QF1008']
 
 [linters.settings.nolintlint]
 require-explanation = true
@@ -199,6 +203,13 @@ confidence = 0.0
 
 [linters.settings.tagalign]
 align = false
+
+[linters.settings.wrapcheck]
+ignore-sigs = [
+  'fmt.Errorf(',
+  'errors.Join(',
+  'go.temporal.io/sdk/temporal.NewApplicationError('
+]
 
 [linters.exclusions]
 generated = 'lax'
@@ -219,6 +230,7 @@ linters = [
   'contextcheck',
   'cyclop',
   'dupl',
+  'dupword',
   'err113',
   'errcheck',
   'errorlint',
@@ -230,10 +242,11 @@ linters = [
   'gocritic',
   'interfacer',
   'lll',
-  'maintidx',
   'nlreturn',
   'varnamelen',
-  'wrapcheck'
+  'wrapcheck',
+  'maintidx',
+  'noctx',
 ]
 path = '(.+)_test\.go'
 
@@ -248,7 +261,8 @@ enable = [
   'gci',
   'gofmt',
   'gofumpt',
-  'goimports'
+  'goimports',
+  'golines',
 ]
 
 [formatters.settings]
@@ -262,6 +276,9 @@ sections = [
 [formatters.settings.gofumpt]
 module-path = 'github.com/induzo'
 extra-rules = true
+
+[formatters.settings.golines]
+reformat-tags = false
 
 [formatters.exclusions]
 generated = 'lax'

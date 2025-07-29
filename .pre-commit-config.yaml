@@ -1,43 +1,45 @@
 default_stages: [pre-commit, pre-push]
 fail_fast: true
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
-    hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
-      - id: check-added-large-files
-      - id: fix-byte-order-marker
-      - id: check-symlinks
-      - id: detect-private-key
-      - id: check-yaml
-      - id: check-json
-      - id: check-toml
-  - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: v4.0.0
-    hooks:
-      - id: conventional-pre-commit
-        stages: [commit-msg]
-        args: []
-  - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.5.0
-    hooks:
-      - id: detect-secrets
-        args: ["--baseline", ".secrets.baseline"]
-  - repo: local
-    hooks:
-      - id: golangci-lint
-        name: golangci-lint
-        entry: bash -c "make lint-all"
-        language: system
-  - repo: https://github.com/dnephin/pre-commit-golang
-    rev: v0.5.1
-    hooks:
-      - id: no-go-testing
-      - id: go-mod-tidy
-  - repo: local
-    hooks:
-      - id: go-tests
-        name: go-tests
-        entry: bash -c "make test-all"
-        language: system
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+  - id: check-added-large-files
+  - id: fix-byte-order-marker
+  - id: check-symlinks
+  - id: detect-private-key
+  - id: check-yaml
+  - id: check-json
+  - id: check-toml
+- repo: https://github.com/compilerla/conventional-pre-commit
+  rev: v4.2.0
+  hooks:
+    - id: conventional-pre-commit
+      stages: [commit-msg]
+      args: []
+- repo: https://github.com/Yelp/detect-secrets
+  rev: v1.5.0
+  hooks:
+  - id: detect-secrets
+    args: ['--baseline', '.secrets.baseline', '--base64-limit', '6']
+- repo: local
+  hooks:
+  - id: go-tidy
+    name: go-tidy
+    entry: |
+      sh -c 'set -o pipefail; go mod tidy | tee /dev/stderr | grep -q FAIL && exit 1 || exit 0'
+    language: system
+  - id: go-lint
+    name: go-lint
+    entry: |
+      sh -c 'set -o pipefail; make lint-all | tee /dev/stderr | grep -q FAIL && exit 1 || exit 0'
+    language: system
+    stages: [pre-push]
+  - id: go-tests
+    name: go-tests
+    entry: |
+      sh -c 'set -o pipefail; make test-all | tee /dev/stderr | grep -q FAIL && exit 1 || exit 0'
+    language: system
+    stages: [pre-push]
