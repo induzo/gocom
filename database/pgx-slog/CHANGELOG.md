@@ -2,12 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [database/pgx-slog/v1.0.23] - 2025-07-29
+## [database/pgx-slog/v1.0.24] - 2025-07-29
 
 ### Documentation
 
 - Update CHANGELOG.md for database/pgx-slog/v1.0.23
 - Update CHANGELOG.md for database/pgx-slog/v1.0.24
+- Update CHANGELOG.md for database/pgx-slog/v1.0.23
 
 ### Features
 
