@@ -162,12 +162,12 @@ func TestErrorToHTTPJSONProblemDetail(t *testing.T) {
 					KeyHeader: DefaultIdempotencyKeyHeader,
 				},
 			},
-			expectedStatusCode:   http.StatusBadRequest,
+			expectedStatusCode:   http.StatusUnprocessableEntity,
 			expectedBodyContains: `"title": "mismatched signature"`,
 		},
 		{
 			name: "store response",
-			err: &StoreResponseError{
+			err: StoreResponseError{
 				RequestContext: RequestContext{
 					Key:       "key",
 					KeyHeader: DefaultIdempotencyKeyHeader,
@@ -197,8 +197,8 @@ func TestErrorToHTTPJSONProblemDetail(t *testing.T) {
 					KeyHeader: DefaultIdempotencyKeyHeader,
 				},
 			}),
-			expectedStatusCode:   http.StatusInternalServerError,
-			expectedBodyContains: `"title": "internal server error"`,
+			expectedStatusCode:   http.StatusUnprocessableEntity,
+			expectedBodyContains: `"title": "mismatched signature"`,
 		},
 		{
 			name:                 "other err",

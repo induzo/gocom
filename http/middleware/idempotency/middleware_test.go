@@ -615,9 +615,6 @@ func errorToString(
 	_ *http.Request,
 	err error,
 ) {
-	storeRespErr := &StoreResponseError{}
-
-	getRespErr := &GetStoredResponseError{}
 	switch {
 	case errors.As(err, &MissingIdempotencyKeyHeaderError{}):
 		http.Error(writer, "MissingIdempotencyKeyHeaderError", http.StatusBadRequest)
@@ -625,9 +622,9 @@ func errorToString(
 		http.Error(writer, "RequestInFlightError", http.StatusConflict)
 	case errors.As(err, &MismatchedSignatureError{}):
 		http.Error(writer, "MismatchedSignatureError", http.StatusBadRequest)
-	case errors.As(err, &storeRespErr):
+	case errors.As(err, &StoreResponseError{}):
 		http.Error(writer, fmt.Sprintf("StoreResponseError: %v", err), http.StatusOK)
-	case errors.As(err, &getRespErr):
+	case errors.As(err, &GetStoredResponseError{}):
 		http.Error(
 			writer,
 			fmt.Sprintf("internal server error: %v", err),

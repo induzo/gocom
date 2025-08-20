@@ -3,6 +3,7 @@ package idempotency
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -57,15 +58,15 @@ type StoreResponseError struct {
 	Err error
 }
 
-func (e *StoreResponseError) Error() string {
+func (e StoreResponseError) Error() string {
 	return fmt.Sprintf("error storing response: %v", e.Err)
 }
 
-func (e *StoreResponseError) toAttrs() []slog.Attr {
+func (e StoreResponseError) toAttrs() []slog.Attr {
 	return append(e.RequestContext.toAttrs(), slog.Any("store_response_error", e.Err))
 }
 
-func (e *StoreResponseError) Unwrap() error {
+func (e StoreResponseError) Unwrap() error {
 	return e.Err
 }
 
@@ -74,15 +75,15 @@ type GetStoredResponseError struct {
 	Err error
 }
 
-func (e *GetStoredResponseError) Error() string {
+func (e GetStoredResponseError) Error() string {
 	return fmt.Sprintf("error getting stored response: %v", e.Err)
 }
 
-func (e *GetStoredResponseError) toAttrs() []slog.Attr {
+func (e GetStoredResponseError) toAttrs() []slog.Attr {
 	return append(e.RequestContext.toAttrs(), slog.Any("get_stored_response_error", e.Err))
 }
 
-func (e *GetStoredResponseError) Unwrap() error {
+func (e GetStoredResponseError) Unwrap() error {
 	return e.Err
 }
 
@@ -119,14 +120,22 @@ func ErrorToHTTPJSONProblemDetail(
 
 	errorAttrs := []slog.Attr{}
 
+	// use potential errors
+	var (
+		missingIdempotencyKeyHeaderError MissingIdempotencyKeyHeaderError
+		requestInFlightError             RequestInFlightError
+		mismatchedSignatureError         MismatchedSignatureError
+		storeResponseError               StoreResponseError
+		getStoredResponseError           GetStoredResponseError
+	)
+
 	defer func() {
 		// log an error with all the collected slog.Attrs
 		slog.LogAttrs(ctx, slog.LevelError, "idempotency error", errorAttrs...)
 	}()
 
-	//nolint:errorlint // we don't use errors.As because we need to handle the specific error types and use their methods
-	switch exactErr := err.(type) {
-	case MissingIdempotencyKeyHeaderError:
+	switch {
+	case errors.As(err, &missingIdempotencyKeyHeaderError):
 		pbDetail = ProblemDetail{
 			HTTPStatusCode: http.StatusBadRequest,
 			Type:           "errors/missing-idempotency-key-header",
@@ -136,8 +145,9 @@ func ErrorToHTTPJSONProblemDetail(
 		}
 
 		errorAttrs = append(errorAttrs, slog.String("issue", "missing idempotency key header"))
-		errorAttrs = append(errorAttrs, exactErr.toAttrs()...)
-	case RequestInFlightError:
+
+		errorAttrs = append(errorAttrs, missingIdempotencyKeyHeaderError.toAttrs()...)
+	case errors.As(err, &requestInFlightError):
 		pbDetail = ProblemDetail{
 			HTTPStatusCode: http.StatusConflict,
 			Type:           "errors/request-already-in-flight",
@@ -146,20 +156,22 @@ func ErrorToHTTPJSONProblemDetail(
 			Instance:       url,
 		}
 
+		exactErr := err.(RequestInFlightError)
+
 		errorAttrs = append(errorAttrs, slog.Any("issue", exactErr))
 		errorAttrs = append(errorAttrs, exactErr.toAttrs()...)
-	case MismatchedSignatureError:
+	case errors.As(err, &mismatchedSignatureError):
 		pbDetail = ProblemDetail{
-			HTTPStatusCode: http.StatusBadRequest,
+			HTTPStatusCode: http.StatusUnprocessableEntity,
 			Type:           "errors/mismatched-signature",
 			Title:          "mismatched signature",
 			Detail:         errorString,
 			Instance:       url,
 		}
 
-		errorAttrs = append(errorAttrs, slog.Any("issue", exactErr))
-		errorAttrs = append(errorAttrs, exactErr.toAttrs()...)
-	case *GetStoredResponseError:
+		errorAttrs = append(errorAttrs, slog.Any("issue", mismatchedSignatureError))
+		errorAttrs = append(errorAttrs, mismatchedSignatureError.toAttrs()...)
+	case errors.As(err, &getStoredResponseError):
 		pbDetail = ProblemDetail{
 			HTTPStatusCode: http.StatusInternalServerError,
 			Type:           "errors/internal-server-error",
@@ -168,13 +180,13 @@ func ErrorToHTTPJSONProblemDetail(
 			Instance:       url,
 		}
 
-		errorAttrs = append(errorAttrs, slog.Any("issue", exactErr))
-		errorAttrs = append(errorAttrs, exactErr.toAttrs()...)
-	case *StoreResponseError:
+		errorAttrs = append(errorAttrs, slog.Any("issue", getStoredResponseError))
+		errorAttrs = append(errorAttrs, getStoredResponseError.toAttrs()...)
+	case errors.As(err, &storeResponseError):
 		// in case of a store response error, we want to log the error
 		// but not change the content already written to the response
-		errorAttrs = append(errorAttrs, slog.Any("issue", exactErr))
-		errorAttrs = append(errorAttrs, exactErr.toAttrs()...)
+		errorAttrs = append(errorAttrs, slog.Any("issue", storeResponseError))
+		errorAttrs = append(errorAttrs, storeResponseError.toAttrs()...)
 
 		return
 	default:

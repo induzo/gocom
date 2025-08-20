@@ -106,7 +106,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 					RequestHash: requestHash,
 				},
 			); errSR != nil {
-				conf.errorToHTTPFn(respW, req, &StoreResponseError{
+				conf.errorToHTTPFn(respW, req, StoreResponseError{
 					RequestContext: RequestContext{
 						URL:       req.URL.String(),
 						Method:    req.Method,
