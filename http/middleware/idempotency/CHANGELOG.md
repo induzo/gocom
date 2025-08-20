@@ -2,7 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/idempotency/v0.3.1] - 2025-08-20
+
+### Styling
+
+- Lint gocritic
+
 ## [http/middleware/idempotency/v0.3.0] - 2025-08-20
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/idempotency/v0.3.0
+- Update docs for module http/middleware/idempotency
 
 ### Features
 
