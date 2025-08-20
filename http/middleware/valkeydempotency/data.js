@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1753806202836,
+  "lastUpdate": 1755687387488,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -816,6 +816,54 @@ window.BENCHMARK_DATA = {
             "value": 39,
             "unit": "allocs/op",
             "extra": "2472 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "Vincent Serpoul",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "a7b33de4f4aee731c78b48a8d9c507efab128c9e",
+          "message": "docs: update docs for module database/pgx-slog",
+          "timestamp": "2025-08-20T18:54:59+08:00",
+          "tree_id": "5688cbd89fb95167f6c17276513f8327c33751f3",
+          "url": "https://github.com/induzo/gocom/commit/a7b33de4f4aee731c78b48a8d9c507efab128c9e"
+        },
+        "date": 1755687386798,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkStoreStoreResponse",
+            "value": 467648,
+            "unit": "ns/op\t    2695 B/op\t      39 allocs/op",
+            "extra": "2310 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - ns/op",
+            "value": 467648,
+            "unit": "ns/op",
+            "extra": "2310 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - B/op",
+            "value": 2695,
+            "unit": "B/op",
+            "extra": "2310 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - allocs/op",
+            "value": 39,
+            "unit": "allocs/op",
+            "extra": "2310 times\n4 procs"
           }
         ]
       }
