@@ -58,14 +58,17 @@ type StoreResponseError struct {
 	Err error
 }
 
+//nolint:gocritic //keep errors all the same
 func (e StoreResponseError) Error() string {
 	return fmt.Sprintf("error storing response: %v", e.Err)
 }
 
+//nolint:gocritic //keep errors all the same
 func (e StoreResponseError) toAttrs() []slog.Attr {
 	return append(e.RequestContext.toAttrs(), slog.Any("store_response_error", e.Err))
 }
 
+//nolint:gocritic //keep errors all the same
 func (e StoreResponseError) Unwrap() error {
 	return e.Err
 }
@@ -75,14 +78,17 @@ type GetStoredResponseError struct {
 	Err error
 }
 
+//nolint:gocritic //keep errors all the same
 func (e GetStoredResponseError) Error() string {
 	return fmt.Sprintf("error getting stored response: %v", e.Err)
 }
 
+//nolint:gocritic //keep errors all the same
 func (e GetStoredResponseError) toAttrs() []slog.Attr {
 	return append(e.RequestContext.toAttrs(), slog.Any("get_stored_response_error", e.Err))
 }
 
+//nolint:gocritic //keep errors all the same
 func (e GetStoredResponseError) Unwrap() error {
 	return e.Err
 }
@@ -156,10 +162,8 @@ func ErrorToHTTPJSONProblemDetail(
 			Instance:       url,
 		}
 
-		exactErr := err.(RequestInFlightError)
-
-		errorAttrs = append(errorAttrs, slog.Any("issue", exactErr))
-		errorAttrs = append(errorAttrs, exactErr.toAttrs()...)
+		errorAttrs = append(errorAttrs, slog.Any("issue", requestInFlightError))
+		errorAttrs = append(errorAttrs, requestInFlightError.toAttrs()...)
 	case errors.As(err, &mismatchedSignatureError):
 		pbDetail = ProblemDetail{
 			HTTPStatusCode: http.StatusUnprocessableEntity,
