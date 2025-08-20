@@ -2,11 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/idempotency/v0.3.0] - 2025-08-20
+
+### Features
+
+- Update mismatched sig to 422 to respect standard
+
+### Miscellaneous Tasks
+
+- Lint-all fixes
+
 ## [http/middleware/idempotency/v0.2.1] - 2025-05-08
 
 ### Bug Fixes
 
 - Add more context to all errors
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/idempotency/v0.2.1
 
 ## [http/middleware/idempotency/v0.2.0] - 2025-05-08
 
