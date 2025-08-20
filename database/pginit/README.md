@@ -38,7 +38,9 @@ ConnPoolHealthCheck returns a health check function for pgxpool.Pool that can be
 Using standard net/http package. We can also simply pass healthCheck as a CheckFn in gocom/http/health/v2.
 
 ```go
-pgi, err := pginit.New("postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m")
+pgi, err := pginit.New(
+	"postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m",
+)
 if err != nil {
 	log.Fatalf("init pgi config: %v", err)
 }
@@ -164,7 +166,9 @@ ConnPool initiates connection to database and return a pgxpool.Pool.
 
 
 ```go
-pgi, err := pginit.New("postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m")
+pgi, err := pginit.New(
+	"postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m",
+)
 if err != nil {
 	log.Fatalf("init pgi config: %v", err)
 }

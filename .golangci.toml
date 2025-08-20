@@ -102,22 +102,22 @@ enable = [
   'whitespace',
   'wrapcheck',
   'wsl_v5',
-  'zerologlint',
 
-  #  Disabled by your configuration linters:
-  #  embeddedstructfieldcheck: Embedded types should be at the top of the field list of a struct, and there must be an empty line separating embedded fields from regular fields. [fast]
-  #  exhaustruct: Checks if all structure fields are initialized.
-  #  funcorder: Checks the order of functions, methods, and constructors. [fast]
-  #  funlen: Checks for long functions. [fast]
-  #  godot: Check if comments end in a period. [fast, auto-fix]
-  #  inamedparam: Reports interfaces with unnamed method parameters. [fast]
-  #  ireturn: Accept Interfaces, Return Concrete Types.
-  #  musttag: Enforce field tags in (un)marshaled structs.
-  #  noinlineerr: Disallows inline error handling (`if err := ...; err != nil {`).
-  #  recvcheck: Checks for receiver type consistency.
-  #  tagliatelle: Checks the struct tags.
-  #  testpackage: Linter that makes you use a separate _test package. [fast]
-  #  wsl [deprecated]: Add or remove empty lines. [fast, auto-fix]
+  # Disabled by your configuration linters:
+  # embeddedstructfieldcheck: Embedded types should be at the top of the field list of a struct, and there must be an empty line separating embedded fields from regular fields. [fast]
+  # exhaustruct: Checks if all structure fields are initialized.
+  # funcorder: Checks the order of functions, methods, and constructors. [fast]
+  # funlen: Checks for long functions. [fast]
+  # godot: Check if comments end in a period. [fast, auto-fix]
+  # inamedparam: Reports interfaces with unnamed method parameters. [fast]
+  # ireturn: Accept Interfaces, Return Concrete Types.
+  # musttag: Enforce field tags in (un)marshaled structs.
+  # noinlineerr: Disallows inline error handling (`if err := ...; err != nil {`).
+  # recvcheck: Checks for receiver type consistency.
+  # tagliatelle: Checks the struct tags.
+  # testpackage: Linter that makes you use a separate _test package. [fast]
+  # zerologlint: Detects the wrong usage of `zerolog` that a user forgets to dispatch with `Send` or `Msg`.
+  # wsl [deprecated]: Add or remove empty lines. [fast, auto-fix]
 ]
 
 [linters.settings]
