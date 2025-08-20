@@ -12,7 +12,7 @@ Package slog provides a logger that writes to a go.uber.org/slog.Logger.
 
 - [type Logger](<#Logger>)
   - [func NewLogger\(logger \*slog.Logger\) \*Logger](<#NewLogger>)
-  - [func \(pl \*Logger\) Log\(\_ context.Context, level tracelog.LogLevel, msg string, data map\[string\]interface\{\}\)](<#Logger.Log>)
+  - [func \(pl \*Logger\) Log\(ctx context.Context, level tracelog.LogLevel, msg string, data map\[string\]interface\{\}\)](<#Logger.Log>)
 
 
 <a name="Logger"></a>
@@ -58,7 +58,10 @@ func main() {
 	textAdapter := slog.NewTextHandler(io.Discard, nil)
 	logger := slog.New(textAdapter)
 
-	pgxPool, _ := pgxpool.New(context.Background(), "postgres://postgres:postgres@localhost:5432/datawarehouse")
+	pgxPool, _ := pgxpool.New(
+		context.Background(),
+		"postgres://postgres:postgres@localhost:5432/datawarehouse", // pragma: allowlist secret
+	)
 
 	pgxPool.Config().ConnConfig.Tracer = &tracelog.TraceLog{
 		Logger:   slogadapter.NewLogger(logger),
@@ -71,10 +74,10 @@ func main() {
 </details>
 
 <a name="Logger.Log"></a>
-### func \(\*Logger\) [Log](<https://github.com/induzo/gocom/blob/main/database/pgx-slog/adapter.go#L19>)
+### func \(\*Logger\) [Log](<https://github.com/induzo/gocom/blob/main/database/pgx-slog/adapter.go#L19-L24>)
 
 ```go
-func (pl *Logger) Log(_ context.Context, level tracelog.LogLevel, msg string, data map[string]interface{})
+func (pl *Logger) Log(ctx context.Context, level tracelog.LogLevel, msg string, data map[string]interface{})
 ```
 
 
