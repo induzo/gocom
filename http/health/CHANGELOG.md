@@ -2,7 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/health/v1.1.18] - 2025-09-13
+
+### Miscellaneous Tasks
+
+- Lint-all fixes
+- Update deps
+- Update deps
+- Update deps
+- Update deps
+
 ## [http/health/v1.1.17] - 2025-06-24
+
+### Documentation
+
+- Update CHANGELOG.md for http/health/v1.1.17
 
 ### Miscellaneous Tasks
 
