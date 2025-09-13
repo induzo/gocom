@@ -2,7 +2,6 @@ package pginit_test
 
 import (
 	"context"
-	"io"
 	"log"
 	"log/slog"
 	"net/http"
@@ -35,7 +34,7 @@ func ExamplePGInit_ConnPool() {
 
 //nolint:testableexamples // cannot run without db
 func ExamplePGInit_ConnPool_withlogger() {
-	textHandler := slog.NewTextHandler(io.Discard, nil)
+	textHandler := slog.DiscardHandler
 	logger := slog.New(textHandler)
 
 	pgi, err := pginit.New(

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"log/slog"
 	"net"
@@ -132,7 +131,7 @@ func TestConnPool(t *testing.T) {
 
 			ctx := context.TODO()
 
-			textHandler := slog.NewTextHandler(io.Discard, nil)
+			textHandler := slog.DiscardHandler
 			logger := slog.New(textHandler)
 
 			pgi, err := New(tt.connString, WithLogger(logger, ""))
@@ -195,7 +194,7 @@ func TestConnPoolWithLogger(t *testing.T) {
 
 			ctx := context.Background()
 
-			textHandler := slog.NewTextHandler(io.Discard, nil)
+			textHandler := slog.DiscardHandler
 			logger := slog.New(textHandler)
 
 			pgi, err := New(
@@ -280,7 +279,7 @@ func TestConnPoolWithTracer(t *testing.T) {
 func TestConnPool_WithCustomDataTypes(t *testing.T) {
 	t.Parallel()
 
-	textHandler := slog.NewTextHandler(io.Discard, nil)
+	textHandler := slog.DiscardHandler
 	logger := slog.New(textHandler)
 
 	tests := []struct {
@@ -402,7 +401,7 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			textHandler := slog.NewTextHandler(io.Discard, nil)
+			textHandler := slog.DiscardHandler
 			logger := slog.New(textHandler)
 
 			pgi, err := New(
@@ -568,7 +567,7 @@ func TestConnPoolWithCustomTypesGoogle_CRUD(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			textHandler := slog.NewTextHandler(io.Discard, nil)
+			textHandler := slog.DiscardHandler
 			logger := slog.New(textHandler)
 
 			pgi, err := New(
@@ -722,7 +721,7 @@ func BenchmarkConnPool(b *testing.B) {
 	for i := 0; i <= b.N; i++ {
 		ctx := context.Background()
 
-		textHandler := slog.NewTextHandler(io.Discard, nil)
+		textHandler := slog.DiscardHandler
 		logger := slog.New(textHandler)
 
 		b.StartTimer()

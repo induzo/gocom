@@ -2,7 +2,6 @@ package slog_test
 
 import (
 	"context"
-	"io"
 	"log/slog"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -13,7 +12,7 @@ import (
 
 //nolint:testableexamples // do not have testable output
 func ExampleNewLogger() {
-	textAdapter := slog.NewTextHandler(io.Discard, nil)
+	textAdapter := slog.DiscardHandler
 	logger := slog.New(textAdapter)
 
 	pgxPool, _ := pgxpool.New(
