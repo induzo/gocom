@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757756532004,
+  "lastUpdate": 1761479454854,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -1056,6 +1056,54 @@ window.BENCHMARK_DATA = {
             "value": 39,
             "unit": "allocs/op",
             "extra": "2521 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "c5c8c19c805b0227818ab6cc3445e611fb4a3927",
+          "message": "docs(changelog): update CHANGELOG.md for database/pginit/v2.2.25",
+          "timestamp": "2025-10-26T19:48:55+08:00",
+          "tree_id": "c2f2792a27d33d5aa61081eae10e62f514767e80",
+          "url": "https://github.com/induzo/gocom/commit/c5c8c19c805b0227818ab6cc3445e611fb4a3927"
+        },
+        "date": 1761479454248,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkStoreStoreResponse",
+            "value": 489259,
+            "unit": "ns/op\t    2699 B/op\t      39 allocs/op",
+            "extra": "2469 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - ns/op",
+            "value": 489259,
+            "unit": "ns/op",
+            "extra": "2469 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - B/op",
+            "value": 2699,
+            "unit": "B/op",
+            "extra": "2469 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - allocs/op",
+            "value": 39,
+            "unit": "allocs/op",
+            "extra": "2469 times\n4 procs"
           }
         ]
       }
