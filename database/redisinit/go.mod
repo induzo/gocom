@@ -6,7 +6,7 @@ toolchain go1.24.1
 
 require (
 	github.com/ory/dockertest/v3 v3.12.0
-	github.com/redis/go-redis/v9 v9.16.0
+	github.com/redis/go-redis/v9 v9.17.1
 	go.uber.org/goleak v1.3.0
 )
 
