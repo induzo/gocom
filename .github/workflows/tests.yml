@@ -10,6 +10,10 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
       - name: Install Go
         uses: actions/setup-go@v5
         with:
@@ -24,10 +28,6 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.work.sum') }}
           restore-keys: |
              ${{ runner.os }}-go-${{ hashFiles('**/go.work.sum') }}
-      - name: Checkout code
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 1
       - name: run all tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

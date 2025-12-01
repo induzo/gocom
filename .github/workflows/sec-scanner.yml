@@ -17,14 +17,14 @@ jobs:
   sec-scan:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: 'go.work'
       - name: Checkout code
         uses: actions/checkout@v5
         with:
           fetch-depth: 0 # we use 0 here as we need it for gitguardian to inspect everything
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.work'
       - name: Install trivy
         run: |
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/.local/bin v"$TRIVY_VERSION"

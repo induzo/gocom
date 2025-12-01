@@ -17,6 +17,10 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
       - name: Install Go
         uses: actions/setup-go@v5
         with:
@@ -32,10 +36,6 @@ jobs:
           key: ${{ runner.os }}-golangci-lint-${{ hashFiles('**/go.work.sum') }}
           restore-keys: |
             ${{ runner.os }}-golangci-lint-${{ hashFiles('**/go.work.sum') }}
-      - name: Checkout code
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 1
       - name: Install golangci-lint
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $HOME/.local/bin v"$LINTER_VERSION"
