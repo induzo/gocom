@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1764560244329,
+  "lastUpdate": 1764560546409,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -960,6 +960,54 @@ window.BENCHMARK_DATA = {
             "value": 11,
             "unit": "allocs/op",
             "extra": "352836 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "1a4d230a5ca6932f47c1e486ec16c4bf5e95b0a1",
+          "message": "chore(ci): fix go mod",
+          "timestamp": "2025-12-01T11:41:17+08:00",
+          "tree_id": "7dc8f6dfa637a4cf24a824bd6b6f2953f4701b29",
+          "url": "https://github.com/induzo/gocom/commit/1a4d230a5ca6932f47c1e486ec16c4bf5e95b0a1"
+        },
+        "date": 1764560545316,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkMiddleware",
+            "value": 3617,
+            "unit": "ns/op\t    1472 B/op\t      11 allocs/op",
+            "extra": "317823 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMiddleware - ns/op",
+            "value": 3617,
+            "unit": "ns/op",
+            "extra": "317823 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMiddleware - B/op",
+            "value": 1472,
+            "unit": "B/op",
+            "extra": "317823 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMiddleware - allocs/op",
+            "value": 11,
+            "unit": "allocs/op",
+            "extra": "317823 times\n4 procs"
           }
         ]
       }
