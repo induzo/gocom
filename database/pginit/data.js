@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1766242015928,
+  "lastUpdate": 1766245540052,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -3714,6 +3714,54 @@ window.BENCHMARK_DATA = {
             "value": 303,
             "unit": "allocs/op",
             "extra": "712 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "cc010e27cb1da72752b1f3133f6b7e692dfaa50d",
+          "message": "fix: golangci lint gomoddirective temporary exclusion",
+          "timestamp": "2025-12-20T23:43:07+08:00",
+          "tree_id": "54b996f5c7f12feb99fadf089d6c7c3810b363b0",
+          "url": "https://github.com/induzo/gocom/commit/cc010e27cb1da72752b1f3133f6b7e692dfaa50d"
+        },
+        "date": 1766245539692,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkConnPool",
+            "value": 2133842,
+            "unit": "ns/op\t   42375 B/op\t     300 allocs/op",
+            "extra": "562 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - ns/op",
+            "value": 2133842,
+            "unit": "ns/op",
+            "extra": "562 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - B/op",
+            "value": 42375,
+            "unit": "B/op",
+            "extra": "562 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - allocs/op",
+            "value": 300,
+            "unit": "allocs/op",
+            "extra": "562 times\n4 procs"
           }
         ]
       }
