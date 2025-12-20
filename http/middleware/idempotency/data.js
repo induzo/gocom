@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1766241999704,
+  "lastUpdate": 1766245529472,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -1056,6 +1056,54 @@ window.BENCHMARK_DATA = {
             "value": 11,
             "unit": "allocs/op",
             "extra": "297490 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "cc010e27cb1da72752b1f3133f6b7e692dfaa50d",
+          "message": "fix: golangci lint gomoddirective temporary exclusion",
+          "timestamp": "2025-12-20T23:43:07+08:00",
+          "tree_id": "54b996f5c7f12feb99fadf089d6c7c3810b363b0",
+          "url": "https://github.com/induzo/gocom/commit/cc010e27cb1da72752b1f3133f6b7e692dfaa50d"
+        },
+        "date": 1766245529128,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkMiddleware",
+            "value": 3786,
+            "unit": "ns/op\t    1472 B/op\t      11 allocs/op",
+            "extra": "302439 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMiddleware - ns/op",
+            "value": 3786,
+            "unit": "ns/op",
+            "extra": "302439 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMiddleware - B/op",
+            "value": 1472,
+            "unit": "B/op",
+            "extra": "302439 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMiddleware - allocs/op",
+            "value": 11,
+            "unit": "allocs/op",
+            "extra": "302439 times\n4 procs"
           }
         ]
       }
