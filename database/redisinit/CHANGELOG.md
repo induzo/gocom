@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/redisinit/v1.0.28] - 2025-12-20
+
+### Bug Fixes
+
+- Redisinit
+
+### Documentation
+
+- Update CHANGELOG.md for database/redisinit/v1.0.28
+
 ## [database/redisinit/v1.0.27] - 2025-12-20
 
 ### Documentation
