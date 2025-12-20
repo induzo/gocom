@@ -180,6 +180,11 @@ enabled-tags = [
   'style'
 ]
 
+[linters.settings.gomoddirectives]
+replace-allow-list = [
+  'github.com/docker/cli'
+]
+
 [linters.settings.gosec]
 excludes = [
   'G601'
