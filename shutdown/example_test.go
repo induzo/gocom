@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"log/slog"
 	"net/http"
@@ -16,7 +15,7 @@ import (
 
 //nolint:testableexamples // do not have testable output
 func ExampleShutdown() {
-	textHandler := slog.NewTextHandler(io.Discard, nil)
+	textHandler := slog.DiscardHandler
 	logger := slog.New(textHandler)
 
 	shutdownHandler := shutdown.New(

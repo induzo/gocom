@@ -149,9 +149,7 @@ func BenchmarkFromRequest(b *testing.B) {
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 
-	b.ResetTimer()
-
-	for range b.N {
+	for b.Loop() {
 		mux.ServeHTTP(rr, req)
 	}
 }

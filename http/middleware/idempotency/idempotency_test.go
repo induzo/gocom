@@ -27,9 +27,7 @@ func BenchmarkMiddleware(b *testing.B) {
 		),
 	)
 
-	b.ResetTimer()
-
-	for range b.N {
+	for b.Loop() {
 		b.StopTimer()
 
 		reqRec := httptest.NewRecorder()

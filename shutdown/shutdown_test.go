@@ -3,7 +3,6 @@ package shutdown
 import (
 	"context"
 	"errors"
-	"io"
 	"log/slog"
 	"reflect"
 	"syscall"
@@ -297,7 +296,7 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 
 	for _, tt := range tests { //nolint:paralleltest // subtest modify same map
 		t.Run(tt.name, func(t *testing.T) {
-			textHandler := slog.NewTextHandler(io.Discard, nil)
+			textHandler := slog.DiscardHandler
 			logger := slog.New(textHandler)
 
 			shutdownHandler := New(
@@ -328,7 +327,7 @@ func TestShutdown(t *testing.T) { //nolint:tparallel // subtest modify same slic
 }
 
 func BenchmarkShutdown(b *testing.B) {
-	textHandler := slog.NewTextHandler(io.Discard, nil)
+	textHandler := slog.DiscardHandler
 	logger := slog.New(textHandler)
 
 	shutdownHandler := New(
@@ -352,9 +351,7 @@ func BenchmarkShutdown(b *testing.B) {
 			},
 		}))
 
-	b.ResetTimer()
-
-	for range b.N {
+	for b.Loop() {
 		go func() {
 			time.Sleep(10 * time.Millisecond)
 
