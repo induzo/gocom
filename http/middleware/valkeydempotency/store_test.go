@@ -315,9 +315,7 @@ func BenchmarkStoreStoreResponse(b *testing.B) {
 
 	defer storeValkey.Close()
 
-	b.ResetTimer()
-
-	for range b.N {
+	for b.Loop() {
 		ctx := context.Background()
 
 		ctx, cancel, _ := storeValkey.TryLock(ctx, "key")

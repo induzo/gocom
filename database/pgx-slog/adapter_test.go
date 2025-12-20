@@ -31,9 +31,7 @@ func BenchmarkNewLogger(b *testing.B) {
 	textHandler := slog.DiscardHandler
 	logger := slog.New(textHandler)
 
-	b.ResetTimer()
-
-	for range b.N {
+	for b.Loop() {
 		_ = NewLogger(logger)
 	}
 }
@@ -48,7 +46,7 @@ func TestLogger_Log(t *testing.T) {
 	type args struct {
 		level tracelog.LogLevel
 		msg   string
-		data  map[string]interface{}
+		data  map[string]any
 	}
 
 	tests := []struct {
@@ -60,7 +58,7 @@ func TestLogger_Log(t *testing.T) {
 			args: args{
 				level: tracelog.LogLevelTrace,
 				msg:   "Trace message",
-				data:  map[string]interface{}{"key": "value"},
+				data:  map[string]any{"key": "value"},
 			},
 		},
 		{
@@ -68,7 +66,7 @@ func TestLogger_Log(t *testing.T) {
 			args: args{
 				level: tracelog.LogLevelDebug,
 				msg:   "Debug message",
-				data:  map[string]interface{}{"key": "value"},
+				data:  map[string]any{"key": "value"},
 			},
 		},
 		{
@@ -76,7 +74,7 @@ func TestLogger_Log(t *testing.T) {
 			args: args{
 				level: tracelog.LogLevelInfo,
 				msg:   "Info message",
-				data:  map[string]interface{}{"key": "value"},
+				data:  map[string]any{"key": "value"},
 			},
 		},
 		{
@@ -84,7 +82,7 @@ func TestLogger_Log(t *testing.T) {
 			args: args{
 				level: tracelog.LogLevelWarn,
 				msg:   "Warn message",
-				data:  map[string]interface{}{"key": "value"},
+				data:  map[string]any{"key": "value"},
 			},
 		},
 		{
@@ -92,7 +90,7 @@ func TestLogger_Log(t *testing.T) {
 			args: args{
 				level: tracelog.LogLevelError,
 				msg:   "Error message",
-				data:  map[string]interface{}{"key": "value"},
+				data:  map[string]any{"key": "value"},
 			},
 		},
 		{
@@ -100,7 +98,7 @@ func TestLogger_Log(t *testing.T) {
 			args: args{
 				level: tracelog.LogLevelNone,
 				msg:   "None log level message",
-				data:  map[string]interface{}{"key": "value"},
+				data:  map[string]any{"key": "value"},
 			},
 		},
 		{
@@ -108,7 +106,7 @@ func TestLogger_Log(t *testing.T) {
 			args: args{
 				level: tracelog.LogLevel(99),
 				msg:   "Undefined log level message",
-				data:  map[string]interface{}{"key": "value"},
+				data:  map[string]any{"key": "value"},
 			},
 		},
 	}
@@ -131,11 +129,9 @@ func BenchmarkLogger_Log(b *testing.B) {
 	ctx := context.Background()
 	level := tracelog.LogLevelInfo
 	msg := "Benchmark message"
-	data := map[string]interface{}{"key": "value"}
+	data := map[string]any{"key": "value"}
 
-	b.ResetTimer()
-
-	for range b.N {
+	for b.Loop() {
 		pl.Log(ctx, level, msg, data)
 	}
 }

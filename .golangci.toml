@@ -64,6 +64,7 @@ enable = [
   'mirror',
   'misspell',
   'mnd',
+  'modernize',
   'nakedret',
   'nestif',
   'nilerr',
@@ -108,14 +109,18 @@ enable = [
   # exhaustruct: Checks if all structure fields are initialized.
   # funcorder: Checks the order of functions, methods, and constructors. [fast]
   # funlen: Checks for long functions. [fast]
+  # godoclint: Checks Golang's documentation practice (godoc). [fast]
   # godot: Check if comments end in a period. [fast, auto-fix]
   # inamedparam: Reports interfaces with unnamed method parameters. [fast]
+  # iotamixing: Checks if iotas are being used in const blocks with other non-iota declarations. [fast]
   # ireturn: Accept Interfaces, Return Concrete Types.
+  # modernize: A suite of analyzers that suggest simplifications to Go code, using modern language and library features.
   # musttag: Enforce field tags in (un)marshaled structs.
   # noinlineerr: Disallows inline error handling (`if err := ...; err != nil {`).
   # recvcheck: Checks for receiver type consistency.
   # tagliatelle: Checks the struct tags.
   # testpackage: Linter that makes you use a separate _test package. [fast]
+  # unqueryvet: Detects SELECT * in SQL queries and SQL builders, preventing performance issues and encouraging explicit column selection. [fast]
   # zerologlint: Detects the wrong usage of `zerolog` that a user forgets to dispatch with `Send` or `Msg`.
   # wsl [deprecated]: Add or remove empty lines. [fast, auto-fix]
 ]

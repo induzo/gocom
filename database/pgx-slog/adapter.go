@@ -20,7 +20,7 @@ func (pl *Logger) Log(
 	ctx context.Context,
 	level tracelog.LogLevel,
 	msg string,
-	data map[string]interface{},
+	data map[string]any,
 ) {
 	fields := make([]any, len(data)+1)
 	idx := 0

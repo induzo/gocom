@@ -3,6 +3,7 @@ package idempotency
 import (
 	"bytes"
 	"context"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -52,9 +53,7 @@ func Test_buildRequestFingerprint(t *testing.T) {
 
 			reqw := httptest.NewRequestWithContext(ctx, http.MethodPost, tt.url, nil)
 
-			for k, v := range tt.headers {
-				reqw.Header[k] = v
-			}
+			maps.Copy(reqw.Header, tt.headers)
 
 			got, err := buildRequestFingerprint(reqw)
 			if err != nil {

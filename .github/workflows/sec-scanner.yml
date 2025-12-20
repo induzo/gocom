@@ -11,18 +11,18 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  TRIVY_VERSION: "0.67.2"
+  TRIVY_VERSION: "0.68.2"
 
 jobs:
   sec-scan:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0 # we use 0 here as we need it for gitguardian to inspect everything
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version-file: 'go.work'
       - name: Install trivy

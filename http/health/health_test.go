@@ -83,7 +83,7 @@ func TestCheckError(t *testing.T) {
 func TestNewHealth(t *testing.T) {
 	t.Parallel()
 
-	if health := NewHealth(); reflect.TypeOf(health) != reflect.TypeOf(&Health{}) {
+	if _ = NewHealth(); reflect.TypeFor[*Health]() != reflect.TypeFor[*Health]() {
 		t.Error("returned struct is not of type Health")
 	}
 }
@@ -282,9 +282,7 @@ func BenchmarkHealth(b *testing.B) {
 
 	handler := health.Handler()
 
-	b.ResetTimer()
-
-	for range b.N {
+	for b.Loop() {
 		handler.ServeHTTP(rr, req)
 	}
 }

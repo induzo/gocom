@@ -2,6 +2,7 @@ package idempotency
 
 import (
 	"net/http"
+	"slices"
 	"testing"
 )
 
@@ -142,14 +143,7 @@ func TestWithIgnoredURLPaths(t *testing.T) {
 			}
 
 			for _, expectedURL := range test.expectedURLParths {
-				found := false
-
-				for _, ignoredURL := range cfg.ignoredURLPaths {
-					if ignoredURL == expectedURL {
-						found = true
-						break
-					}
-				}
+				found := slices.Contains(cfg.ignoredURLPaths, expectedURL)
 
 				if !found {
 					t.Errorf("WithIgnoredURLPaths did not set the URL %s", expectedURL)

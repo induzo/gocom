@@ -130,9 +130,7 @@ func BenchmarkXxx(b *testing.B) {
 
 	healthCheck := ClientHealthCheck(cli)
 
-	b.ResetTimer()
-
-	for range b.N {
+	for b.Loop() {
 		if err := healthCheck(context.Background()); err != nil {
 			b.Errorf("unexpected error in health check: %s", err)
 		}
