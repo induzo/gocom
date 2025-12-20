@@ -50,3 +50,6 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 )
+
+// replace github.com/docker/cli => github.com/docker/cli v29.1.3+incompatible
+replace github.com/docker/cli v29.1.3+incompatible => github.com/docker/cli v28.5.1+incompatible
