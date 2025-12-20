@@ -2,7 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/health/v1.1.20] - 2025-12-20
+
+### Miscellaneous Tasks
+
+- Update ci deps
+- Release
+- Modernize
+
 ## [http/health/v1.1.19] - 2025-12-01
+
+### Documentation
+
+- Update CHANGELOG.md for http/health/v1.1.19
 
 ### Miscellaneous Tasks
 
