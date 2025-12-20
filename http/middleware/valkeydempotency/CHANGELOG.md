@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [http/middleware/valkeydempotency/v0.1.14] - 2025-12-20
 
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/valkeydempotency/v0.1.14
+
 ### Miscellaneous Tasks
 
 - Database/pginit
