@@ -2,7 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/pginit/v2.2.27] - 2025-12-20
+
+### Miscellaneous Tasks
+
+- Release
+- Update deps
+
 ## [database/pginit/v2.2.26] - 2025-12-01
+
+### Documentation
+
+- Update CHANGELOG.md for database/pginit/v2.2.26
 
 ### Miscellaneous Tasks
 
