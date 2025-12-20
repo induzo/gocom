@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1766242964009,
+  "lastUpdate": 1766244358901,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -4560,6 +4560,78 @@ window.BENCHMARK_DATA = {
             "value": 2,
             "unit": "allocs/op",
             "extra": "10026270 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "122ffe24a05472980de97536a8499ec4a2431870",
+          "message": "chore: update go.work",
+          "timestamp": "2025-12-20T23:20:12+08:00",
+          "tree_id": "0c9f9c5ceea9b73f5ce7e22efb93fddadafb77bb",
+          "url": "https://github.com/induzo/gocom/commit/122ffe24a05472980de97536a8499ec4a2431870"
+        },
+        "date": 1766244358380,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkNewLogger",
+            "value": 20.42,
+            "unit": "ns/op\t       8 B/op\t       1 allocs/op",
+            "extra": "55850718 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkNewLogger - ns/op",
+            "value": 20.42,
+            "unit": "ns/op",
+            "extra": "55850718 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkNewLogger - B/op",
+            "value": 8,
+            "unit": "B/op",
+            "extra": "55850718 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkNewLogger - allocs/op",
+            "value": 1,
+            "unit": "allocs/op",
+            "extra": "55850718 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkLogger_Log",
+            "value": 95.62,
+            "unit": "ns/op\t      48 B/op\t       1 allocs/op",
+            "extra": "12708421 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkLogger_Log - ns/op",
+            "value": 95.62,
+            "unit": "ns/op",
+            "extra": "12708421 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkLogger_Log - B/op",
+            "value": 48,
+            "unit": "B/op",
+            "extra": "12708421 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkLogger_Log - allocs/op",
+            "value": 1,
+            "unit": "allocs/op",
+            "extra": "12708421 times\n4 procs"
           }
         ]
       }
