@@ -2,7 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/idempotency/v0.3.4] - 2025-12-20
+
+### Bug Fixes
+
+- Modernize
+- Http/middleware/idempotency/example_test.go
+
 ## [http/middleware/idempotency/v0.3.3] - 2025-12-20
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/idempotency/v0.3.3
 
 ### Miscellaneous Tasks
 
