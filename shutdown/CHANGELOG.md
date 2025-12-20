@@ -2,11 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
+## [shutdown/v1.3.3] - 2025-12-20
+
+### Documentation
+
+- Update docs for module shutdown
+
+### Features
+
+- New release
+
+### Miscellaneous Tasks
+
+- Init
+- Lint-all fixes
+- Update deps
+- Update deps
+- Update
+
+### Testing
+
+- Add more coverage
+
 ## [shutdown/v1.3.2] - 2024-12-28
 
 ### Bug Fixes
 
 - Shutdown funcs with circ deps
+
+### Documentation
+
+- Update CHANGELOG.md for shutdown/v1.3.2
 
 ## [shutdown/v1.3.1] - 2024-12-28
 
