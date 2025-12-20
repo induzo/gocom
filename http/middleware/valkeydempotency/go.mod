@@ -1,6 +1,6 @@
 module github.com/induzo/gocom/http/middleware/valkeydempotency
 
-go 1.24.0
+go 1.25.5
 
 require (
 	github.com/induzo/gocom/http/middleware/idempotency v0.3.1

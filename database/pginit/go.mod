@@ -1,6 +1,6 @@
 module github.com/induzo/gocom/database/pginit/v2
 
-go 1.24.0
+go 1.25.5
 
 require (
 	github.com/exaring/otelpgx v0.9.4
