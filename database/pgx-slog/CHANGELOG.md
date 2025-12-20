@@ -2,7 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [database/pgx-slog/v1.0.31] - 2025-12-20
+## [database/pgx-slog/v1.0.32] - 2025-12-20
+
+### Bug Fixes
+
+- Pgx-slog
+
+### Documentation
+
+- Update CHANGELOG.md for database/pgx-slog/v1.0.31
 
 ### Miscellaneous Tasks
 
