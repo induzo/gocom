@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/health/v1.1.22] - 2025-12-20
+
+### Miscellaneous Tasks
+
+- Http/health
+
+## [http/health/v1.1.21] - 2025-12-20
+
+### Documentation
+
+- Update CHANGELOG.md for http/health/v1.1.21
+
 ## [http/health/v1.1.20] - 2025-12-20
 
 ### Documentation
