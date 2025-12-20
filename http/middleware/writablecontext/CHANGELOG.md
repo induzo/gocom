@@ -2,11 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/writablecontext/v0.1.8] - 2025-12-20
+
+### Documentation
+
+- Update docs for module http/middleware/writablecontext
+
+### Features
+
+- New release
+
+### Miscellaneous Tasks
+
+- Lint-all fixes
+- Update deps
+- Update deps
+- Update
+
+### Testing
+
+- Add more coverage
+
 ## [http/middleware/writablecontext/v0.1.7] - 2024-12-28
 
 ### Bug Fixes
 
 - Add goleak systematically
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/writablecontext/v0.1.7
 
 ### Features
 
