@@ -44,7 +44,6 @@ func ExampleNewMiddleware() {
 	var wg sync.WaitGroup
 
 	for range 3 {
-
 		wg.Go(func() {
 			sendPOSTReq(ctx, server, "same-key", "")
 		})
