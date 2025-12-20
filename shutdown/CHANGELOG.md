@@ -2,11 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [shutdown/v1.3.4] - 2025-12-20
+
+### Bug Fixes
+
+- Modernize
+
 ## [shutdown/v1.3.3] - 2025-12-20
 
 ### Documentation
 
 - Update docs for module shutdown
+- Update CHANGELOG.md for shutdown/v1.3.3
 
 ### Features
 
