@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/pgx-slog/v1.0.33] - 2025-12-20
+
+### Bug Fixes
+
+- Go version
+
 ## [database/pgx-slog/v1.0.32] - 2025-12-20
 
 ### Bug Fixes
@@ -11,6 +17,7 @@ All notable changes to this project will be documented in this file.
 ### Documentation
 
 - Update CHANGELOG.md for database/pgx-slog/v1.0.31
+- Update CHANGELOG.md for database/pgx-slog/v1.0.32
 
 ### Miscellaneous Tasks
 
