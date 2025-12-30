@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/health/v1.1.24] - 2025-12-30
+
+### Features
+
+- Remove httplog from health
+
+## [http/health/v1.1.23] - 2025-12-20
+
+### Documentation
+
+- Update CHANGELOG.md for http/health/v1.1.23
+
 ## [http/health/v1.1.22] - 2025-12-20
 
 ### Documentation
