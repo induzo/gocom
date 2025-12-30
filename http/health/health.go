@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/httplog/v2"
 	"github.com/goccy/go-json"
 	"golang.org/x/sync/errgroup"
 )
@@ -98,8 +97,6 @@ func (h *Health) RegisterCheck(conf CheckConfig) {
 // application based on the provided check functions.
 func (h *Health) Handler() http.Handler {
 	return http.HandlerFunc(func(respW http.ResponseWriter, req *http.Request) {
-		logger := httplog.LogEntry(req.Context())
-
 		errGroup, ctx := errgroup.WithContext(req.Context())
 
 		for _, check := range h.checks {
@@ -135,7 +132,7 @@ func (h *Health) Handler() http.Handler {
 				ErrorMessage: err.Error(),
 			}
 
-			logger.ErrorContext(
+			slog.ErrorContext(
 				req.Context(),
 				"health check failed",
 				slog.String("path", req.URL.Path),
@@ -148,7 +145,7 @@ func (h *Health) Handler() http.Handler {
 			if err := json.NewEncoder(respW).EncodeContext(req.Context(), responseBody); err != nil {
 				respW.WriteHeader(http.StatusInternalServerError)
 
-				logger.ErrorContext(
+				slog.ErrorContext(
 					req.Context(),
 					"write response body",
 					slog.String("path", req.URL.Path),
