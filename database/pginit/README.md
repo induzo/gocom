@@ -196,7 +196,7 @@ if err := pool.Ping(ctx); err != nil {
 
 
 ```go
-textHandler := slog.NewTextHandler(io.Discard, nil)
+textHandler := slog.DiscardHandler
 logger := slog.New(textHandler)
 
 pgi, err := pginit.New(
