@@ -2,11 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/valkeydempotency/v0.2.0] - 2026-01-15
+
+### Miscellaneous Tasks
+
+- Update deps
+- Update deps
+- Update deps
+- Update deps
+
+### Styling
+
+- Golangci linter
+
 ## [http/middleware/valkeydempotency/v0.1.17] - 2025-12-20
 
 ### Bug Fixes
 
 - Http/middleware/valkeydempotency
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/valkeydempotency/v0.1.17
 
 ## [http/middleware/valkeydempotency/v0.1.16] - 2025-12-20
 
