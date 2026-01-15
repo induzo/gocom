@@ -609,6 +609,36 @@ func sendReq(
 	return resp.StatusCode, string(body), nil
 }
 
+func TestMiddleware_IdempotencyKeyInContext(t *testing.T) {
+	t.Parallel()
+
+	store := NewInMemStore()
+	idempotencyMiddleware := NewMiddleware(store)
+
+	expectedKey := "test-idempotency-key"
+	var capturedKey string
+
+	handler := idempotencyMiddleware(
+		http.HandlerFunc(func(_ http.ResponseWriter, req *http.Request) {
+			// Capture the idempotency key from context
+			key, ok := req.Context().Value(IdempotencyKeyCtxKey).(string)
+			if ok {
+				capturedKey = key
+			}
+		}),
+	)
+
+	req := httptest.NewRequest(http.MethodPost, "/test", nil)
+	req.Header.Set(DefaultIdempotencyKeyHeader, expectedKey)
+
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	if capturedKey != expectedKey {
+		t.Errorf("expected idempotency key in context to be %q, got %q", expectedKey, capturedKey)
+	}
+}
+
 // errorToString write the error type returned
 func errorToString(
 	writer http.ResponseWriter,

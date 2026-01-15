@@ -2,6 +2,7 @@ package idempotency
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"fmt"
 	"net/http"
@@ -52,6 +53,11 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 
 				return
 			}
+
+			// set key in the request context
+			req = req.WithContext(
+				context.WithValue(req.Context(), IdempotencyKeyCtxKey, key),
+			)
 
 			requestHash, errS := buildRequestHash(conf.fingerprinterFn, req)
 			if errS != nil {
@@ -162,6 +168,8 @@ func handleRequestWithIdempotency(
 
 	return false
 }
+
+const IdempotencyKeyCtxKey = "idempotency_key"
 
 // buildRequestHash is the function that will take the request
 //
