@@ -13,6 +13,7 @@ Package idempotency provides an HTTP middleware for managing idempotency. Idempo
 - [Constants](<#constants>)
 - [func ErrorToHTTPJSONProblemDetail\(respW http.ResponseWriter, req \*http.Request, err error\)](<#ErrorToHTTPJSONProblemDetail>)
 - [func NewMiddleware\(store Store, options ...Option\) func\(http.Handler\) http.Handler](<#NewMiddleware>)
+- [type ContextKey](<#ContextKey>)
 - [type ErrorToHTTPFn](<#ErrorToHTTPFn>)
 - [type GetStoredResponseError](<#GetStoredResponseError>)
   - [func \(e GetStoredResponseError\) Error\(\) string](<#GetStoredResponseError.Error>)
@@ -55,12 +56,6 @@ const (
     DefaultIdempotencyKeyHeader             = "X-Idempotency-Key"
     DefaultIdempotentReplayedResponseHeader = "X-Idempotent-Replayed"
 )
-```
-
-<a name="IdempotencyKeyCtxKey"></a>
-
-```go
-const IdempotencyKeyCtxKey = "idempotency_key"
 ```
 
 <a name="ErrorToHTTPJSONProblemDetail"></a>
@@ -197,6 +192,21 @@ Hello World! 1
 
 </p>
 </details>
+
+<a name="ContextKey"></a>
+## type [ContextKey](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/middleware.go#L173>)
+
+
+
+```go
+type ContextKey string
+```
+
+<a name="IdempotencyKeyCtxKey"></a>
+
+```go
+const IdempotencyKeyCtxKey ContextKey = "idempotency_key"
+```
 
 <a name="ErrorToHTTPFn"></a>
 ## type [ErrorToHTTPFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/config.go#L12>)
