@@ -97,6 +97,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			defer unlock()
 
 			// update the request context with the new context
+			//nolint:contextcheck // newCtx is derived from req.Context() in TryLock
 			req = req.WithContext(newCtx)
 
 			teeRespW := newTeeResponseWriter(respW)
@@ -169,7 +170,9 @@ func handleRequestWithIdempotency(
 	return false
 }
 
-const IdempotencyKeyCtxKey = "idempotency_key"
+type ContextKey string
+
+const IdempotencyKeyCtxKey ContextKey = "idempotency_key"
 
 // buildRequestHash is the function that will take the request
 //
