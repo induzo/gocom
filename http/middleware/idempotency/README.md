@@ -57,6 +57,12 @@ const (
 )
 ```
 
+<a name="IdempotencyKeyCtxKey"></a>
+
+```go
+const IdempotencyKeyCtxKey = "idempotency_key"
+```
+
 <a name="ErrorToHTTPJSONProblemDetail"></a>
 ## func [ErrorToHTTPJSONProblemDetail](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L110-L114>)
 
@@ -67,7 +73,7 @@ func ErrorToHTTPJSONProblemDetail(respW http.ResponseWriter, req *http.Request, 
 ErrorToHTTPJSONProblemDetail converts an error to a RFC9457 problem detail. This is a sample errorToHTTPFn function that handles the specific errors encountered You can add your own func and set it inside the config
 
 <a name="NewMiddleware"></a>
-## func [NewMiddleware](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/middleware.go#L13>)
+## func [NewMiddleware](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/middleware.go#L14>)
 
 ```go
 func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handler
@@ -127,13 +133,9 @@ func main() {
 	var wg sync.WaitGroup
 
 	for range 3 {
-		wg.Add(1)
-
-		go func() {
-			defer wg.Done()
-
+		wg.Go(func() {
 			sendPOSTReq(ctx, server, "same-key", "")
-		}()
+		})
 
 		time.Sleep(80 * time.Millisecond)
 	}
