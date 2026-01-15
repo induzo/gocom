@@ -12,7 +12,7 @@ Package slog provides a logger that writes to a go.uber.org/slog.Logger.
 
 - [type Logger](<#Logger>)
   - [func NewLogger\(logger \*slog.Logger\) \*Logger](<#NewLogger>)
-  - [func \(pl \*Logger\) Log\(ctx context.Context, level tracelog.LogLevel, msg string, data map\[string\]interface\{\}\)](<#Logger.Log>)
+  - [func \(pl \*Logger\) Log\(ctx context.Context, level tracelog.LogLevel, msg string, data map\[string\]any\)](<#Logger.Log>)
 
 
 <a name="Logger"></a>
@@ -45,7 +45,6 @@ package main
 
 import (
 	"context"
-	"io"
 	"log/slog"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -55,7 +54,7 @@ import (
 )
 
 func main() {
-	textAdapter := slog.NewTextHandler(io.Discard, nil)
+	textAdapter := slog.DiscardHandler
 	logger := slog.New(textAdapter)
 
 	pgxPool, _ := pgxpool.New(
@@ -77,7 +76,7 @@ func main() {
 ### func \(\*Logger\) [Log](<https://github.com/induzo/gocom/blob/main/database/pgx-slog/adapter.go#L19-L24>)
 
 ```go
-func (pl *Logger) Log(ctx context.Context, level tracelog.LogLevel, msg string, data map[string]interface{})
+func (pl *Logger) Log(ctx context.Context, level tracelog.LogLevel, msg string, data map[string]any)
 ```
 
 
