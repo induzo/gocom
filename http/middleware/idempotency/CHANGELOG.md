@@ -2,12 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/idempotency/v0.4.0] - 2026-01-15
+
+### Features
+
+- Add idemkey in context
+
 ## [http/middleware/idempotency/v0.3.4] - 2025-12-20
 
 ### Bug Fixes
 
 - Modernize
 - Http/middleware/idempotency/example_test.go
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/idempotency/v0.3.4
 
 ## [http/middleware/idempotency/v0.3.3] - 2025-12-20
 
