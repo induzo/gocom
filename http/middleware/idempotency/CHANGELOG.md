@@ -4,9 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ## [http/middleware/idempotency/v0.4.0] - 2026-01-15
 
+### Bug Fixes
+
+- Contextcheck
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/idempotency/v0.4.0
+- Update docs for module http/middleware/idempotency
+
 ### Features
 
 - Add idemkey in context
+
+### Styling
+
+- Golangci linter
 
 ## [http/middleware/idempotency/v0.3.4] - 2025-12-20
 
