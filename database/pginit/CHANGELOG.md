@@ -2,12 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/pginit/v2.2.31] - 2026-01-15
+
+### Bug Fixes
+
+- Contextcheck
+
+### Miscellaneous Tasks
+
+- Update deps
+
+### Styling
+
+- Golangci linter
+
 ## [database/pginit/v2.2.30] - 2025-12-20
 
 ### Bug Fixes
 
 - Database/pginit
 - Database/pginit
+
+### Documentation
+
+- Update CHANGELOG.md for database/pginit/v2.2.30
 
 ### Miscellaneous Tasks
 
