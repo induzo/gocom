@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
 
 - Update CHANGELOG.md for http/middleware/idempotency/v0.4.0
 - Update docs for module http/middleware/idempotency
+- Update CHANGELOG.md for http/middleware/idempotency/v0.4.0
+- Update docs for module http/middleware/idempotency
 
 ### Features
 
