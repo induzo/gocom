@@ -42,7 +42,9 @@ func TestMain(m *testing.M) {
 	testValkeyPortHost = resource.GetHostPort("6379/tcp")
 
 	if err := pool.Retry(func() error {
-		client, err := valkey.NewClient(valkey.ClientOption{InitAddress: []string{testValkeyPortHost}})
+		client, err := valkey.NewClient(
+			valkey.ClientOption{InitAddress: []string{testValkeyPortHost}},
+		)
 		if err != nil {
 			return fmt.Errorf("could not connect to valkey: %w", err)
 		}

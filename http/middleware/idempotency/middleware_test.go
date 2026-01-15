@@ -616,6 +616,7 @@ func TestMiddleware_IdempotencyKeyInContext(t *testing.T) {
 	idempotencyMiddleware := NewMiddleware(store)
 
 	expectedKey := "test-idempotency-key"
+
 	var capturedKey string
 
 	handler := idempotencyMiddleware(

@@ -450,7 +450,10 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 				uuid  uuid.UUID
 				price decimal.Decimal
 			}{}
-			if err := row.Scan(&r.uuid, &r.price); err != nil { //nolint:govet // inline err is within scope
+			if err := row.Scan(
+				&r.uuid,
+				&r.price,
+			); err != nil { //nolint:govet // inline err is within scope
 				t.Errorf("expected no error but got: %v, (%+v)", err, row)
 			}
 
@@ -620,7 +623,10 @@ func TestConnPoolWithCustomTypesGoogle_CRUD(t *testing.T) {
 				price decimal.Decimal
 			}{}
 
-			if err := row.Scan(&r.uuid, &r.price); err != nil { //nolint:govet // inline err is within scope
+			if err := row.Scan(
+				&r.uuid,
+				&r.price,
+			); err != nil { //nolint:govet // inline err is within scope
 				t.Errorf("expected no error but got: %v, (%+v)", err, row)
 			}
 

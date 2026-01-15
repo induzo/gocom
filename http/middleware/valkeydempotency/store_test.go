@@ -196,7 +196,11 @@ func TestStoreStoreResponse(t *testing.T) {
 			defer storeValkey.Close()
 
 			if tt.doesKeyExist {
-				if errSR := storeValkey.StoreResponse(context.Background(), tt.key, &idempotency.StoredResponse{}); errSR != nil {
+				if errSR := storeValkey.StoreResponse(
+					context.Background(),
+					tt.key,
+					&idempotency.StoredResponse{},
+				); errSR != nil {
 					t.Fatalf("StoreResponse() error = %v", errSR)
 				}
 			}
@@ -273,7 +277,11 @@ func TestStoreGetStoredResponse(t *testing.T) {
 			defer storeValkey.Close()
 
 			if tt.storedResponse != nil {
-				if errSR := storeValkey.StoreResponse(context.Background(), tt.key, sampleStoredResponse); errSR != nil {
+				if errSR := storeValkey.StoreResponse(
+					context.Background(),
+					tt.key,
+					sampleStoredResponse,
+				); errSR != nil {
 					t.Fatalf("StoreResponse() error = %v", errSR)
 				}
 			}

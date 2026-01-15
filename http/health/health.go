@@ -142,7 +142,8 @@ func (h *Health) Handler() http.Handler {
 
 			respW.Header().Set("Content-Type", "application/json")
 
-			if err := json.NewEncoder(respW).EncodeContext(req.Context(), responseBody); err != nil {
+			if err := json.NewEncoder(respW).
+				EncodeContext(req.Context(), responseBody); err != nil {
 				respW.WriteHeader(http.StatusInternalServerError)
 
 				slog.ErrorContext(
