@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1768440951955,
+  "lastUpdate": 1769441836637,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -3240,6 +3240,54 @@ window.BENCHMARK_DATA = {
             "value": 16,
             "unit": "allocs/op",
             "extra": "359678 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "298b6c50b91cc02f8a390ec1ae7b16a5df1ff0c2",
+          "message": "fix: remove redisinit",
+          "timestamp": "2026-01-26T23:36:26+08:00",
+          "tree_id": "4a2fb2cfb5674af0afd218da49d6df167d126461",
+          "url": "https://github.com/induzo/gocom/commit/298b6c50b91cc02f8a390ec1ae7b16a5df1ff0c2"
+        },
+        "date": 1769441835982,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHealth",
+            "value": 3223,
+            "unit": "ns/op\t    1192 B/op\t      16 allocs/op",
+            "extra": "364122 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHealth - ns/op",
+            "value": 3223,
+            "unit": "ns/op",
+            "extra": "364122 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHealth - B/op",
+            "value": 1192,
+            "unit": "B/op",
+            "extra": "364122 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHealth - allocs/op",
+            "value": 16,
+            "unit": "allocs/op",
+            "extra": "364122 times\n4 procs"
           }
         ]
       }
