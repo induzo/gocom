@@ -2,14 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
-## [database/pginit/v2.2.31] - 2026-01-15
+## [database/pginit/v2.2.31] - 2026-01-26
 
 ### Bug Fixes
 
 - Contextcheck
 
+### Documentation
+
+- Update CHANGELOG.md for database/pginit/v2.2.31
+- Update docs for module database/pginit
+
 ### Miscellaneous Tasks
 
+- Update deps
 - Update deps
 
 ### Styling
