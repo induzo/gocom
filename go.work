@@ -3,7 +3,6 @@ go 1.25.5
 use (
 	./database/pginit
 	./database/pgx-slog
-	./database/redisinit
 	./http/health
 	./http/middleware/idempotency
 	./http/middleware/valkeydempotency
