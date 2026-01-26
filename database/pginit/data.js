@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1768440979947,
+  "lastUpdate": 1769441475715,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -3850,6 +3850,54 @@ window.BENCHMARK_DATA = {
           {
             "name": "BenchmarkConnPool - B/op",
             "value": 42390,
+            "unit": "B/op",
+            "extra": "538 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - allocs/op",
+            "value": 300,
+            "unit": "allocs/op",
+            "extra": "538 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "1c9a518f4313bcead0d34a360771822916955597",
+          "message": "docs(changelog): update CHANGELOG.md for http/middleware/valkeydempotency/v0.1.18",
+          "timestamp": "2026-01-26T23:28:31+08:00",
+          "tree_id": "bbd819ca497a7ab2101af35d21b0771e36c1efb1",
+          "url": "https://github.com/induzo/gocom/commit/1c9a518f4313bcead0d34a360771822916955597"
+        },
+        "date": 1769441475140,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkConnPool",
+            "value": 2231799,
+            "unit": "ns/op\t   42450 B/op\t     300 allocs/op",
+            "extra": "538 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - ns/op",
+            "value": 2231799,
+            "unit": "ns/op",
+            "extra": "538 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - B/op",
+            "value": 42450,
             "unit": "B/op",
             "extra": "538 times\n4 procs"
           },
