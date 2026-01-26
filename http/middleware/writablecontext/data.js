@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1766245882816,
+  "lastUpdate": 1769441832394,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -1608,6 +1608,54 @@ window.BENCHMARK_DATA = {
             "value": 5,
             "unit": "allocs/op",
             "extra": "2777115 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "298b6c50b91cc02f8a390ec1ae7b16a5df1ff0c2",
+          "message": "fix: remove redisinit",
+          "timestamp": "2026-01-26T23:36:26+08:00",
+          "tree_id": "4a2fb2cfb5674af0afd218da49d6df167d126461",
+          "url": "https://github.com/induzo/gocom/commit/298b6c50b91cc02f8a390ec1ae7b16a5df1ff0c2"
+        },
+        "date": 1769441831360,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkFromRequest",
+            "value": 414.5,
+            "unit": "ns/op\t     718 B/op\t       5 allocs/op",
+            "extra": "2735527 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromRequest - ns/op",
+            "value": 414.5,
+            "unit": "ns/op",
+            "extra": "2735527 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromRequest - B/op",
+            "value": 718,
+            "unit": "B/op",
+            "extra": "2735527 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromRequest - allocs/op",
+            "value": 5,
+            "unit": "allocs/op",
+            "extra": "2735527 times\n4 procs"
           }
         ]
       }
