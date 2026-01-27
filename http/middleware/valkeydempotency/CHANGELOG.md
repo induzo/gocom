@@ -2,7 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
-## [http/middleware/valkeydempotency/v0.1.18] - 2026-01-26
+## [http/middleware/valkeydempotency/v0.2.1] - 2026-01-27
+
+### Bug Fixes
+
+- Go 1.25.6
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/valkeydempotency/v0.1.18
+
+### Miscellaneous Tasks
+
+- Update deps
+- Update idempot
+
+## [http/middleware/valkeydempotency/v0.2.0] - 2026-01-15
 
 ### Documentation
 
@@ -10,7 +25,6 @@ All notable changes to this project will be documented in this file.
 
 ### Miscellaneous Tasks
 
-- Update deps
 - Update deps
 - Update deps
 - Update deps
