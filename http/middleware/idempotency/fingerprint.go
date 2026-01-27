@@ -13,18 +13,19 @@ import (
 // to handle large payloads without loading everything into memory at once.
 // You can add your own logic here to build the fingerprint.
 func buildRequestFingerprint(req *http.Request) ([]byte, error) {
-	h := sha256.New()
+	hash := sha256.New()
 
 	// Write the method and URL into the hash
-	h.Write([]byte(req.Method + req.URL.String()))
+	hash.Write([]byte(req.Method + req.URL.String()))
 
 	// Stream the body through both the hash and a buffer.
 	// This avoids loading the entire body into memory before processing.
 	var bodyBuf bytes.Buffer
+
 	tee := io.TeeReader(req.Body, &bodyBuf)
 
 	// Copy the body to the hash in chunks (streaming)
-	if _, err := io.Copy(h, tee); err != nil {
+	if _, err := io.Copy(hash, tee); err != nil {
 		return nil, fmt.Errorf("buildRequestFingerprint: reading body: %w", err)
 	}
 
@@ -42,15 +43,15 @@ func buildRequestFingerprint(req *http.Request) ([]byte, error) {
 	// For instance, content-type or a specific custom header
 	for _, hdr := range whitelistedHeaders {
 		if v := req.Header.Get(hdr); v != "" {
-			h.Write([]byte(hdr))
-			h.Write([]byte(v))
+			hash.Write([]byte(hdr))
+			hash.Write([]byte(v))
 		}
 	}
 
 	// Optionally add some scoping values, like userid
 	if v, ok := req.Context().Value("userid").(string); ok {
-		h.Write([]byte("userid-" + v))
+		hash.Write([]byte("userid-" + v))
 	}
 
-	return h.Sum(nil), nil
+	return hash.Sum(nil), nil
 }

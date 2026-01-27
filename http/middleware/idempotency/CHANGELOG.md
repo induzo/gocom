@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/idempotency/v0.5.0] - 2026-01-27
+
+### Bug Fixes
+
+- Go 1.25.6
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/idempotency/v0.4.1
+
+### Features
+
+- Use a tee reader for idempotency
+
 ## [http/middleware/idempotency/v0.4.0] - 2026-01-15
 
 ### Bug Fixes

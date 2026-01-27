@@ -37,7 +37,9 @@ func Test_buildRequestFingerprint(t *testing.T) {
 			context: map[any]any{
 				"userid": "123",
 			},
-			want: sha256Hash([]byte("POSThttp://example.comContent-Typeapplication/jsonuserid-123")),
+			want: sha256Hash(
+				[]byte("POSThttp://example.comContent-Typeapplication/jsonuserid-123"),
+			),
 		},
 	}
 
