@@ -3,6 +3,7 @@ package idempotency
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"maps"
 	"net/http"
 	"net/http/httptest"
@@ -25,7 +26,7 @@ func Test_buildRequestFingerprint(t *testing.T) {
 			headers: http.Header{
 				"Content-Type": []string{"application/json"},
 			},
-			want: []byte("POSThttp://example.comContent-Typeapplication/json"),
+			want: sha256Hash([]byte("POSThttp://example.comContent-Typeapplication/json")),
 		},
 		{
 			name: "request with context userid",
@@ -36,7 +37,7 @@ func Test_buildRequestFingerprint(t *testing.T) {
 			context: map[any]any{
 				"userid": "123",
 			},
-			want: []byte("POSThttp://example.comContent-Typeapplication/jsonuserid-123"),
+			want: sha256Hash([]byte("POSThttp://example.comContent-Typeapplication/jsonuserid-123")),
 		},
 	}
 
@@ -61,8 +62,13 @@ func Test_buildRequestFingerprint(t *testing.T) {
 			}
 
 			if !bytes.Equal(got, tt.want) {
-				t.Errorf("buildRequestFingerprint() = %v, want %v", string(got), string(tt.want))
+				t.Errorf("buildRequestFingerprint() = %x, want %x", got, tt.want)
 			}
 		})
 	}
+}
+
+func sha256Hash(data []byte) []byte {
+	h := sha256.Sum256(data)
+	return h[:]
 }

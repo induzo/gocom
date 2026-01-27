@@ -2,32 +2,35 @@ package idempotency
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"fmt"
 	"io"
 	"net/http"
 )
 
-// This is a sample fingerprinter function that hashes the request body and some headers
-// You can add your own logic here to build the fingerprint
+// buildRequestFingerprint creates a hash fingerprint from the request.
+// It uses SHA-256 to produce a fixed-size output and streams the body
+// to handle large payloads without loading everything into memory at once.
+// You can add your own logic here to build the fingerprint.
 func buildRequestFingerprint(req *http.Request) ([]byte, error) {
-	var buf bytes.Buffer
+	h := sha256.New()
 
-	// Copy the body so we can reuse it after hashing
-	bodyBytes, err := io.ReadAll(req.Body)
-	if err != nil {
-		return nil, fmt.Errorf("buildRequestFingerprint: %w", err)
+	// Write the method and URL into the hash
+	h.Write([]byte(req.Method + req.URL.String()))
+
+	// Stream the body through both the hash and a buffer.
+	// This avoids loading the entire body into memory before processing.
+	var bodyBuf bytes.Buffer
+	tee := io.TeeReader(req.Body, &bodyBuf)
+
+	// Copy the body to the hash in chunks (streaming)
+	if _, err := io.Copy(h, tee); err != nil {
+		return nil, fmt.Errorf("buildRequestFingerprint: reading body: %w", err)
 	}
 
-	defer req.Body.Close()
-
-	// write the method and URL into the buffer
-	buf.WriteString(req.Method + req.URL.String())
-
-	// Put the body back into the request for the next handler
-	req.Body = io.NopCloser(bytes.NewReader(bodyBytes))
-
-	// Write the body into the buffer to incorporate it into the hash
-	buf.Write(bodyBytes)
+	// Close the original body and replace it with the buffered copy
+	req.Body.Close()
+	req.Body = io.NopCloser(&bodyBuf)
 
 	whitelistedHeaders := []string{
 		"Accept",
@@ -37,17 +40,17 @@ func buildRequestFingerprint(req *http.Request) ([]byte, error) {
 
 	// Optionally add some headers if you want them in the signature
 	// For instance, content-type or a specific custom header
-	for _, h := range whitelistedHeaders {
-		if v := req.Header.Get(h); v != "" {
-			buf.WriteString(h)
-			buf.WriteString(v)
+	for _, hdr := range whitelistedHeaders {
+		if v := req.Header.Get(hdr); v != "" {
+			h.Write([]byte(hdr))
+			h.Write([]byte(v))
 		}
 	}
 
 	// Optionally add some scoping values, like userid
 	if v, ok := req.Context().Value("userid").(string); ok {
-		buf.WriteString("userid-" + v)
+		h.Write([]byte("userid-" + v))
 	}
 
-	return buf.Bytes(), nil
+	return h.Sum(nil), nil
 }
