@@ -11,12 +11,17 @@ import (
 )
 
 // Middleware enforces idempotency on non-GET requests.
+//
+//nolint:cyclop // Complexity is acceptable for middleware validation logic.
 func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handler {
 	conf := newDefaultConfig()
 
 	for _, opt := range options {
 		opt(conf)
 	}
+
+	// Configure the store with the response TTL from config
+	store.SetResponseTTL(conf.responseTTL)
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(respW http.ResponseWriter, req *http.Request) {
@@ -54,6 +59,26 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 				return
 			}
 
+			// Validate the idempotency key
+			if err := validateIdempotencyKey(key); err != nil {
+				conf.errorToHTTPFn(respW, req,
+					InvalidIdempotencyKeyError{
+						RequestContext: RequestContext{
+							URL:       req.URL.String(),
+							Method:    req.Method,
+							Key:       key,
+							KeyHeader: conf.idempotencyKeyHeader,
+						},
+						Err: err,
+					},
+				)
+
+				return
+			}
+
+			// Build composite store key (user:method:path:key)
+			storeKey := buildStoreKey(req, key, conf.userIDExtractor)
+
 			// set key in the request context
 			req = req.WithContext(
 				context.WithValue(req.Context(), IdempotencyKeyCtxKey, key),
@@ -69,16 +94,17 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			if isFound := handleRequestWithIdempotency(
 				conf,
 				store,
-				key,
+				storeKey,
 				requestHash,
 				respW,
 				req,
+				key,
 			); isFound {
 				return
 			}
 
 			// Try to lock the key to prevent concurrent requests
-			newCtx, unlock, errL := store.TryLock(req.Context(), key)
+			newCtx, unlock, errL := store.TryLock(req.Context(), storeKey)
 			if errL != nil {
 				conf.errorToHTTPFn(respW, req,
 					RequestInFlightError{
@@ -105,7 +131,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			next.ServeHTTP(teeRespW, req)
 
 			//nolint:contextcheck // req.Context() is a valid value
-			if errSR := store.StoreResponse(req.Context(), key,
+			if errSR := store.StoreResponse(req.Context(), storeKey,
 				&StoredResponse{
 					StatusCode:  teeRespW.statusCode,
 					Header:      teeRespW.header(),
@@ -132,14 +158,15 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 func handleRequestWithIdempotency(
 	conf *config,
 	store Store,
-	key string,
+	storeKey string,
 	requestHash []byte,
 	respW http.ResponseWriter,
 	req *http.Request,
+	originalKey string,
 ) bool {
 	ctx := req.Context()
 
-	resp, exists, err := store.GetStoredResponse(ctx, key)
+	resp, exists, err := store.GetStoredResponse(ctx, storeKey)
 	if err != nil {
 		conf.errorToHTTPFn(respW, req, err)
 
@@ -154,7 +181,7 @@ func handleRequestWithIdempotency(
 						URL:       req.URL.String(),
 						Method:    req.Method,
 						KeyHeader: conf.idempotencyKeyHeader,
-						Key:       key,
+						Key:       originalKey,
 					},
 				},
 			)
@@ -195,11 +222,18 @@ func buildRequestHash(
 
 // replayResponse writes a previously stored response to a ResponseWriter
 func replayResponse(conf *config, respW http.ResponseWriter, resp *StoredResponse) {
-	// Copy stored headers
+	// Create a map of allowed headers for fast lookup
+	allowedHeaders := make(map[string]bool)
+	for _, hdr := range conf.allowedReplayHeaders {
+		allowedHeaders[strings.ToLower(hdr)] = true
+	}
+
+	// Copy only safe/allowed stored headers
 	for hdr, values := range resp.Header {
-		// We skip Content-Length because we might re-write it or let
-		// http do so. Or you can do w.Header().Set("Content-Length", strconv.Itoa(len(resp.Body))).
-		if strings.EqualFold(hdr, "content-length") {
+		lowerHdr := strings.ToLower(hdr)
+
+		// Skip Content-Length (will be set automatically) and disallowed headers
+		if lowerHdr == "content-length" || !allowedHeaders[lowerHdr] {
 			continue
 		}
 

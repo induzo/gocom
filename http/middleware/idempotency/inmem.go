@@ -5,22 +5,50 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 )
 
 var _ Store = &InMemStore{}
 
-type InMemStore struct {
-	locks                      sync.Map // key -> struct{}
-	responses                  sync.Map // key -> *StoredResponse
-	withStoreResponseError     bool
-	withGetStoredResponseError bool
+type storedEntry struct {
+	response  *StoredResponse
+	expiresAt time.Time
 }
 
-// NewInMemStore initializes an in-memory store.
+type InMemStore struct {
+	locks                      sync.Map // key -> time.Time (lock expiry)
+	responses                  sync.Map // key -> *storedEntry
+	withStoreResponseError     bool
+	withGetStoredResponseError bool
+	lockTimeout                time.Duration
+	responseTTL                time.Duration
+	cancel                     context.CancelFunc
+}
+
+const defaultLockTimeout = 30 * time.Second
+
+// NewInMemStore initializes an in-memory store with automatic cleanup.
 func NewInMemStore() *InMemStore {
-	return &InMemStore{
-		locks:     sync.Map{},
-		responses: sync.Map{},
+	ctx, cancel := context.WithCancel(context.Background())
+
+	store := &InMemStore{
+		locks:       sync.Map{},
+		responses:   sync.Map{},
+		lockTimeout: defaultLockTimeout,
+		responseTTL: DefaultResponseTTL,
+		cancel:      cancel,
+	}
+
+	// Start background cleanup goroutine
+	go store.cleanup(ctx)
+
+	return store
+}
+
+// Close stops the background cleanup goroutine.
+func (s *InMemStore) Close() {
+	if s.cancel != nil {
+		s.cancel()
 	}
 }
 
@@ -32,17 +60,59 @@ func (s *InMemStore) withActiveGetStoredResponseError() {
 	s.withGetStoredResponseError = true
 }
 
+// cleanup periodically removes expired locks and responses.
+func (s *InMemStore) cleanup(ctx context.Context) {
+	ticker := time.NewTicker(1 * time.Minute)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			now := time.Now()
+
+			// Clean expired locks
+			s.locks.Range(func(key, value any) bool {
+				if expiry, ok := value.(time.Time); ok && now.After(expiry) {
+					s.locks.Delete(key)
+				}
+
+				return true
+			})
+
+			// Clean expired responses
+			s.responses.Range(func(key, value any) bool {
+				if entry, ok := value.(*storedEntry); ok && now.After(entry.expiresAt) {
+					s.responses.Delete(key)
+				}
+
+				return true
+			})
+		}
+	}
+}
+
 func (s *InMemStore) TryLock(
 	ctx context.Context,
 	key string,
 ) (context.Context, context.CancelFunc, error) {
-	if _, loaded := s.locks.LoadOrStore(key, struct{}{}); loaded {
-		return ctx,
-			nil,
-			fmt.Errorf(
-				"TryLock: %w",
-				errors.New("key is already locked"), //nolint:err113 // this is a test store
-			)
+	now := time.Now()
+	lockExpiry := now.Add(s.lockTimeout)
+
+	// Check if lock exists and is not expired
+	if existing, loaded := s.locks.LoadOrStore(key, lockExpiry); loaded {
+		if expiry, ok := existing.(time.Time); ok && now.Before(expiry) {
+			return ctx,
+				nil,
+				fmt.Errorf(
+					"TryLock: %w",
+					errors.New("key is already locked"), //nolint:err113 // this is a test store
+				)
+		}
+
+		// Lock expired, update it
+		s.locks.Store(key, lockExpiry)
 	}
 
 	return ctx, func() {
@@ -50,7 +120,11 @@ func (s *InMemStore) TryLock(
 	}, nil
 }
 
-func (s *InMemStore) StoreResponse(_ context.Context, key string, resp *StoredResponse) error {
+func (s *InMemStore) StoreResponse(
+	_ context.Context,
+	key string,
+	resp *StoredResponse,
+) error {
 	if s.withStoreResponseError {
 		return fmt.Errorf(
 			"StoreResponse: %w",
@@ -58,7 +132,12 @@ func (s *InMemStore) StoreResponse(_ context.Context, key string, resp *StoredRe
 		)
 	}
 
-	if _, loaded := s.responses.LoadOrStore(key, resp); loaded {
+	entry := &storedEntry{
+		response:  resp,
+		expiresAt: time.Now().Add(s.responseTTL),
+	}
+
+	if _, loaded := s.responses.LoadOrStore(key, entry); loaded {
 		return fmt.Errorf(
 			"StoreResponse: %w",
 			errors.New("key already present"), //nolint:err113 // this is a test store
@@ -81,12 +160,12 @@ func (s *InMemStore) GetStoredResponse(
 			)
 	}
 
-	resp, found := s.responses.Load(key)
-	if !found || resp == nil {
+	value, found := s.responses.Load(key)
+	if !found || value == nil {
 		return nil, false, nil
 	}
 
-	storedResp, valid := resp.(*StoredResponse)
+	entry, valid := value.(*storedEntry)
 	if !valid {
 		return nil,
 			false,
@@ -96,5 +175,17 @@ func (s *InMemStore) GetStoredResponse(
 			)
 	}
 
-	return storedResp, true, nil
+	// Check if expired
+	if time.Now().After(entry.expiresAt) {
+		s.responses.Delete(key)
+
+		return nil, false, nil
+	}
+
+	return entry.response, true, nil
+}
+
+// SetResponseTTL configures how long responses should be cached.
+func (s *InMemStore) SetResponseTTL(ttl time.Duration) {
+	s.responseTTL = ttl
 }

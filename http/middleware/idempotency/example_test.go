@@ -18,7 +18,11 @@ import (
 // Using NewMiddleware
 func ExampleNewMiddleware() {
 	ctx := context.Background()
-	idempotencyMiddleware := idempotency.NewMiddleware(idempotency.NewInMemStore())
+
+	store := idempotency.NewInMemStore()
+	defer store.Close()
+
+	idempotencyMiddleware := idempotency.NewMiddleware(store)
 	mux := http.NewServeMux()
 
 	counter := int32(0)

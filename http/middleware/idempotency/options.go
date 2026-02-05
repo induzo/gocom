@@ -2,6 +2,7 @@ package idempotency
 
 import (
 	"net/http"
+	"time"
 )
 
 type Option func(*config)
@@ -27,7 +28,7 @@ func WithIdempotentReplayedHeader(header string) Option {
 	}
 }
 
-// WithErrorToHTTP sets a function to convert errors to HTTP status codes and content.
+// WithErrorToHTTPFn sets a function to convert errors to HTTP status codes and content.
 func WithErrorToHTTPFn(fn func(http.ResponseWriter, *http.Request, error)) Option {
 	return func(cfg *config) {
 		cfg.errorToHTTPFn = fn
@@ -71,5 +72,29 @@ func WithIgnoredURLPaths(urlPaths ...string) Option {
 		}
 
 		cfg.ignoredURLPaths = urlPaths
+	}
+}
+
+// WithResponseTTL sets the duration for which responses are cached.
+// Default is 24 hours.
+func WithResponseTTL(ttl time.Duration) Option {
+	return func(cfg *config) {
+		cfg.responseTTL = ttl
+	}
+}
+
+// WithUserIDExtractor sets a function to extract user/tenant ID from the request.
+// This is used to scope idempotency keys to specific users/tenants.
+func WithUserIDExtractor(fn UserIDExtractorFn) Option {
+	return func(cfg *config) {
+		cfg.userIDExtractor = fn
+	}
+}
+
+// WithAllowedReplayHeaders sets the list of headers that are safe to replay.
+// Only these headers will be copied from the stored response.
+func WithAllowedReplayHeaders(headers ...string) Option {
+	return func(cfg *config) {
+		cfg.allowedReplayHeaders = headers
 	}
 }

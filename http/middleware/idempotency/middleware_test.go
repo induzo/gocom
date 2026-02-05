@@ -19,7 +19,10 @@ import (
 func TestNewMiddleware(t *testing.T) {
 	t.Parallel()
 
-	idempotencyMiddleware := NewMiddleware(NewInMemStore())
+	store := NewInMemStore()
+	defer store.Close()
+
+	idempotencyMiddleware := NewMiddleware(store)
 
 	if idempotencyMiddleware == nil {
 		t.Error("NewMiddleware returned nil")
@@ -411,6 +414,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			options := append([]Option{WithErrorToHTTPFn(errorToString)}, tt.options...)
 
 			store := NewInMemStore()
+			t.Cleanup(store.Close)
 
 			if tt.withFaultyStoreResponseStore {
 				store.withActiveStoreResponseError()
@@ -494,6 +498,7 @@ func TestReplayResponse(t *testing.T) {
 	t.Parallel()
 
 	store := NewInMemStore()
+	defer store.Close()
 
 	storedResp := &StoredResponse{
 		StatusCode: http.StatusOK,
@@ -512,6 +517,7 @@ func TestReplayResponse(t *testing.T) {
 	replayResponse(&config{
 		idempotentReplayedHeader: DefaultIdempotentReplayedResponseHeader,
 		errorToHTTPFn:            errorToString,
+		allowedReplayHeaders:     []string{"Content-Type", "X-Test"},
 	}, respRec, storedResp)
 
 	resp := respRec.Result()
@@ -613,6 +619,8 @@ func TestMiddleware_IdempotencyKeyInContext(t *testing.T) {
 	t.Parallel()
 
 	store := NewInMemStore()
+	defer store.Close()
+
 	idempotencyMiddleware := NewMiddleware(store)
 
 	expectedKey := "test-idempotency-key"

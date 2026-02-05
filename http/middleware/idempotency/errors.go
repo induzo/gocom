@@ -37,6 +37,26 @@ func (e MissingIdempotencyKeyHeaderError) Error() string {
 	return "missing idempotency key header `" + e.KeyHeader + "`"
 }
 
+type InvalidIdempotencyKeyError struct {
+	RequestContext
+	Err error
+}
+
+//nolint:gocritic //keep errors all the same
+func (e InvalidIdempotencyKeyError) Error() string {
+	return fmt.Sprintf("invalid idempotency key: %v", e.Err)
+}
+
+//nolint:gocritic //keep errors all the same
+func (e InvalidIdempotencyKeyError) toAttrs() []slog.Attr {
+	return append(e.RequestContext.toAttrs(), slog.Any("validation_error", e.Err))
+}
+
+//nolint:gocritic //keep errors all the same
+func (e InvalidIdempotencyKeyError) Unwrap() error {
+	return e.Err
+}
+
 type RequestInFlightError struct {
 	RequestContext
 }
@@ -107,6 +127,8 @@ type ProblemDetail struct {
 // ErrorToHTTPJSONProblemDetail converts an error to a RFC9457 problem detail.
 // This is a sample errorToHTTPFn function that handles the specific errors encountered
 // You can add your own func and set it inside the config
+//
+//nolint:cyclop // Error handling requires checking multiple error types.
 func ErrorToHTTPJSONProblemDetail(
 	respW http.ResponseWriter,
 	req *http.Request,
@@ -129,6 +151,7 @@ func ErrorToHTTPJSONProblemDetail(
 	// use potential errors
 	var (
 		missingIdempotencyKeyHeaderError MissingIdempotencyKeyHeaderError
+		invalidIdempotencyKeyError       InvalidIdempotencyKeyError
 		requestInFlightError             RequestInFlightError
 		mismatchedSignatureError         MismatchedSignatureError
 		storeResponseError               StoreResponseError
@@ -153,6 +176,18 @@ func ErrorToHTTPJSONProblemDetail(
 		errorAttrs = append(errorAttrs, slog.String("issue", "missing idempotency key header"))
 
 		errorAttrs = append(errorAttrs, missingIdempotencyKeyHeaderError.toAttrs()...)
+	case errors.As(err, &invalidIdempotencyKeyError):
+		pbDetail = ProblemDetail{
+			HTTPStatusCode: http.StatusBadRequest,
+			Type:           "errors/invalid-idempotency-key",
+			Title:          "invalid idempotency key",
+			Detail:         errorString,
+			Instance:       url,
+		}
+
+		errorAttrs = append(errorAttrs, slog.String("issue", "invalid idempotency key"))
+
+		errorAttrs = append(errorAttrs, invalidIdempotencyKeyError.toAttrs()...)
 	case errors.As(err, &requestInFlightError):
 		pbDetail = ProblemDetail{
 			HTTPStatusCode: http.StatusConflict,

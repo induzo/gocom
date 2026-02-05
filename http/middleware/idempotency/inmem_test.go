@@ -4,12 +4,14 @@ import (
 	"context"
 	"net/http"
 	"testing"
+	"time"
 )
 
 func TestNewInMemStore(t *testing.T) {
 	t.Parallel()
 
 	store := NewInMemStore()
+	defer store.Close()
 
 	if store == nil {
 		t.Error("NewInMemStore returned nil")
@@ -20,6 +22,7 @@ func TestInMemStoreLock(t *testing.T) {
 	t.Parallel()
 
 	store := NewInMemStore()
+	t.Cleanup(store.Close)
 
 	tests := []struct {
 		name         string
@@ -49,7 +52,8 @@ func TestInMemStoreLock(t *testing.T) {
 			t.Parallel()
 
 			if tt.doesKeyExist {
-				store.locks.Store(tt.key, struct{}{})
+				// Store a lock with future expiry
+				store.locks.Store(tt.key, time.Now().Add(1*time.Hour))
 			}
 
 			_, cancel, err := store.TryLock(context.Background(), tt.key)
@@ -73,6 +77,7 @@ func TestInMemStoreStoreResponse(t *testing.T) {
 	t.Parallel()
 
 	store := NewInMemStore()
+	t.Cleanup(store.Close)
 
 	tests := []struct {
 		name         string
@@ -136,6 +141,7 @@ func TestInMemStoreGetStoredResponse(t *testing.T) {
 	t.Parallel()
 
 	store := NewInMemStore()
+	t.Cleanup(store.Close)
 
 	sampleStoredResponse := &StoredResponse{
 		StatusCode:  http.StatusOK,
@@ -183,7 +189,17 @@ func TestInMemStoreGetStoredResponse(t *testing.T) {
 			t.Parallel()
 
 			if tt.storedResponse != nil {
-				store.responses.Store(tt.key, tt.storedResponse)
+				// For testing "unexpected response type", store the value directly
+				if respPtr, ok := tt.storedResponse.(*StoredResponse); ok {
+					entry := &storedEntry{
+						response:  respPtr,
+						expiresAt: time.Now().Add(1 * time.Hour),
+					}
+					store.responses.Store(tt.key, entry)
+				} else {
+					// Store invalid type directly for testing error handling
+					store.responses.Store(tt.key, tt.storedResponse)
+				}
 			}
 
 			resp, ok, err := store.GetStoredResponse(context.Background(), tt.key)
