@@ -25,7 +25,10 @@ type InMemStore struct {
 	cancel                     context.CancelFunc
 }
 
-const defaultLockTimeout = 30 * time.Second
+const (
+	defaultLockTimeout = 30 * time.Second
+	defaultResponseTTL = 24 * time.Hour
+)
 
 // NewInMemStore initializes an in-memory store with automatic cleanup.
 func NewInMemStore() *InMemStore {
@@ -35,7 +38,7 @@ func NewInMemStore() *InMemStore {
 		locks:       sync.Map{},
 		responses:   sync.Map{},
 		lockTimeout: defaultLockTimeout,
-		responseTTL: DefaultResponseTTL,
+		responseTTL: defaultResponseTTL,
 		cancel:      cancel,
 	}
 

@@ -2,7 +2,6 @@ package idempotency
 
 import (
 	"net/http"
-	"time"
 )
 
 type Option func(*config)
@@ -72,14 +71,6 @@ func WithIgnoredURLPaths(urlPaths ...string) Option {
 		}
 
 		cfg.ignoredURLPaths = urlPaths
-	}
-}
-
-// WithResponseTTL sets the duration for which responses are cached.
-// Default is 24 hours.
-func WithResponseTTL(ttl time.Duration) Option {
-	return func(cfg *config) {
-		cfg.responseTTL = ttl
 	}
 }
 

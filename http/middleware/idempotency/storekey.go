@@ -28,11 +28,18 @@ func validateIdempotencyKey(key string) error {
 	}
 
 	if len(key) > maxKeyLength {
-		return fmt.Errorf("validateIdempotencyKey: %w (max %d characters)", ErrKeyTooLong, maxKeyLength)
+		return fmt.Errorf(
+			"validateIdempotencyKey: %w (max %d characters)",
+			ErrKeyTooLong,
+			maxKeyLength,
+		)
 	}
 
 	if !validKeyPattern.MatchString(key) {
-		return fmt.Errorf("validateIdempotencyKey: %w (allowed: a-z, A-Z, 0-9, ., _, -)", ErrInvalidKeyChars)
+		return fmt.Errorf(
+			"validateIdempotencyKey: %w (allowed: a-z, A-Z, 0-9, ., _, -)",
+			ErrInvalidKeyChars,
+		)
 	}
 
 	return nil

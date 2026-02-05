@@ -20,9 +20,6 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 		opt(conf)
 	}
 
-	// Configure the store with the response TTL from config
-	store.SetResponseTTL(conf.responseTTL)
-
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(respW http.ResponseWriter, req *http.Request) {
 			if !slices.Contains(conf.affectedMethods, req.Method) {

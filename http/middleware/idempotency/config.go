@@ -2,13 +2,11 @@ package idempotency
 
 import (
 	"net/http"
-	"time"
 )
 
 const (
 	DefaultIdempotencyKeyHeader             = "X-Idempotency-Key"
 	DefaultIdempotentReplayedResponseHeader = "X-Idempotent-Replayed"
-	DefaultResponseTTL                      = 24 * time.Hour
 )
 
 type ErrorToHTTPFn func(http.ResponseWriter, *http.Request, error)
@@ -25,7 +23,6 @@ type config struct {
 	errorToHTTPFn            ErrorToHTTPFn
 	affectedMethods          []string
 	ignoredURLPaths          []string
-	responseTTL              time.Duration
 	userIDExtractor          UserIDExtractorFn
 	allowedReplayHeaders     []string
 }
@@ -39,7 +36,6 @@ func newDefaultConfig() *config {
 		fingerprinterFn:          buildRequestFingerprint,
 		affectedMethods:          []string{http.MethodPost},
 		ignoredURLPaths:          []string{},
-		responseTTL:              DefaultResponseTTL,
 		userIDExtractor:          defaultUserIDExtractor,
 		allowedReplayHeaders:     defaultAllowedReplayHeaders(),
 	}

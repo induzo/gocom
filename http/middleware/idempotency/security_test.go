@@ -243,8 +243,9 @@ func TestMiddleware_TTLExpiration(t *testing.T) {
 	store := NewInMemStore()
 	defer store.Close()
 
-	// Configure with short TTL
-	middleware := NewMiddleware(store, WithResponseTTL(100*time.Millisecond))
+	store.SetResponseTTL(100 * time.Millisecond)
+
+	middleware := NewMiddleware(store)
 
 	counter := 0
 	handler := middleware(
