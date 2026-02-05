@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [http/middleware/idempotency/v0.5.0] - 2026-01-27
+## [http/middleware/idempotency/v0.6.0] - 2026-02-05
 
 ### Bug Fixes
 
@@ -11,10 +11,13 @@ All notable changes to this project will be documented in this file.
 ### Documentation
 
 - Update CHANGELOG.md for http/middleware/idempotency/v0.4.1
+- Update CHANGELOG.md for http/middleware/idempotency/v0.5.0
 
 ### Features
 
 - Use a tee reader for idempotency
+- Constraint idemkey to method url and userid if avail
+- Move the ttl responsibility to the Store
 
 ## [http/middleware/idempotency/v0.4.0] - 2026-01-15
 
