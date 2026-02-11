@@ -2,11 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/idempotency/v0.8.2] - 2026-02-11
+
+### Bug Fixes
+
+- Better spans
+
+### Features
+
+- Lint
+
 ## [http/middleware/idempotency/v0.8.1] - 2026-02-11
 
 ### Bug Fixes
 
 - Better spans
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/idempotency/v0.8.1
+- Update docs for module http/middleware/idempotency
 
 ## [http/middleware/idempotency/v0.8.0] - 2026-02-11
 
