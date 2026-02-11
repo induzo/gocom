@@ -3,7 +3,7 @@ module github.com/induzo/gocom/http/middleware/valkeydempotency
 go 1.25.6
 
 require (
-	github.com/induzo/gocom/http/middleware/idempotency v0.6.0
+	github.com/induzo/gocom/http/middleware/idempotency v0.7.0
 	github.com/ory/dockertest/v3 v3.12.0
 	github.com/valkey-io/valkey-go v1.0.71
 	go.uber.org/goleak v1.3.0
@@ -46,7 +46,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.40.0 // indirect
 	go.opentelemetry.io/otel/trace v1.40.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/sys v0.40.0 // indirect
+	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/text v0.33.0 // indirect
 )
 
