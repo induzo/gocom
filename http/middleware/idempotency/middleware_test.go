@@ -701,10 +701,8 @@ func TestMiddleware_WithTracer(t *testing.T) {
 			"idempotency.build_store_key:end",
 			"idempotency.build_request_hash:start",
 			"idempotency.build_request_hash:end",
-			"idempotency.check_stored_response:start",
-			"idempotency.get_stored_response:start",
-			"idempotency.get_stored_response:end",
-			"idempotency.check_stored_response:end",
+			"idempotency.handle_response:start",
+			"idempotency.handle_response:end",
 			"idempotency.try_lock:start",
 			"idempotency.try_lock:end",
 			"idempotency.store_response:start",
@@ -784,8 +782,8 @@ func TestMiddleware_WithTracer(t *testing.T) {
 		defer mu.Unlock()
 
 		// Should have middleware, extract, validate, build_store_key, build_hash, check_stored, get_stored, and replay spans
-		if !containsSpan(spans, "idempotency.get_stored_response") {
-			t.Error("expected get_stored_response span")
+		if !containsSpan(spans, "idempotency.handle_response") {
+			t.Error("expected handle_response span")
 		}
 
 		if !containsSpan(spans, "idempotency.replay_response") {

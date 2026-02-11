@@ -126,10 +126,8 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 				return
 			}
 
-			csctx, endCheckStored := conf.tracerFn(req, "idempotency.check_stored_response")
-
-			//nolint:contextcheck // csctx is derived from req.Context() in tracerFn
-			req = req.WithContext(csctx)
+			handledCtx, endCheckStored := conf.tracerFn(req, "idempotency.handle_response")
+			req = req.WithContext(handledCtx)
 
 			//nolint:contextcheck // req contains valid derived context
 			isFound := handleRequestWithIdempotency(
@@ -230,14 +228,7 @@ func handleRequestWithIdempotency(
 	req *http.Request,
 	originalKey string,
 ) bool {
-	gsrctx, endGetStored := conf.tracerFn(req, "idempotency.get_stored_response")
-
-	req = req.WithContext(gsrctx)
-
 	resp, exists, err := store.GetStoredResponse(req.Context(), storeKey)
-
-	endGetStored()
-
 	if err != nil {
 		conf.errorToHTTPFn(respW, req, err)
 
