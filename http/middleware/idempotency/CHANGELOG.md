@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/idempotency/v0.7.0] - 2026-02-11
+
+### Features
+
+- Add tracing option
+
 ## [http/middleware/idempotency/v0.6.0] - 2026-02-05
 
 ### Bug Fixes
@@ -12,6 +18,8 @@ All notable changes to this project will be documented in this file.
 
 - Update CHANGELOG.md for http/middleware/idempotency/v0.4.1
 - Update CHANGELOG.md for http/middleware/idempotency/v0.5.0
+- Update CHANGELOG.md for http/middleware/idempotency/v0.6.0
+- Update docs for module http/middleware/idempotency
 
 ### Features
 
