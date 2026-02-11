@@ -648,6 +648,278 @@ func TestMiddleware_IdempotencyKeyInContext(t *testing.T) {
 	}
 }
 
+func TestMiddleware_WithTracer(t *testing.T) {
+	t.Parallel()
+
+	t.Run("successful request creates all expected spans", func(t *testing.T) {
+		t.Parallel()
+
+		store := NewInMemStore()
+		defer store.Close()
+
+		var mu sync.Mutex
+		spans := []string{}
+
+		tracerFn := func(_ *http.Request, spanName string) func() {
+			mu.Lock()
+			spans = append(spans, spanName+":start")
+			mu.Unlock()
+
+			return func() {
+				mu.Lock()
+				spans = append(spans, spanName+":end")
+				mu.Unlock()
+			}
+		}
+
+		middleware := NewMiddleware(store, WithTracer(tracerFn))
+
+		handler := middleware(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("test response"))
+		}))
+
+		req := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader("test body"))
+		req.Header.Set(DefaultIdempotencyKeyHeader, "test-key-123")
+
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+
+		// Check that all expected spans were created
+		// Spans now end immediately after their operation (except middleware which uses defer)
+		expectedSpans := []string{
+			"idempotency.middleware:start",
+			"idempotency.extract_key:start",
+			"idempotency.extract_key:end",
+			"idempotency.validate_key:start",
+			"idempotency.validate_key:end",
+			"idempotency.build_store_key:start",
+			"idempotency.build_store_key:end",
+			"idempotency.build_request_hash:start",
+			"idempotency.build_request_hash:end",
+			"idempotency.check_stored_response:start",
+			"idempotency.get_stored_response:start",
+			"idempotency.get_stored_response:end",
+			"idempotency.check_stored_response:end",
+			"idempotency.lock:start",
+			"idempotency.lock:end",
+			"idempotency.execute_request:start",
+			"idempotency.execute_request:end",
+			"idempotency.store_response:start",
+			"idempotency.store_response:end",
+			"idempotency.middleware:end",
+		}
+
+		mu.Lock()
+		defer mu.Unlock()
+
+		if len(spans) != len(expectedSpans) {
+			t.Errorf("expected %d spans, got %d\nExpected: %v\nGot: %v",
+				len(expectedSpans), len(spans), expectedSpans, spans)
+		}
+
+		for i, expected := range expectedSpans {
+			if i >= len(spans) {
+				break
+			}
+			if spans[i] != expected {
+				t.Errorf("span[%d]: expected %q, got %q", i, expected, spans[i])
+			}
+		}
+	})
+
+	t.Run("replayed request creates replay spans", func(t *testing.T) {
+		t.Parallel()
+
+		store := NewInMemStore()
+		defer store.Close()
+
+		var mu sync.Mutex
+		spans := []string{}
+
+		tracerFn := func(_ *http.Request, spanName string) func() {
+			mu.Lock()
+			spans = append(spans, spanName)
+			mu.Unlock()
+
+			return func() {}
+		}
+
+		middleware := NewMiddleware(store, WithTracer(tracerFn))
+
+		handler := middleware(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("first response"))
+		}))
+
+		// First request
+		req1 := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader("test body"))
+		req1.Header.Set(DefaultIdempotencyKeyHeader, "replay-key")
+		rec1 := httptest.NewRecorder()
+		handler.ServeHTTP(rec1, req1)
+
+		// Clear spans
+		mu.Lock()
+		spans = []string{}
+		mu.Unlock()
+
+		// Second request with same key - should be replayed
+		req2 := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader("test body"))
+		req2.Header.Set(DefaultIdempotencyKeyHeader, "replay-key")
+		rec2 := httptest.NewRecorder()
+		handler.ServeHTTP(rec2, req2)
+
+		mu.Lock()
+		defer mu.Unlock()
+
+		// Should have middleware, extract, validate, build_store_key, build_hash, check_stored, get_stored, and replay spans
+		if !containsSpan(spans, "idempotency.middleware") {
+			t.Error("expected middleware span")
+		}
+		if !containsSpan(spans, "idempotency.get_stored_response") {
+			t.Error("expected get_stored_response span")
+		}
+		if !containsSpan(spans, "idempotency.replay_response") {
+			t.Error("expected replay_response span for cached response")
+		}
+		// Should NOT have execute_request or store_response since it's replayed
+		if containsSpan(spans, "idempotency.execute_request") {
+			t.Error("should not have execute_request span for replayed response")
+		}
+		if containsSpan(spans, "idempotency.store_response") {
+			t.Error("should not have store_response span for replayed response")
+		}
+	})
+
+	t.Run("missing key still creates tracing spans", func(t *testing.T) {
+		t.Parallel()
+
+		store := NewInMemStore()
+		defer store.Close()
+
+		var mu sync.Mutex
+		spans := []string{}
+
+		tracerFn := func(_ *http.Request, spanName string) func() {
+			mu.Lock()
+			spans = append(spans, spanName)
+			mu.Unlock()
+
+			return func() {}
+		}
+
+		middleware := NewMiddleware(store, WithTracer(tracerFn), WithErrorToHTTPFn(errorToString))
+
+		handler := middleware(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		}))
+
+		req := httptest.NewRequest(http.MethodPost, "/test", nil)
+		// No idempotency key header set
+
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+
+		mu.Lock()
+		defer mu.Unlock()
+
+		// Should have middleware and extract_key spans even though request fails
+		if !containsSpan(spans, "idempotency.middleware") {
+			t.Error("expected middleware span even for failed request")
+		}
+		if !containsSpan(spans, "idempotency.extract_key") {
+			t.Error("expected extract_key span even for failed request")
+		}
+	})
+
+	t.Run("no-op tracer by default", func(t *testing.T) {
+		t.Parallel()
+
+		store := NewInMemStore()
+		defer store.Close()
+
+		// Create middleware without WithTracer option
+		middleware := NewMiddleware(store)
+
+		handler := middleware(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("test"))
+		}))
+
+		req := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader("body"))
+		req.Header.Set(DefaultIdempotencyKeyHeader, "test-key")
+
+		rec := httptest.NewRecorder()
+
+		// Should not panic with nil tracer
+		handler.ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusOK {
+			t.Errorf("expected status 200, got %d", rec.Code)
+		}
+	})
+
+	t.Run("concurrent requests both get traced", func(t *testing.T) {
+		t.Parallel()
+
+		store := NewInMemStore()
+		defer store.Close()
+
+		spanCalls := atomic.Int32{}
+
+		tracerFn := func(_ *http.Request, spanName string) func() {
+			spanCalls.Add(1)
+			return func() {}
+		}
+
+		middleware := NewMiddleware(store, WithTracer(tracerFn), WithErrorToHTTPFn(errorToString))
+
+		handler := middleware(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			time.Sleep(50 * time.Millisecond)
+			w.WriteHeader(http.StatusOK)
+		}))
+
+		var wg sync.WaitGroup
+		wg.Add(2)
+
+		// First request
+		go func() {
+			defer wg.Done()
+			req := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader("body"))
+			req.Header.Set(DefaultIdempotencyKeyHeader, "concurrent-key")
+			rec := httptest.NewRecorder()
+			handler.ServeHTTP(rec, req)
+		}()
+
+		// Second concurrent request with same key
+		go func() {
+			defer wg.Done()
+			time.Sleep(10 * time.Millisecond)
+			req := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader("body"))
+			req.Header.Set(DefaultIdempotencyKeyHeader, "concurrent-key")
+			rec := httptest.NewRecorder()
+			handler.ServeHTTP(rec, req)
+		}()
+
+		wg.Wait()
+
+		// Both requests should have created spans
+		if spanCalls.Load() == 0 {
+			t.Error("expected tracer to be called for concurrent requests")
+		}
+	})
+}
+
+// containsSpan checks if a span name exists in the slice
+func containsSpan(spans []string, spanName string) bool {
+	for _, s := range spans {
+		if strings.Contains(s, spanName) {
+			return true
+		}
+	}
+	return false
+}
+
 // errorToString write the error type returned
 func errorToString(
 	writer http.ResponseWriter,

@@ -89,3 +89,20 @@ func WithAllowedReplayHeaders(headers ...string) Option {
 		cfg.allowedReplayHeaders = headers
 	}
 }
+
+// WithTracer sets a tracer function to add observability spans to the middleware.
+// The tracer function receives the request and span name, and should return
+// a function to end the span (to be called with defer).
+//
+// Example with OpenTelemetry:
+//
+//	func(req *http.Request, spanName string) func() {
+//		ctx, span := tracer.Start(req.Context(), spanName)
+//		req = req.WithContext(ctx)
+//		return func() { span.End() }
+//	}
+func WithTracer(tracerFn TracerFn) Option {
+	return func(cfg *config) {
+		cfg.tracerFn = tracerFn
+	}
+}

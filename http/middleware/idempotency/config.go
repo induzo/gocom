@@ -15,6 +15,12 @@ type ErrorToHTTPFn func(http.ResponseWriter, *http.Request, error)
 // Return empty string if no user context is available.
 type UserIDExtractorFn func(*http.Request) string
 
+// TracerFn is a function that starts a span with the given name and returns
+// a function to end the span. This allows integration with any tracing library
+// (OpenTelemetry, DataDog, Jaeger, etc.).
+// The returned function should be called with defer to ensure the span is ended.
+type TracerFn func(ctx *http.Request, spanName string) func()
+
 type config struct {
 	idempotencyKeyIsOptional bool
 	idempotencyKeyHeader     string
@@ -25,6 +31,7 @@ type config struct {
 	ignoredURLPaths          []string
 	userIDExtractor          UserIDExtractorFn
 	allowedReplayHeaders     []string
+	tracerFn                 TracerFn
 }
 
 func newDefaultConfig() *config {
@@ -38,7 +45,13 @@ func newDefaultConfig() *config {
 		ignoredURLPaths:          []string{},
 		userIDExtractor:          defaultUserIDExtractor,
 		allowedReplayHeaders:     defaultAllowedReplayHeaders(),
+		tracerFn:                 noOpTracer,
 	}
+}
+
+// noOpTracer is a no-op tracer that does nothing.
+func noOpTracer(_ *http.Request, _ string) func() {
+	return func() {}
 }
 
 // defaultUserIDExtractor tries to extract userid from context.
