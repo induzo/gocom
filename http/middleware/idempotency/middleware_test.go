@@ -658,16 +658,21 @@ func TestMiddleware_WithTracer(t *testing.T) {
 		defer store.Close()
 
 		var mu sync.Mutex
+
 		spans := []string{}
 
 		tracerFn := func(_ *http.Request, spanName string) func() {
 			mu.Lock()
+
 			spans = append(spans, spanName+":start")
+
 			mu.Unlock()
 
 			return func() {
 				mu.Lock()
+
 				spans = append(spans, spanName+":end")
+
 				mu.Unlock()
 			}
 		}
@@ -722,6 +727,7 @@ func TestMiddleware_WithTracer(t *testing.T) {
 			if i >= len(spans) {
 				break
 			}
+
 			if spans[i] != expected {
 				t.Errorf("span[%d]: expected %q, got %q", i, expected, spans[i])
 			}
@@ -735,11 +741,14 @@ func TestMiddleware_WithTracer(t *testing.T) {
 		defer store.Close()
 
 		var mu sync.Mutex
+
 		spans := []string{}
 
 		tracerFn := func(_ *http.Request, spanName string) func() {
 			mu.Lock()
+
 			spans = append(spans, spanName)
+
 			mu.Unlock()
 
 			return func() {}
@@ -755,17 +764,21 @@ func TestMiddleware_WithTracer(t *testing.T) {
 		// First request
 		req1 := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader("test body"))
 		req1.Header.Set(DefaultIdempotencyKeyHeader, "replay-key")
+
 		rec1 := httptest.NewRecorder()
 		handler.ServeHTTP(rec1, req1)
 
 		// Clear spans
 		mu.Lock()
+
 		spans = []string{}
+
 		mu.Unlock()
 
 		// Second request with same key - should be replayed
 		req2 := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader("test body"))
 		req2.Header.Set(DefaultIdempotencyKeyHeader, "replay-key")
+
 		rec2 := httptest.NewRecorder()
 		handler.ServeHTTP(rec2, req2)
 
@@ -776,9 +789,11 @@ func TestMiddleware_WithTracer(t *testing.T) {
 		if !containsSpan(spans, "idempotency.middleware") {
 			t.Error("expected middleware span")
 		}
+
 		if !containsSpan(spans, "idempotency.get_stored_response") {
 			t.Error("expected get_stored_response span")
 		}
+
 		if !containsSpan(spans, "idempotency.replay_response") {
 			t.Error("expected replay_response span for cached response")
 		}
@@ -786,6 +801,7 @@ func TestMiddleware_WithTracer(t *testing.T) {
 		if containsSpan(spans, "idempotency.execute_request") {
 			t.Error("should not have execute_request span for replayed response")
 		}
+
 		if containsSpan(spans, "idempotency.store_response") {
 			t.Error("should not have store_response span for replayed response")
 		}
@@ -798,11 +814,14 @@ func TestMiddleware_WithTracer(t *testing.T) {
 		defer store.Close()
 
 		var mu sync.Mutex
+
 		spans := []string{}
 
 		tracerFn := func(_ *http.Request, spanName string) func() {
 			mu.Lock()
+
 			spans = append(spans, spanName)
+
 			mu.Unlock()
 
 			return func() {}
@@ -827,6 +846,7 @@ func TestMiddleware_WithTracer(t *testing.T) {
 		if !containsSpan(spans, "idempotency.middleware") {
 			t.Error("expected middleware span even for failed request")
 		}
+
 		if !containsSpan(spans, "idempotency.extract_key") {
 			t.Error("expected extract_key span even for failed request")
 		}
@@ -867,7 +887,7 @@ func TestMiddleware_WithTracer(t *testing.T) {
 
 		spanCalls := atomic.Int32{}
 
-		tracerFn := func(_ *http.Request, spanName string) func() {
+		tracerFn := func(_ *http.Request, _ string) func() {
 			spanCalls.Add(1)
 			return func() {}
 		}
@@ -885,8 +905,10 @@ func TestMiddleware_WithTracer(t *testing.T) {
 		// First request
 		go func() {
 			defer wg.Done()
+
 			req := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader("body"))
 			req.Header.Set(DefaultIdempotencyKeyHeader, "concurrent-key")
+
 			rec := httptest.NewRecorder()
 			handler.ServeHTTP(rec, req)
 		}()
@@ -894,9 +916,12 @@ func TestMiddleware_WithTracer(t *testing.T) {
 		// Second concurrent request with same key
 		go func() {
 			defer wg.Done()
+
 			time.Sleep(10 * time.Millisecond)
+
 			req := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader("body"))
 			req.Header.Set(DefaultIdempotencyKeyHeader, "concurrent-key")
+
 			rec := httptest.NewRecorder()
 			handler.ServeHTTP(rec, req)
 		}()
@@ -917,6 +942,7 @@ func containsSpan(spans []string, spanName string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 

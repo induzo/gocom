@@ -38,6 +38,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 
 			endExtractKey := conf.tracerFn(req, "idempotency.extract_key")
 			key := strings.TrimSpace(req.Header.Get(conf.idempotencyKeyHeader))
+
 			endExtractKey()
 
 			if key == "" {
@@ -64,6 +65,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			// Validate the idempotency key
 			endValidateKey := conf.tracerFn(req, "idempotency.validate_key")
 			err := validateIdempotencyKey(key)
+
 			endValidateKey()
 
 			if err != nil {
@@ -85,6 +87,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			// Build composite store key (user:method:path:key)
 			endBuildStoreKey := conf.tracerFn(req, "idempotency.build_store_key")
 			storeKey := buildStoreKey(req, key, conf.userIDExtractor)
+
 			endBuildStoreKey()
 
 			// set key in the request context
@@ -94,6 +97,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 
 			endBuildHash := conf.tracerFn(req, "idempotency.build_request_hash")
 			requestHash, errS := buildRequestHash(conf.fingerprinterFn, req)
+
 			endBuildHash()
 
 			if errS != nil {
@@ -112,6 +116,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 				req,
 				key,
 			)
+
 			endCheckStored()
 
 			if isFound {
@@ -121,7 +126,9 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			// Try to lock the key to prevent concurrent requests
 			endLock := conf.tracerFn(req, "idempotency.lock")
 			newCtx, unlock, errL := store.TryLock(req.Context(), storeKey)
+
 			endLock()
+
 			if errL != nil {
 				conf.errorToHTTPFn(respW, req,
 					RequestInFlightError{
@@ -149,8 +156,8 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			next.ServeHTTP(teeRespW, req)
 			endExecute()
 
-			//nolint:contextcheck // req.Context() is a valid value
 			endStore := conf.tracerFn(req, "idempotency.store_response")
+			//nolint:contextcheck // req.Context() is updated with newCtx above
 			errSR := store.StoreResponse(req.Context(), storeKey,
 				&StoredResponse{
 					StatusCode:  teeRespW.statusCode,
@@ -159,6 +166,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 					RequestHash: requestHash,
 				},
 			)
+
 			endStore()
 
 			if errSR != nil {
@@ -191,6 +199,7 @@ func handleRequestWithIdempotency(
 
 	endGetStored := conf.tracerFn(req, "idempotency.get_stored_response")
 	resp, exists, err := store.GetStoredResponse(ctx, storeKey)
+
 	endGetStored()
 
 	if err != nil {

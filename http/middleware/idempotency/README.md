@@ -42,6 +42,7 @@ Package idempotency provides an HTTP middleware for managing idempotency. Idempo
   - [func WithIdempotentReplayedHeader\(header string\) Option](<#WithIdempotentReplayedHeader>)
   - [func WithIgnoredURLPaths\(urlPaths ...string\) Option](<#WithIgnoredURLPaths>)
   - [func WithOptionalIdempotencyKey\(\) Option](<#WithOptionalIdempotencyKey>)
+  - [func WithTracer\(tracerFn TracerFn\) Option](<#WithTracer>)
   - [func WithUserIDExtractor\(fn UserIDExtractorFn\) Option](<#WithUserIDExtractor>)
 - [type ProblemDetail](<#ProblemDetail>)
 - [type RequestContext](<#RequestContext>)
@@ -53,6 +54,7 @@ Package idempotency provides an HTTP middleware for managing idempotency. Idempo
   - [func \(e StoreResponseError\) Error\(\) string](<#StoreResponseError.Error>)
   - [func \(e StoreResponseError\) Unwrap\(\) error](<#StoreResponseError.Unwrap>)
 - [type StoredResponse](<#StoredResponse>)
+- [type TracerFn](<#TracerFn>)
 - [type UserIDExtractorFn](<#UserIDExtractorFn>)
 
 
@@ -219,7 +221,7 @@ Hello World! 1
 </details>
 
 <a name="ContextKey"></a>
-## type [ContextKey](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/middleware.go#L197>)
+## type [ContextKey](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/middleware.go#L228>)
 
 
 
@@ -488,6 +490,25 @@ func WithOptionalIdempotencyKey() Option
 
 WithOptionalIdempotencyKey sets the idempotency key to optional.
 
+<a name="WithTracer"></a>
+### func [WithTracer](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L104>)
+
+```go
+func WithTracer(tracerFn TracerFn) Option
+```
+
+WithTracer sets a tracer function to add observability spans to the middleware. The tracer function receives the request and span name, and should return a function to end the span \(to be called with defer\).
+
+Example with OpenTelemetry:
+
+```
+func(req *http.Request, spanName string) func() {
+	ctx, span := tracer.Start(req.Context(), spanName)
+	req = req.WithContext(ctx)
+	return func() { span.End() }
+}
+```
+
 <a name="WithUserIDExtractor"></a>
 ### func [WithUserIDExtractor](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L79>)
 
@@ -621,6 +642,15 @@ type StoredResponse struct {
     Body        []byte
     RequestHash []byte // To verify the same request payload
 }
+```
+
+<a name="TracerFn"></a>
+## type [TracerFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/config.go#L22>)
+
+TracerFn is a function that starts a span with the given name and returns a function to end the span. This allows integration with any tracing library \(OpenTelemetry, DataDog, Jaeger, etc.\). The returned function should be called with defer to ensure the span is ended.
+
+```go
+type TracerFn func(ctx *http.Request, spanName string) func()
 ```
 
 <a name="UserIDExtractorFn"></a>
