@@ -2,11 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/idempotency/v0.8.1] - 2026-02-11
+
+### Bug Fixes
+
+- Better spans
+
 ## [http/middleware/idempotency/v0.8.0] - 2026-02-11
 
 ### Bug Fixes
 
 - Context mgmt
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/idempotency/v0.8.0
+- Update docs for module http/middleware/idempotency
 
 ### Features
 
