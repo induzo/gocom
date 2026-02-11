@@ -1,6 +1,7 @@
 package idempotency
 
 import (
+	"context"
 	"net/http"
 )
 
@@ -16,10 +17,10 @@ type ErrorToHTTPFn func(http.ResponseWriter, *http.Request, error)
 type UserIDExtractorFn func(*http.Request) string
 
 // TracerFn is a function that starts a span with the given name and returns
-// a function to end the span. This allows integration with any tracing library
-// (OpenTelemetry, DataDog, Jaeger, etc.).
+// the updated context with the span and a function to end the span.
+// This allows integration with any tracing library (OpenTelemetry, DataDog, Jaeger, etc.).
 // The returned function should be called with defer to ensure the span is ended.
-type TracerFn func(req *http.Request, spanName string) func()
+type TracerFn func(req *http.Request, spanName string) (context.Context, func())
 
 type config struct {
 	idempotencyKeyIsOptional bool
@@ -50,8 +51,8 @@ func newDefaultConfig() *config {
 }
 
 // noOpTracer is a no-op tracer that does nothing.
-func noOpTracer(_ *http.Request, _ string) func() {
-	return func() {}
+func noOpTracer(req *http.Request, _ string) (context.Context, func()) {
+	return req.Context(), func() {}
 }
 
 // defaultUserIDExtractor tries to extract userid from context.

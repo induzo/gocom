@@ -34,7 +34,8 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 				return
 			}
 
-			endExtractKey := conf.tracerFn(req, "idempotency.extract_key")
+			ctx, endExtractKey := conf.tracerFn(req, "idempotency.extract_key")
+			req = req.WithContext(ctx)
 			key := strings.TrimSpace(req.Header.Get(conf.idempotencyKeyHeader))
 
 			endExtractKey()
@@ -61,7 +62,8 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			}
 
 			// Validate the idempotency key
-			endValidateKey := conf.tracerFn(req, "idempotency.validate_key")
+			ctx, endValidateKey := conf.tracerFn(req, "idempotency.validate_key")
+			req = req.WithContext(ctx)
 			err := validateIdempotencyKey(key)
 
 			endValidateKey()
@@ -83,7 +85,8 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			}
 
 			// Build composite store key (user:method:path:key)
-			endBuildStoreKey := conf.tracerFn(req, "idempotency.build_store_key")
+			ctx, endBuildStoreKey := conf.tracerFn(req, "idempotency.build_store_key")
+			req = req.WithContext(ctx)
 			storeKey := buildStoreKey(req, key, conf.userIDExtractor)
 
 			endBuildStoreKey()
@@ -93,7 +96,8 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 				context.WithValue(req.Context(), IdempotencyKeyCtxKey, key),
 			)
 
-			endBuildHash := conf.tracerFn(req, "idempotency.build_request_hash")
+			ctx, endBuildHash := conf.tracerFn(req, "idempotency.build_request_hash")
+			req = req.WithContext(ctx)
 			requestHash, errS := buildRequestHash(conf.fingerprinterFn, req)
 
 			endBuildHash()
@@ -104,7 +108,8 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 				return
 			}
 
-			endCheckStored := conf.tracerFn(req, "idempotency.check_stored_response")
+			ctx, endCheckStored := conf.tracerFn(req, "idempotency.check_stored_response")
+			req = req.WithContext(ctx)
 			isFound := handleRequestWithIdempotency(
 				conf,
 				store,
@@ -122,7 +127,8 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			}
 
 			// Try to lock the key to prevent concurrent requests
-			endLock := conf.tracerFn(req, "idempotency.lock")
+			ctx, endLock := conf.tracerFn(req, "idempotency.lock")
+			req = req.WithContext(ctx)
 			newCtx, unlock, errL := store.TryLock(req.Context(), storeKey)
 
 			endLock()
@@ -152,7 +158,8 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 
 			next.ServeHTTP(teeRespW, req)
 
-			endStore := conf.tracerFn(req, "idempotency.store_response")
+			ctx, endStore := conf.tracerFn(req, "idempotency.store_response")
+			req = req.WithContext(ctx)
 			//nolint:contextcheck // req.Context() is updated with newCtx above
 			errSR := store.StoreResponse(req.Context(), storeKey,
 				&StoredResponse{
@@ -191,10 +198,9 @@ func handleRequestWithIdempotency(
 	req *http.Request,
 	originalKey string,
 ) bool {
-	ctx := req.Context()
-
-	endGetStored := conf.tracerFn(req, "idempotency.get_stored_response")
-	resp, exists, err := store.GetStoredResponse(ctx, storeKey)
+	ctx, endGetStored := conf.tracerFn(req, "idempotency.get_stored_response")
+	req = req.WithContext(ctx)
+	resp, exists, err := store.GetStoredResponse(req.Context(), storeKey)
 
 	endGetStored()
 
@@ -220,7 +226,8 @@ func handleRequestWithIdempotency(
 			return true
 		}
 
-		endReplay := conf.tracerFn(req, "idempotency.replay_response")
+		ctx, endReplay := conf.tracerFn(req, "idempotency.replay_response")
+		req = req.WithContext(ctx)
 		replayResponse(conf, respW, resp)
 		endReplay()
 

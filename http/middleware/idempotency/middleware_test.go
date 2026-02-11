@@ -661,14 +661,14 @@ func TestMiddleware_WithTracer(t *testing.T) {
 
 		spans := []string{}
 
-		tracerFn := func(_ *http.Request, spanName string) func() {
+		tracerFn := func(req *http.Request, spanName string) (context.Context, func()) {
 			mu.Lock()
 
 			spans = append(spans, spanName+":start")
 
 			mu.Unlock()
 
-			return func() {
+			return req.Context(), func() {
 				mu.Lock()
 
 				spans = append(spans, spanName+":end")
@@ -740,14 +740,14 @@ func TestMiddleware_WithTracer(t *testing.T) {
 
 		spans := []string{}
 
-		tracerFn := func(_ *http.Request, spanName string) func() {
+		tracerFn := func(req *http.Request, spanName string) (context.Context, func()) {
 			mu.Lock()
 
 			spans = append(spans, spanName)
 
 			mu.Unlock()
 
-			return func() {}
+			return req.Context(), func() {}
 		}
 
 		middleware := NewMiddleware(store, WithTracer(tracerFn))
@@ -809,14 +809,14 @@ func TestMiddleware_WithTracer(t *testing.T) {
 
 		spans := []string{}
 
-		tracerFn := func(_ *http.Request, spanName string) func() {
+		tracerFn := func(req *http.Request, spanName string) (context.Context, func()) {
 			mu.Lock()
 
 			spans = append(spans, spanName)
 
 			mu.Unlock()
 
-			return func() {}
+			return req.Context(), func() {}
 		}
 
 		middleware := NewMiddleware(store, WithTracer(tracerFn), WithErrorToHTTPFn(errorToString))
@@ -879,9 +879,9 @@ func TestMiddleware_WithTracer(t *testing.T) {
 
 		spanCalls := atomic.Int32{}
 
-		tracerFn := func(_ *http.Request, _ string) func() {
+		tracerFn := func(req *http.Request, _ string) (context.Context, func()) {
 			spanCalls.Add(1)
-			return func() {}
+			return req.Context(), func() {}
 		}
 
 		middleware := NewMiddleware(store, WithTracer(tracerFn), WithErrorToHTTPFn(errorToString))
