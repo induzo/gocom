@@ -691,7 +691,7 @@ func TestMiddleware_WithTracer(t *testing.T) {
 		handler.ServeHTTP(rec, req)
 
 		// Check that all expected spans were created
-		// Spans now end immediately after their operation (except middleware which uses defer)
+		// Spans now end immediately after their operation (except lock which uses defer)
 		expectedSpans := []string{
 			"idempotency.extract_key:start",
 			"idempotency.extract_key:end",
@@ -705,10 +705,10 @@ func TestMiddleware_WithTracer(t *testing.T) {
 			"idempotency.get_stored_response:start",
 			"idempotency.get_stored_response:end",
 			"idempotency.check_stored_response:end",
-			"idempotency.lock:start",
-			"idempotency.lock:end",
+			"idempotency.try_lock:start",
 			"idempotency.store_response:start",
 			"idempotency.store_response:end",
+			"idempotency.try_lock:end",
 		}
 
 		mu.Lock()

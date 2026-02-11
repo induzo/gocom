@@ -34,8 +34,13 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 				return
 			}
 
-			ctx, endExtractKey := conf.tracerFn(req, "idempotency.extract_key")
-			req = req.WithContext(ctx)
+			kctx, endExtractKey := conf.tracerFn(req, "idempotency.extract_key")
+
+			//nolint:contextcheck // kctx is derived from req.Context() in tracerFn
+			req = req.WithContext(
+				kctx,
+			)
+
 			key := strings.TrimSpace(req.Header.Get(conf.idempotencyKeyHeader))
 
 			endExtractKey()
@@ -62,8 +67,12 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			}
 
 			// Validate the idempotency key
-			ctx, endValidateKey := conf.tracerFn(req, "idempotency.validate_key")
-			req = req.WithContext(ctx)
+			vkctx, endValidateKey := conf.tracerFn(req, "idempotency.validate_key")
+
+			//nolint:contextcheck // vkctx is derived from req.Context() in tracerFn
+			req = req.WithContext(
+				vkctx,
+			)
 			err := validateIdempotencyKey(key)
 
 			endValidateKey()
@@ -85,19 +94,28 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			}
 
 			// Build composite store key (user:method:path:key)
-			ctx, endBuildStoreKey := conf.tracerFn(req, "idempotency.build_store_key")
-			req = req.WithContext(ctx)
+			bskctx, endBuildStoreKey := conf.tracerFn(req, "idempotency.build_store_key")
+
+			//nolint:contextcheck // ctx is derived from req.Context() in tracerFn
+			req = req.WithContext(
+				bskctx,
+			)
+
 			storeKey := buildStoreKey(req, key, conf.userIDExtractor)
 
 			endBuildStoreKey()
 
 			// set key in the request context
+			//nolint:contextcheck // context derived from req.Context() using context.WithValue
 			req = req.WithContext(
 				context.WithValue(req.Context(), IdempotencyKeyCtxKey, key),
 			)
 
-			ctx, endBuildHash := conf.tracerFn(req, "idempotency.build_request_hash")
-			req = req.WithContext(ctx)
+			bhctx, endBuildHash := conf.tracerFn(req, "idempotency.build_request_hash")
+
+			//nolint:contextcheck // ctx is derived from req.Context() in tracerFn
+			req = req.WithContext(bhctx)
+
 			requestHash, errS := buildRequestHash(conf.fingerprinterFn, req)
 
 			endBuildHash()
@@ -108,8 +126,12 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 				return
 			}
 
-			ctx, endCheckStored := conf.tracerFn(req, "idempotency.check_stored_response")
-			req = req.WithContext(ctx)
+			csctx, endCheckStored := conf.tracerFn(req, "idempotency.check_stored_response")
+
+			//nolint:contextcheck // csctx is derived from req.Context() in tracerFn
+			req = req.WithContext(csctx)
+
+			//nolint:contextcheck // req contains valid derived context
 			isFound := handleRequestWithIdempotency(
 				conf,
 				store,
@@ -127,12 +149,12 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			}
 
 			// Try to lock the key to prevent concurrent requests
-			ctx, endLock := conf.tracerFn(req, "idempotency.lock")
-			req = req.WithContext(ctx)
-			newCtx, unlock, errL := store.TryLock(req.Context(), storeKey)
+			lctx, endLock := conf.tracerFn(req, "idempotency.try_lock")
 
-			endLock()
+			//nolint:contextcheck // ctx is derived from req.Context() in tracerFn
+			req = req.WithContext(lctx)
 
+			tloctx, unlock, errL := store.TryLock(req.Context(), storeKey)
 			if errL != nil {
 				conf.errorToHTTPFn(respW, req,
 					RequestInFlightError{
@@ -149,18 +171,22 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			}
 
 			defer unlock()
+			defer endLock()
 
 			// update the request context with the new context
-			//nolint:contextcheck // newCtx is derived from req.Context() in TryLock
-			req = req.WithContext(newCtx)
+			//nolint:contextcheck // ctx is derived from req.Context() in TryLock
+			req = req.WithContext(tloctx)
 
 			teeRespW := newTeeResponseWriter(respW)
 
 			next.ServeHTTP(teeRespW, req)
 
-			ctx, endStore := conf.tracerFn(req, "idempotency.store_response")
-			req = req.WithContext(ctx)
-			//nolint:contextcheck // req.Context() is updated with newCtx above
+			srctx, endStore := conf.tracerFn(req, "idempotency.store_response")
+
+			//nolint:contextcheck // ctx is derived from req.Context() in tracerFn
+			req = req.WithContext(srctx)
+
+			//nolint:contextcheck // req.Context() properly derived from srctx above
 			errSR := store.StoreResponse(req.Context(), storeKey,
 				&StoredResponse{
 					StatusCode:  teeRespW.statusCode,
@@ -198,8 +224,10 @@ func handleRequestWithIdempotency(
 	req *http.Request,
 	originalKey string,
 ) bool {
-	ctx, endGetStored := conf.tracerFn(req, "idempotency.get_stored_response")
-	req = req.WithContext(ctx)
+	gsrctx, endGetStored := conf.tracerFn(req, "idempotency.get_stored_response")
+
+	req = req.WithContext(gsrctx)
+
 	resp, exists, err := store.GetStoredResponse(req.Context(), storeKey)
 
 	endGetStored()
@@ -226,8 +254,8 @@ func handleRequestWithIdempotency(
 			return true
 		}
 
-		ctx, endReplay := conf.tracerFn(req, "idempotency.replay_response")
-		req = req.WithContext(ctx)
+		_, endReplay := conf.tracerFn(req, "idempotency.replay_response")
+
 		replayResponse(conf, respW, resp)
 		endReplay()
 
