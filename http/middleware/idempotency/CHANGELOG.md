@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 
 - Better spans
 
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/idempotency/v0.8.2
+- Update docs for module http/middleware/idempotency
+
 ### Features
 
 - Lint
