@@ -221,7 +221,7 @@ Hello World! 1
 </details>
 
 <a name="ContextKey"></a>
-## type [ContextKey](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/middleware.go#L268>)
+## type [ContextKey](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/middleware.go#L274>)
 
 
 
@@ -491,21 +491,16 @@ func WithOptionalIdempotencyKey() Option
 WithOptionalIdempotencyKey sets the idempotency key to optional.
 
 <a name="WithTracer"></a>
-### func [WithTracer](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L103>)
+### func [WithTracer](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L104>)
 
 ```go
 func WithTracer(tracerFn TracerFn) Option
 ```
 
-WithTracer sets a tracer function to add observability spans to the middleware. The tracer function receives the request and span name, and should return the updated context with the span and a function to end the span \(to be called with defer\).
-
-Example with OpenTelemetry:
+return ctx, func\(\) \{ span.End\(\) \}
 
 ```
-func(req *http.Request, spanName string) (context.Context, func()) {
-	ctx, span := otel.Tracer("idempotency").Start(req.Context(), spanName)
-	return ctx, func() { span.End() }
-}
+},
 ```
 
 <a name="WithUserIDExtractor"></a>
