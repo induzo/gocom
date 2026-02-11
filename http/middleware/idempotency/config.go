@@ -19,7 +19,7 @@ type UserIDExtractorFn func(*http.Request) string
 // a function to end the span. This allows integration with any tracing library
 // (OpenTelemetry, DataDog, Jaeger, etc.).
 // The returned function should be called with defer to ensure the span is ended.
-type TracerFn func(ctx *http.Request, spanName string) func()
+type TracerFn func(req *http.Request, spanName string) func()
 
 type config struct {
 	idempotencyKeyIsOptional bool
