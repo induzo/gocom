@@ -706,9 +706,11 @@ func TestMiddleware_WithTracer(t *testing.T) {
 			"idempotency.get_stored_response:end",
 			"idempotency.check_stored_response:end",
 			"idempotency.try_lock:start",
+			"idempotency.try_lock:end",
 			"idempotency.store_response:start",
 			"idempotency.store_response:end",
-			"idempotency.try_lock:end",
+			"idempotency.unlock:start",
+			"idempotency.unlock:end",
 		}
 
 		mu.Lock()

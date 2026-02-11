@@ -96,10 +96,11 @@ func WithAllowedReplayHeaders(headers ...string) Option {
 //
 // Example with OpenTelemetry:
 //
-//	func(req *http.Request, spanName string) (context.Context, func()) {
-//		ctx, span := otel.Tracer("idempotency").Start(req.Context(), spanName)
+// func(req *http.Request, spanName string) (context.Context, func()) {
+// 	ctx, span := otel.Tracer("idempotency").Start(req.Context(), spanName)
+
 //		return ctx, func() { span.End() }
-//	}
+//	},
 func WithTracer(tracerFn TracerFn) Option {
 	return func(cfg *config) {
 		cfg.tracerFn = tracerFn

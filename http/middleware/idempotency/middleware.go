@@ -170,8 +170,14 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 				return
 			}
 
-			defer unlock()
-			defer endLock()
+			endLock()
+
+			defer func() {
+				// Try to lock the key to prevent concurrent requests
+				_, endUnLock := conf.tracerFn(req, "idempotency.unlock")
+				unlock()
+				endUnLock()
+			}()
 
 			// update the request context with the new context
 			//nolint:contextcheck // ctx is derived from req.Context() in TryLock
