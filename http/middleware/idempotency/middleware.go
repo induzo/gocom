@@ -106,7 +106,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			endBuildStoreKey()
 
 			// set key in the request context
-			//nolint:contextcheck // context derived from req.Context() using context.WithValue
+
 			req = req.WithContext(
 				context.WithValue(req.Context(), IdempotencyKeyCtxKey, key),
 			)
@@ -175,12 +175,13 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			defer func() {
 				// Try to lock the key to prevent concurrent requests
 				_, endUnLock := conf.tracerFn(req, "idempotency.unlock")
+
 				unlock()
 				endUnLock()
 			}()
 
 			// update the request context with the new context
-			//nolint:contextcheck // ctx is derived from req.Context() in TryLock
+
 			req = req.WithContext(tloctx)
 
 			teeRespW := newTeeResponseWriter(respW)
@@ -192,7 +193,6 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			//nolint:contextcheck // ctx is derived from req.Context() in tracerFn
 			req = req.WithContext(srctx)
 
-			//nolint:contextcheck // req.Context() properly derived from srctx above
 			errSR := store.StoreResponse(req.Context(), storeKey,
 				&StoredResponse{
 					StatusCode:  teeRespW.statusCode,
