@@ -22,8 +22,6 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(respW http.ResponseWriter, req *http.Request) {
-			defer conf.tracerFn(req, "idempotency.middleware")()
-
 			if !slices.Contains(conf.affectedMethods, req.Method) {
 				next.ServeHTTP(respW, req)
 
@@ -152,9 +150,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 
 			teeRespW := newTeeResponseWriter(respW)
 
-			endExecute := conf.tracerFn(req, "idempotency.execute_request")
 			next.ServeHTTP(teeRespW, req)
-			endExecute()
 
 			endStore := conf.tracerFn(req, "idempotency.store_response")
 			//nolint:contextcheck // req.Context() is updated with newCtx above

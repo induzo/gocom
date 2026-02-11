@@ -97,8 +97,11 @@ func WithAllowedReplayHeaders(headers ...string) Option {
 // Example with OpenTelemetry:
 //
 //	func(req *http.Request, spanName string) func() {
-//		ctx, span := tracer.Start(req.Context(), spanName)
-//		req = req.WithContext(ctx)
+//		ctx, span := otel.Tracer("idempotency").Start(req.Context(), spanName)
+//		newReq := req.WithContext(ctx)
+//
+//		*req = *newReq
+//
 //		return func() { span.End() }
 //	}
 func WithTracer(tracerFn TracerFn) Option {
