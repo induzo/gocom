@@ -2,10 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/idempotency/v0.7.1] - 2026-02-11
+
+### Features
+
+- Improve tracing
+
+### Styling
+
+- Improve doc
+
 ## [http/middleware/idempotency/v0.7.0] - 2026-02-11
 
 ### Documentation
 
+- Update CHANGELOG.md for http/middleware/idempotency/v0.7.0
+- Update docs for module http/middleware/idempotency
 - Update CHANGELOG.md for http/middleware/idempotency/v0.7.0
 - Update docs for module http/middleware/idempotency
 
