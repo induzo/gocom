@@ -221,7 +221,7 @@ Hello World! 1
 </details>
 
 <a name="ContextKey"></a>
-## type [ContextKey](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/middleware.go#L237>)
+## type [ContextKey](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/middleware.go#L233>)
 
 
 
@@ -491,7 +491,7 @@ func WithOptionalIdempotencyKey() Option
 WithOptionalIdempotencyKey sets the idempotency key to optional.
 
 <a name="WithTracer"></a>
-### func [WithTracer](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L104>)
+### func [WithTracer](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L107>)
 
 ```go
 func WithTracer(tracerFn TracerFn) Option
@@ -503,8 +503,11 @@ Example with OpenTelemetry:
 
 ```
 func(req *http.Request, spanName string) func() {
-	ctx, span := tracer.Start(req.Context(), spanName)
-	req = req.WithContext(ctx)
+	ctx, span := otel.Tracer("idempotency").Start(req.Context(), spanName)
+	newReq := req.WithContext(ctx)
+
+	*req = *newReq
+
 	return func() { span.End() }
 }
 ```
@@ -650,7 +653,7 @@ type StoredResponse struct {
 TracerFn is a function that starts a span with the given name and returns a function to end the span. This allows integration with any tracing library \(OpenTelemetry, DataDog, Jaeger, etc.\). The returned function should be called with defer to ensure the span is ended.
 
 ```go
-type TracerFn func(ctx *http.Request, spanName string) func()
+type TracerFn func(req *http.Request, spanName string) func()
 ```
 
 <a name="UserIDExtractorFn"></a>
