@@ -152,7 +152,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			//nolint:contextcheck // ctx is derived from req.Context() in tracerFn
 			req = req.WithContext(lctx)
 
-			tloctx, unlock, errL := store.TryLock(req.Context(), storeKey)
+			_, unlock, errL := store.TryLock(req.Context(), storeKey)
 			if errL != nil {
 				conf.errorToHTTPFn(respW, req,
 					RequestInFlightError{
@@ -172,16 +172,13 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 
 			defer func() {
 				// Try to lock the key to prevent concurrent requests
-				_, endUnLock := conf.tracerFn(req, "idempotency.unlock")
+				_, endUnlock := conf.tracerFn(req, "idempotency.unlock")
 
 				unlock()
-				endUnLock()
+				endUnlock()
 			}()
 
 			// update the request context with the new context
-
-			req = req.WithContext(tloctx)
-
 			teeRespW := newTeeResponseWriter(respW)
 
 			next.ServeHTTP(teeRespW, req)
