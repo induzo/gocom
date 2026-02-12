@@ -152,7 +152,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			//nolint:contextcheck // ctx is derived from req.Context() in tracerFn
 			req = req.WithContext(lctx)
 
-			_, unlock, errL := store.TryLock(req.Context(), storeKey)
+			lockCtx, unlock, errL := store.TryLock(req.Context(), storeKey)
 			if errL != nil {
 				conf.errorToHTTPFn(respW, req,
 					RequestInFlightError{
@@ -168,6 +168,10 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 				return
 			}
 
+			if lockCtx == nil {
+				lockCtx = req.Context()
+			}
+
 			endLock()
 
 			defer func() {
@@ -178,7 +182,6 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 				endUnlock()
 			}()
 
-			// update the request context with the new context
 			teeRespW := newTeeResponseWriter(respW)
 
 			next.ServeHTTP(teeRespW, req)
@@ -188,7 +191,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			//nolint:contextcheck // ctx is derived from req.Context() in tracerFn
 			req = req.WithContext(srctx)
 
-			errSR := store.StoreResponse(req.Context(), storeKey,
+			errSR := store.StoreResponse(lockCtx, storeKey,
 				&StoredResponse{
 					StatusCode:  teeRespW.statusCode,
 					Header:      teeRespW.header(),

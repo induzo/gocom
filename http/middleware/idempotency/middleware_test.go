@@ -452,10 +452,10 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 			for reqIdx, reqw := range tt.reqws {
 				wg.Add(1)
 
-				go func(id int, key, body string) {
+				go func(id int, key, body string, startAt time.Duration) {
 					defer wg.Done()
 
-					time.Sleep(reqw.startAt)
+					time.Sleep(startAt)
 
 					status, body, err := sendReq(
 						context.Background(),
@@ -482,7 +482,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 					if tt.expectedResp[id].body != strings.TrimSpace(body) {
 						t.Errorf("expected body `%s`, got `%s`", tt.expectedResp[id].body, body)
 					}
-				}(reqIdx, reqw.key, reqw.body)
+				}(reqIdx, reqw.key, reqw.body, reqw.startAt)
 			}
 
 			wg.Wait()
