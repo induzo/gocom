@@ -12,7 +12,7 @@ import (
 
 // Middleware enforces idempotency on non-GET requests.
 //
-//nolint:cyclop // Complexity is acceptable for middleware validation logic.
+//nolint:cyclop,gocognit // Complexity is acceptable for middleware validation logic.
 func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handler {
 	conf := newDefaultConfig()
 
@@ -34,13 +34,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 				return
 			}
 
-			kctx, endExtractKey := conf.tracerFn(req, "idempotency.extract_key")
-
-			//nolint:contextcheck // kctx is derived from req.Context() in tracerFn
-			req = req.WithContext(
-				kctx,
-			)
-
+			endExtractKey := conf.tracerFn(req, "idempotency.extract_key")
 			key := strings.TrimSpace(req.Header.Get(conf.idempotencyKeyHeader))
 
 			endExtractKey()
@@ -67,12 +61,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			}
 
 			// Validate the idempotency key
-			vkctx, endValidateKey := conf.tracerFn(req, "idempotency.validate_key")
-
-			//nolint:contextcheck // vkctx is derived from req.Context() in tracerFn
-			req = req.WithContext(
-				vkctx,
-			)
+			endValidateKey := conf.tracerFn(req, "idempotency.validate_key")
 			err := validateIdempotencyKey(key)
 
 			endValidateKey()
@@ -94,28 +83,17 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			}
 
 			// Build composite store key (user:method:path:key)
-			bskctx, endBuildStoreKey := conf.tracerFn(req, "idempotency.build_store_key")
-
-			//nolint:contextcheck // ctx is derived from req.Context() in tracerFn
-			req = req.WithContext(
-				bskctx,
-			)
-
+			endBuildStoreKey := conf.tracerFn(req, "idempotency.build_store_key")
 			storeKey := buildStoreKey(req, key, conf.userIDExtractor)
 
 			endBuildStoreKey()
 
 			// set key in the request context
-
 			req = req.WithContext(
 				context.WithValue(req.Context(), IdempotencyKeyCtxKey, key),
 			)
 
-			bhctx, endBuildHash := conf.tracerFn(req, "idempotency.build_request_hash")
-
-			//nolint:contextcheck // ctx is derived from req.Context() in tracerFn
-			req = req.WithContext(bhctx)
-
+			endBuildHash := conf.tracerFn(req, "idempotency.build_request_hash")
 			requestHash, errS := buildRequestHash(conf.fingerprinterFn, req)
 
 			endBuildHash()
@@ -126,10 +104,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 				return
 			}
 
-			handledCtx, endCheckStored := conf.tracerFn(req, "idempotency.handle_response")
-			//nolint:contextcheck // ctx is derived from req.Context() in tracerFn
-			req = req.WithContext(handledCtx)
-
+			endCheckStored := conf.tracerFn(req, "idempotency.handle_response")
 			isFound := handleRequestWithIdempotency(
 				conf,
 				store,
@@ -147,10 +122,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			}
 
 			// Try to lock the key to prevent concurrent requests
-			lctx, endLock := conf.tracerFn(req, "idempotency.try_lock")
-
-			//nolint:contextcheck // ctx is derived from req.Context() in tracerFn
-			req = req.WithContext(lctx)
+			endLock := conf.tracerFn(req, "idempotency.try_lock")
 
 			lockCtx, unlock, errL := store.TryLock(req.Context(), storeKey)
 			if errL != nil {
@@ -176,7 +148,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 
 			defer func() {
 				// Try to lock the key to prevent concurrent requests
-				_, endUnlock := conf.tracerFn(req, "idempotency.unlock")
+				endUnlock := conf.tracerFn(req, "idempotency.unlock")
 
 				unlock()
 				endUnlock()
@@ -186,11 +158,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 
 			next.ServeHTTP(teeRespW, req)
 
-			srctx, endStore := conf.tracerFn(req, "idempotency.store_response")
-
-			//nolint:contextcheck // ctx is derived from req.Context() in tracerFn
-			req = req.WithContext(srctx)
-
+			endStore := conf.tracerFn(req, "idempotency.store_response")
 			errSR := store.StoreResponse(lockCtx, storeKey,
 				&StoredResponse{
 					StatusCode:  teeRespW.statusCode,
@@ -251,7 +219,7 @@ func handleRequestWithIdempotency(
 			return true
 		}
 
-		_, endReplay := conf.tracerFn(req, "idempotency.replay_response")
+		endReplay := conf.tracerFn(req, "idempotency.replay_response")
 
 		replayResponse(conf, respW, resp)
 		endReplay()
