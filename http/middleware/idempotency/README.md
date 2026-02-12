@@ -221,7 +221,7 @@ Hello World! 1
 </details>
 
 <a name="ContextKey"></a>
-## type [ContextKey](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/middleware.go#L265>)
+## type [ContextKey](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/middleware.go#L233>)
 
 
 
@@ -236,7 +236,7 @@ const IdempotencyKeyCtxKey ContextKey = "idempotency_key"
 ```
 
 <a name="ErrorToHTTPFn"></a>
-## type [ErrorToHTTPFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/config.go#L13>)
+## type [ErrorToHTTPFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/config.go#L12>)
 
 
 
@@ -491,16 +491,21 @@ func WithOptionalIdempotencyKey() Option
 WithOptionalIdempotencyKey sets the idempotency key to optional.
 
 <a name="WithTracer"></a>
-### func [WithTracer](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L104>)
+### func [WithTracer](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L103>)
 
 ```go
 func WithTracer(tracerFn TracerFn) Option
 ```
 
-return ctx, func\(\) \{ span.End\(\) \}
+WithTracer sets a tracer function to add observability spans to the middleware. The tracer function receives the request and span name, and should return a function to end the span.
+
+Example with OpenTelemetry:
 
 ```
-},
+func(req *http.Request, spanName string) func() {
+	_, span := otel.Tracer("idempotency").Start(req.Context(), spanName)
+	return func() { span.End() }
+}
 ```
 
 <a name="WithUserIDExtractor"></a>
@@ -639,16 +644,16 @@ type StoredResponse struct {
 ```
 
 <a name="TracerFn"></a>
-## type [TracerFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/config.go#L23>)
+## type [TracerFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/config.go#L22>)
 
-TracerFn is a function that starts a span with the given name and returns the updated context with the span and a function to end the span. This allows integration with any tracing library \(OpenTelemetry, DataDog, Jaeger, etc.\). The returned function should be called with defer to ensure the span is ended.
+TracerFn is a function that starts a span with the given name and returns a function to end the span. This allows integration with any tracing library \(OpenTelemetry, DataDog, Jaeger, etc.\). The returned function should be called to ensure the span is ended.
 
 ```go
-type TracerFn func(req *http.Request, spanName string) (context.Context, func())
+type TracerFn func(req *http.Request, spanName string) func()
 ```
 
 <a name="UserIDExtractorFn"></a>
-## type [UserIDExtractorFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/config.go#L17>)
+## type [UserIDExtractorFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/config.go#L16>)
 
 UserIDExtractorFn extracts the user/tenant ID from the request context. Return empty string if no user context is available.
 
