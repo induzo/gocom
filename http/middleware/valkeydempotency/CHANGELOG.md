@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/valkeydempotency/v0.4.5] - 2026-02-12
+
+### Miscellaneous Tasks
+
+- Update deps
+
 ## [http/middleware/valkeydempotency/v0.4.4] - 2026-02-11
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/valkeydempotency/v0.4.4
 
 ### Miscellaneous Tasks
 
