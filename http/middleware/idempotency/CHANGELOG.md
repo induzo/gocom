@@ -2,11 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/idempotency/v0.9.0] - 2026-02-12
+
+### Bug Fixes
+
+- Do not override req context
+
 ## [http/middleware/idempotency/v0.8.4] - 2026-02-12
 
 ### Bug Fixes
 
 - Do not override req context with trylock
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/idempotency/v0.8.4
+- Update docs for module http/middleware/idempotency
 
 ## [http/middleware/idempotency/v0.8.3] - 2026-02-12
 
