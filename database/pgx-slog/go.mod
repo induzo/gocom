@@ -3,7 +3,7 @@ module github.com/induzo/gocom/database/pgx-slog
 go 1.25.6
 
 require (
-	github.com/jackc/pgx/v5 v5.8.0
+	github.com/jackc/pgx/v5 v5.9.0
 	go.uber.org/goleak v1.3.0
 )
 
