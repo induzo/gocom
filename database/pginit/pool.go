@@ -28,6 +28,10 @@ type PGInit struct {
 
 // New initializes a PGInit using the provided Config and options. If
 // opts is not provided it will initializes PGInit with default configuration.
+//
+// If a custom-type option (WithDecimalType, WithUUIDType, WithGoogleUUIDType)
+// or a connection string that ships its own AfterConnect hook is in play,
+// New chains them so both run on every new physical connection.
 func New(connString string, opts ...Option) (*PGInit, error) {
 	pgxConf, err := pgxpool.ParseConfig(connString)
 	if err != nil {
@@ -42,12 +46,21 @@ func New(connString string, opts ...Option) (*PGInit, error) {
 		opt(pgi)
 	}
 
-	pgi.pgxConf.AfterConnect = func(_ context.Context, conn *pgx.Conn) error {
-		for _, customDataType := range pgi.customDataTypes {
-			customDataType(conn.TypeMap())
-		}
+	prevAfterConnect := pgi.pgxConf.AfterConnect
+	if len(pgi.customDataTypes) > 0 || prevAfterConnect != nil {
+		pgi.pgxConf.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+			if prevAfterConnect != nil {
+				if errPrev := prevAfterConnect(ctx, conn); errPrev != nil {
+					return errPrev
+				}
+			}
 
-		return nil
+			for _, customDataType := range pgi.customDataTypes {
+				customDataType(conn.TypeMap())
+			}
+
+			return nil
+		}
 	}
 
 	return pgi, nil
@@ -72,6 +85,10 @@ func (pgi *PGInit) ConnPool(ctx context.Context) (*pgxpool.Pool, error) {
 // WithLogger Add logger to pgx. if the request context contains request id,
 // can pass in the request id context key to reqIDKeyFromCtx and logger will
 // log with the request id.
+//
+// Note: WithLogger and WithTracer both set ConnConfig.Tracer; only the last
+// one applied takes effect. To use both, wrap them externally before calling
+// New.
 func WithLogger(logger *slog.Logger, _ string) Option {
 	return func(pgi *PGInit) {
 		pgi.pgxConf.ConnConfig.Tracer = &tracelog.TraceLog{
@@ -82,6 +99,10 @@ func WithLogger(logger *slog.Logger, _ string) Option {
 }
 
 // WithTracer Add tracer to pgx.
+//
+// Note: WithTracer and WithLogger both set ConnConfig.Tracer; only the last
+// one applied takes effect. To use both, wrap them externally before calling
+// New.
 func WithTracer(opts ...otelpgx.Option) Option {
 	return func(pgi *PGInit) {
 		pgi.pgxConf.ConnConfig.Tracer = otelpgx.NewTracer(opts...)
@@ -90,21 +111,21 @@ func WithTracer(opts ...otelpgx.Option) Option {
 
 // WithDecimalType set pgx decimal type to shopspring/decimal.
 func WithDecimalType() Option {
-	return func(p *PGInit) {
-		p.customDataTypes = append(p.customDataTypes, pgxdecimal.Register)
+	return func(pgi *PGInit) {
+		pgi.customDataTypes = append(pgi.customDataTypes, pgxdecimal.Register)
 	}
 }
 
 // WithUUIDType set pgx uuid type to gofrs/uuid.
 func WithUUIDType() Option {
-	return func(p *PGInit) {
-		p.customDataTypes = append(p.customDataTypes, pgxuuid.Register)
+	return func(pgi *PGInit) {
+		pgi.customDataTypes = append(pgi.customDataTypes, pgxuuid.Register)
 	}
 }
 
 // WithGoogleUUIDType set pgx uuid type to google/uuid.
 func WithGoogleUUIDType() Option {
-	return func(p *PGInit) {
-		p.customDataTypes = append(p.customDataTypes, pgxGoogleUUID.Register)
+	return func(pgi *PGInit) {
+		pgi.customDataTypes = append(pgi.customDataTypes, pgxGoogleUUID.Register)
 	}
 }

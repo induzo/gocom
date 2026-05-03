@@ -62,4 +62,7 @@ require (
 	golang.org/x/text v0.36.0 // indirect
 )
 
+// Workaround for dockertest's transitive dependency on docker/cli.
+// Re-evaluate periodically; safe to drop once dockertest no longer pulls
+// the affected version into the build graph.
 replace github.com/docker/cli v29.1.5+incompatible => github.com/docker/cli v28.5.2+incompatible

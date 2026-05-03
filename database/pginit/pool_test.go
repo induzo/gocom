@@ -60,7 +60,11 @@ func TestMain(m *testing.M) {
 		net.JoinHostPort(resource.GetBoundIP("5432/tcp"), resource.GetPort("5432/tcp")),
 	)
 
-	resource.Expire(60) // Tell docker to hard kill the container in 60 seconds
+	if err := resource.Expire(
+		300,
+	); err != nil { // Tell docker to hard kill the container in 5 minutes
+		log.Fatalf("Could not set container expiry: %s", err)
+	}
 
 	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 	if err := pool.Retry(func() error {
@@ -204,18 +208,18 @@ func TestConnPoolWithLogger(t *testing.T) {
 				WithUUIDType(),
 			)
 			if err != nil {
-				t.Error("expected no error")
+				t.Fatalf("New: %v", err)
 			}
 
 			db, err := pgi.ConnPool(ctx)
 			if err != nil {
-				t.Error("expected no error")
+				t.Fatalf("ConnPool: %v", err)
 			}
 
 			defer db.Close()
 
 			if err := db.Ping(ctx); err != nil {
-				t.Error("expected no error")
+				t.Errorf("ping: %v", err)
 			}
 
 			if db.Config().ConnConfig.Tracer == nil {
@@ -251,18 +255,18 @@ func TestConnPoolWithTracer(t *testing.T) {
 				WithTracer(),
 			)
 			if err != nil {
-				t.Error("expected no error")
+				t.Fatalf("New: %v", err)
 			}
 
 			db, err := pgi.ConnPool(ctx)
 			if err != nil {
-				t.Error("expected no error")
+				t.Fatalf("ConnPool: %v", err)
 			}
 
 			defer db.Close()
 
 			if err := db.Ping(ctx); err != nil {
-				t.Error("expected no error")
+				t.Errorf("ping: %v", err)
 			}
 
 			if db.Config().ConnConfig.Tracer == nil {
@@ -348,19 +352,19 @@ func TestConnPool_WithCustomDataTypes(t *testing.T) {
 				tt.opts...,
 			)
 			if err != nil {
-				t.Error("expected no error")
+				t.Fatalf("New: %v", err)
 			}
 
 			db, err := pgi.ConnPool(ctx)
 			if err != nil {
-				t.Error("expected no error")
+				t.Fatalf("ConnPool: %v", err)
 			}
 
 			defer db.Close()
 
 			err = db.Ping(ctx)
 			if err != nil {
-				t.Error("expected no error")
+				t.Errorf("ping: %v", err)
 			}
 
 			var d decimal.Decimal
@@ -411,26 +415,26 @@ func TestConnPoolWithCustomTypes_CRUD(t *testing.T) {
 				WithUUIDType(),
 			)
 			if err != nil {
-				t.Errorf("expected no error but got: %v", err)
+				t.Fatalf("New: %v", err)
 			}
 
 			pool, err := pgi.ConnPool(ctx)
 			if err != nil {
-				t.Errorf("expected no error but got: %v", err)
+				t.Fatalf("ConnPool: %v", err)
 			}
 			defer pool.Close()
 
 			conn, err := pool.Acquire(ctx)
 			if err != nil {
-				t.Errorf("expected no error but got: %v", err)
+				t.Fatalf("Acquire: %v", err)
 			}
 			defer conn.Release()
 
 			tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
 			if err != nil {
-				t.Errorf("expected no error but got: %v", err)
+				t.Fatalf("BeginTx: %v", err)
 			}
-			defer tx.Rollback(ctx)
+			defer func() { _ = tx.Rollback(ctx) }()
 
 			_, err = tx.Exec(
 				ctx,
@@ -580,29 +584,29 @@ func TestConnPoolWithCustomTypesGoogle_CRUD(t *testing.T) {
 				WithGoogleUUIDType(),
 			)
 			if err != nil {
-				t.Errorf("expected no error but got: %v", err)
+				t.Fatalf("New: %v", err)
 			}
 
 			pool, err := pgi.ConnPool(ctx)
 			if err != nil {
-				t.Errorf("expected no error but got: %v", err)
+				t.Fatalf("ConnPool: %v", err)
 			}
 
 			defer pool.Close()
 
 			conn, err := pool.Acquire(ctx)
 			if err != nil {
-				t.Errorf("expected no error but got: %v", err)
+				t.Fatalf("Acquire: %v", err)
 			}
 
 			defer conn.Release()
 
 			tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
 			if err != nil {
-				t.Errorf("expected no error but got: %v", err)
+				t.Fatalf("BeginTx: %v", err)
 			}
 
-			defer tx.Rollback(ctx)
+			defer func() { _ = tx.Rollback(ctx) }()
 
 			_, err = tx.Exec(
 				ctx,
@@ -724,23 +728,25 @@ func TestConnPoolWithCustomTypesGoogle_CRUD(t *testing.T) {
 }
 
 func BenchmarkConnPool(b *testing.B) {
-	for i := 0; i <= b.N; i++ {
-		ctx := context.Background()
+	ctx := context.Background()
+	logger := slog.New(slog.DiscardHandler)
 
-		textHandler := slog.DiscardHandler
-		logger := slog.New(textHandler)
-
-		b.StartTimer()
-
-		pgi, _ := New(
+	for b.Loop() {
+		pgi, err := New(
 			connStr,
 			WithLogger(logger, "request-id"),
 			WithDecimalType(),
 			WithUUIDType(),
 		)
+		if err != nil {
+			b.Fatalf("New: %v", err)
+		}
 
-		pgi.ConnPool(ctx)
+		pool, err := pgi.ConnPool(ctx)
+		if err != nil {
+			b.Fatalf("ConnPool: %v", err)
+		}
 
-		b.StopTimer()
+		pool.Close()
 	}
 }

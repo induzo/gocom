@@ -32,7 +32,7 @@ func TestJSONRowToAddrOfStruct(t *testing.T) {
 			},
 		},
 		{
-			name:    "valid json",
+			name:    "invalid json",
 			json:    `{"id": 10, "name": "dodo"`,
 			wantErr: true,
 		},
