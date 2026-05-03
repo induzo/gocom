@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - Go 1.25.6
 
+### Documentation
+
+- Update CHANGELOG.md for database/pgx-slog/v1.0.36
+
 ### Miscellaneous Tasks
 
 - Update deps
