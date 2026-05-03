@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -83,8 +84,13 @@ func TestCheckError(t *testing.T) {
 func TestNewHealth(t *testing.T) {
 	t.Parallel()
 
-	if _ = NewHealth(); reflect.TypeFor[*Health]() != reflect.TypeFor[*Health]() {
-		t.Error("returned struct is not of type Health")
+	h := NewHealth()
+	if h == nil {
+		t.Fatal("NewHealth returned nil")
+	}
+
+	if len(h.checks) != 0 {
+		t.Errorf("expected zero registered checks, got %d", len(h.checks))
 	}
 }
 
@@ -232,7 +238,7 @@ func TestHealth(t *testing.T) {
 			defer resp.Body.Close()
 
 			if status := resp.StatusCode; status != tt.wantStatusCode {
-				t.Errorf("expected status %d, got %d", http.StatusOK, resp.StatusCode)
+				t.Errorf("expected status %d, got %d", tt.wantStatusCode, resp.StatusCode)
 			}
 
 			if tt.wantErrResponse == nil {
@@ -244,6 +250,14 @@ func TestHealth(t *testing.T) {
 				}
 
 				return
+			}
+
+			if got := resp.Header.Get("Content-Type"); got != "application/json" {
+				t.Errorf("Content-Type = %q, want application/json", got)
+			}
+
+			if got := resp.Header.Get("Cache-Control"); got != "no-store" {
+				t.Errorf("Cache-Control = %q, want no-store", got)
 			}
 
 			gotRes := Response{}
@@ -267,11 +281,134 @@ func TestHealth(t *testing.T) {
 	}
 }
 
-func BenchmarkHealth(b *testing.B) {
-	rr := httptest.NewRecorder()
+// TestHealth_PanicRecovery ensures a panicking CheckFn does not crash the
+// server: the handler must respond 503 with a check_error code.
+func TestHealth_PanicRecovery(t *testing.T) {
+	t.Parallel()
 
+	h := NewHealth(WithChecks(CheckConfig{
+		Name: "panicker",
+		CheckFn: func(_ context.Context) error {
+			panic("boom")
+		},
+	}))
+
+	rr := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, HealthEndpoint, nil)
 
+	h.Handler().ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusServiceUnavailable {
+		t.Fatalf("status = %d, want %d", rr.Code, http.StatusServiceUnavailable)
+	}
+
+	var got Response
+	if err := json.NewDecoder(rr.Body).Decode(&got); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+
+	if got.Error != "check_error" {
+		t.Errorf("Error code = %q, want check_error", got.Error)
+	}
+
+	if !strings.Contains(got.ErrorMessage, "panic") {
+		t.Errorf("ErrorMessage = %q, want it to mention panic", got.ErrorMessage)
+	}
+}
+
+// TestHealth_NonGET asserts the handler currently accepts non-GET methods
+// and runs the configured checks. Pinning this behavior so any future
+// method-enforcement change is intentional.
+func TestHealth_NonGET(t *testing.T) {
+	t.Parallel()
+
+	h := NewHealth(WithChecks(CheckConfig{
+		Name: "ok",
+		CheckFn: func(_ context.Context) error {
+			return nil
+		},
+	}))
+
+	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodHead} {
+		rr := httptest.NewRecorder()
+		req := httptest.NewRequest(method, HealthEndpoint, nil)
+
+		h.Handler().ServeHTTP(rr, req)
+
+		if rr.Code != http.StatusOK {
+			t.Errorf("method %s: status = %d, want %d", method, rr.Code, http.StatusOK)
+		}
+	}
+}
+
+// TestHealth_ContextCanceled verifies the handler still returns 503 when the
+// request context is cancelled before the check completes.
+func TestHealth_ContextCanceled(t *testing.T) {
+	t.Parallel()
+
+	released := make(chan struct{})
+
+	h := NewHealth(WithChecks(CheckConfig{
+		Name:    "slow",
+		Timeout: time.Second,
+		CheckFn: func(ctx context.Context) error {
+			defer close(released)
+
+			<-ctx.Done()
+
+			return ctx.Err()
+		},
+	}))
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequestWithContext(ctx, http.MethodGet, HealthEndpoint, nil)
+
+	cancel() // cancel before serving so the handler immediately observes Done
+
+	h.Handler().ServeHTTP(rr, req)
+	<-released
+
+	if rr.Code != http.StatusServiceUnavailable {
+		t.Fatalf("status = %d, want %d", rr.Code, http.StatusServiceUnavailable)
+	}
+}
+
+// TestHealth_NoSuperfluousWriteHeader catches the historical
+// "http: superfluous response.WriteHeader call" warning from the failure
+// path by counting WriteHeader invocations on a tracking ResponseWriter.
+func TestHealth_NoSuperfluousWriteHeader(t *testing.T) {
+	t.Parallel()
+
+	h := NewHealth(WithChecks(CheckConfig{
+		Name: "broken",
+		CheckFn: func(_ context.Context) error {
+			return errors.New("boom")
+		},
+	}))
+
+	rr := &countingResponseWriter{ResponseRecorder: httptest.NewRecorder()}
+	req := httptest.NewRequest(http.MethodGet, HealthEndpoint, nil)
+
+	h.Handler().ServeHTTP(rr, req)
+
+	if rr.writeHeaderCalls.Load() != 1 {
+		t.Errorf("WriteHeader called %d times, want 1", rr.writeHeaderCalls.Load())
+	}
+}
+
+type countingResponseWriter struct {
+	*httptest.ResponseRecorder
+	writeHeaderCalls atomic.Int32
+}
+
+func (w *countingResponseWriter) WriteHeader(status int) {
+	w.writeHeaderCalls.Add(1)
+	w.ResponseRecorder.WriteHeader(status)
+}
+
+func BenchmarkHealth(b *testing.B) {
 	health := NewHealth(WithChecks(CheckConfig{
 		Name:    "test",
 		Timeout: 5 * time.Second,
@@ -283,6 +420,8 @@ func BenchmarkHealth(b *testing.B) {
 	handler := health.Handler()
 
 	for b.Loop() {
+		rr := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, HealthEndpoint, nil)
 		handler.ServeHTTP(rr, req)
 	}
 }
