@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1777809373412,
+  "lastUpdate": 1777810982376,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -2778,6 +2778,54 @@ window.BENCHMARK_DATA = {
             "value": 33,
             "unit": "allocs/op",
             "extra": "94 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "71c152449e62a7e90dd76284a2df96f6731a3caa",
+          "message": "chore: update makefile for the readme update",
+          "timestamp": "2026-05-03T14:22:10+02:00",
+          "tree_id": "7348c31463fa9ef96c3ad8d586496048df0e786f",
+          "url": "https://github.com/induzo/gocom/commit/71c152449e62a7e90dd76284a2df96f6731a3caa"
+        },
+        "date": 1777810981234,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkShutdown",
+            "value": 12495139,
+            "unit": "ns/op\t    2052 B/op\t      33 allocs/op",
+            "extra": "96 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkShutdown - ns/op",
+            "value": 12495139,
+            "unit": "ns/op",
+            "extra": "96 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkShutdown - B/op",
+            "value": 2052,
+            "unit": "B/op",
+            "extra": "96 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkShutdown - allocs/op",
+            "value": 33,
+            "unit": "allocs/op",
+            "extra": "96 times\n4 procs"
           }
         ]
       }
