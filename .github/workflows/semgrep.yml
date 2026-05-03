@@ -3,16 +3,24 @@ on:
   pull_request: {}
   schedule:
     - cron: "0 0 * * 6"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 env:
   SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
 jobs:
   semgrep:
     name: Scan
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     container:
-      image: returntocorp/semgrep
+      image: semgrep/semgrep:1.161.0
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
       - run: semgrep ci --exclude "docker-compose*.yml"

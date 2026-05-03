@@ -10,12 +10,17 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   TRIVY_VERSION: "0.70.0"
+  GOVULNCHECK_VERSION: "v1.3.0"
 
 jobs:
   sec-scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -32,7 +37,7 @@ jobs:
         run: make trivy-scan
       - name: Install govuln
         run: |
-          go install golang.org/x/vuln/cmd/govulncheck@latest
+          go install golang.org/x/vuln/cmd/govulncheck@${GOVULNCHECK_VERSION}
       - name: Run security scan with govuln
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -41,7 +46,7 @@ jobs:
           git config --global url."https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com".insteadOf "https://github.com"
           make vuln-scan-all
       - name: GitGuardian scan
-        uses: GitGuardian/ggshield-action@v1.45.0
+        uses: GitGuardian/ggshield-action@33598664f24734b2c3f8eeac2f1bf3db0426a474 # v1.50.0
         env:
           GITHUB_PUSH_BEFORE_SHA: ${{ github.event.before }}
           GITHUB_PUSH_BASE_SHA: ${{ github.event.base }}

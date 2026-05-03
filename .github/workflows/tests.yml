@@ -6,28 +6,24 @@ on:
     branches:
       - "main"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
       - name: Install Go
         uses: actions/setup-go@v6
         with:
           go-version-file: 'go.work'
-      - name: Cache tests
-        id: tests
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.work.sum') }}
-          restore-keys: |
-             ${{ runner.os }}-go-${{ hashFiles('**/go.work.sum') }}
       - name: run all tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

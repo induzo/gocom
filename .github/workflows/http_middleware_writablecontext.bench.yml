@@ -4,48 +4,21 @@ on:
   push:
     paths:
       - "http/middleware/writablecontext/**"
-      - ".github/workflows/**"
+      - ".github/workflows/http_middleware_writablecontext.bench.yml"
+      - ".github/workflows/_bench.yml"
     branches: [main]
+
+concurrency:
+  group: bench-http-middleware-writablecontext-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
   deployments: write
 
 jobs:
-  benchmark:
-    name: Performance regression check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-      - name: Install Go
-        uses: actions/setup-go@v6
-        with:
-          go-version-file: 'go.work'
-      # Run benchmark with `go test -bench` and stores the output to a file
-      - name: Run benchmark
-        working-directory: http/middleware/writablecontext
-        env:
-          GOPRIVATE: "github.com/induzo/*"
-        run: |
-          git config --global url.https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/.insteadOf https://github.com/
-          go test ./... -bench=. -benchmem | tee ./bench-continuous.txt
-      # Run `github-action-benchmark` action
-      - name: Store benchmark result
-        uses: benchmark-action/github-action-benchmark@v1
-        with:
-          tool: "go"
-          output-file-path: ./http/middleware/writablecontext/bench-continuous.txt
-          # Workflow will fail when an alert happens
-          fail-on-alert: false
-          # GitHub API token to make a commit comment
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          # Enable alert commit comment
-          comment-on-alert: true
-          benchmark-data-dir-path: ./http/middleware/writablecontext/
-          # When cache is used
-          # external-data-json-path: ./cache/http/middleware/writablecontext/benchmark-data.json
-          # Push and deploy GitHub pages branch automatically
-          auto-push: true
+  bench:
+    uses: ./.github/workflows/_bench.yml
+    with:
+      module: http/middleware/writablecontext
+    secrets: inherit

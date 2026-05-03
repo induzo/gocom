@@ -1,0 +1,45 @@
+name: "_bench (reusable)"
+
+on:
+  workflow_call:
+    inputs:
+      module:
+        description: "Module path under the repo root, e.g. http/health"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    name: Performance regression check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      deployments: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: 'go.work'
+      - name: Run benchmark
+        working-directory: ${{ inputs.module }}
+        env:
+          GOPRIVATE: "github.com/induzo/*"
+        run: |
+          git config --global url.https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/.insteadOf https://github.com/
+          go test ./... -bench=. -benchmem | tee ./bench-continuous.txt
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@a60cea5bc7b49e15c1f58f411161f99e0df48372 # v1.22.0
+        with:
+          tool: "go"
+          output-file-path: ./${{ inputs.module }}/bench-continuous.txt
+          fail-on-alert: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment-on-alert: true
+          benchmark-data-dir-path: ./${{ inputs.module }}/
+          auto-push: true

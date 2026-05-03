@@ -10,32 +10,31 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   LINTER_VERSION: "2.12.1"
 
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
       - name: Install Go
         uses: actions/setup-go@v6
         with:
           go-version-file: 'go.work'
       - name: Cache golangci-lint
-        id: golangci-lint
         uses: actions/cache@v5
         with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-            ~/.cache/golangci-lint
-          key: ${{ runner.os }}-golangci-lint-${{ hashFiles('**/go.work.sum') }}
+          path: ~/.cache/golangci-lint
+          key: ${{ runner.os }}-golangci-lint-${{ env.LINTER_VERSION }}-${{ hashFiles('**/go.work.sum') }}
           restore-keys: |
-            ${{ runner.os }}-golangci-lint-${{ hashFiles('**/go.work.sum') }}
+            ${{ runner.os }}-golangci-lint-${{ env.LINTER_VERSION }}-
+            ${{ runner.os }}-golangci-lint-
       - name: Install golangci-lint
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $HOME/.local/bin v"$LINTER_VERSION"
