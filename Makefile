@@ -60,19 +60,14 @@ changelogs-gen: ## generate changelog for every module.
 #############################
 
 readme-version-table-update: ## update version table in README.md to latest version.
-	@( \
-		while IFS= read -r line; do \
-			module=$$(echo "$$line" | grep -oE '\[\w+/\w+\]' | tr -d '[]'); \
-			if [ ! -z "$$module" ]; then \
-				latest_version=$$(git tag --list "$${module}/v*" | sed "s:$${module}/v::" | sort -t . -k1n -k2n -k3n | tail -n 1); \
-				echo "$$line" | sed "s:\(.*| \)[[:digit:]]\+\(\.[[:digit:]]\+\)\{0,2\}\(.*\):\1$$latest_version\3:"; \
-			else \
-				echo "$$line"; \
-			fi; \
-		done < README.md > README.md.tmp; \
-		mv README.md.tmp README.md; \
-		git commit -m "docs(readme): update latest versions" ./README.md \
-	)
+	@for module in $(ALL_MODULES_SPACE_SEP); do \
+		latest=$$(git tag --list "$$module/v*" | sort -V | tail -n1 | sed "s|$$module/v||"); \
+		[ -z "$$latest" ] && continue; \
+		awk -F'|' -v OFS='|' -v module="$$module" -v latest="$$latest" \
+			'index($$0, "]("module")") { sub(/[0-9]+\.[0-9]+\.[0-9]+/, latest, $$4) } 1' \
+			README.md > README.md.tmp && mv README.md.tmp README.md; \
+	done; \
+	git commit -m "docs(readme): update latest versions" ./README.md
 
 
 ########
@@ -168,37 +163,24 @@ download-all: ## download all dependencies for the different modules
 release: release-specific readme-version-table-update ## release selection module, gen-changelog, gen docs, commit and tag and update the version table
 
 release-specific: ## release selection module, gen-changelog, gen docs, commit and tag
-	@( \
-		select module in $(ALL_MODULES_SPACE_SEP); do \
-			if [ -z $$module ]; then \
-				break; \
-			fi; \
-			printf "here is the $$module latest tag present: "; \
-			git tag --list --sort=version:refname "$$module/v*" | tail -1; \
-			printf "what tag do you want to give? (use the form $$module/vX.X.X): "; \
-			read -r TAG; \
-			sed -i '' -E "s:TAG_MODULE:$$module:g" ./cliff.toml && \
-			git cliff \
-				--tag $$TAG \
-				--include-path "**/$$module/*" \
-				-o ./$$module/CHANGELOG.md && \
-			sed -i '' -E "s:$$module:TAG_MODULE:g" ./cliff.toml && \
-			printf "\nchangelog generated for $$module!\n"; \
-			git add ./$$module/CHANGELOG.md && \
-			git commit -m "docs(changelog): update CHANGELOG.md for $$TAG" ./$$module/CHANGELOG.md; \
-			gomarkdoc --output ./$$module/README.md ./$$module/ && \
-			printf "docs generated for $$module!\n"; \
-			git add ./$$module/README.md && \
-			git commit -m "docs: update docs for module $$module" ./$$module/README.md; \
-			go work sync && \
-			git add ./go.work ./go.work.sum && \
-			git commit -m "chore: update go.work" ./go.work ./go.work.sum; \
-			git tag $$TAG && \
-			printf "\nrelease tagged $$TAG !\n"; \
-			printf "\nrelease and tagging has been done, if you are OK with everything, just git push origin $$(git describe --abbrev=0 --tags $$(git rev-list --tags="$$module/v[0-9].*" --max-count=1))\n"; \
-			break; \
-		done \
-	)
+	@select module in $(ALL_MODULES_SPACE_SEP); do \
+		[ -z "$$module" ] && break; \
+		printf "latest tag for $$module: "; \
+		git tag --list --sort=version:refname "$$module/v*" | tail -1; \
+		printf "new tag (form $$module/vX.Y.Z): "; \
+		read -r TAG; \
+		sed -i.bak -E "s:TAG_MODULE:$$module:g" ./cliff.toml && \
+		git cliff --tag $$TAG --include-path "**/$$module/*" -o ./$$module/CHANGELOG.md && \
+		mv ./cliff.toml.bak ./cliff.toml && \
+		git commit -m "docs(changelog): update CHANGELOG.md for $$TAG" ./$$module/CHANGELOG.md && \
+		gomarkdoc --output ./$$module/README.md ./$$module/ && \
+		git commit -m "docs: update docs for module $$module" ./$$module/README.md && \
+		go work sync && \
+		git commit -m "chore: update go.work" ./go.work ./go.work.sum && \
+		git tag $$TAG && \
+		printf "\nrelease tagged $$TAG\nif everything looks good, run: git push origin $$TAG\n"; \
+		break; \
+	done
 
 
 #########
