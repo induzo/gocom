@@ -9,6 +9,11 @@ import (
 	"net/http"
 )
 
+const (
+	internalServerErrorMsg = "internal server error"
+	headerContentType      = "Content-Type"
+)
+
 type RequestContext struct {
 	URL       string
 	Method    string
@@ -214,7 +219,7 @@ func ErrorToHTTPJSONProblemDetail(
 		pbDetail = ProblemDetail{
 			HTTPStatusCode: http.StatusInternalServerError,
 			Type:           "errors/internal-server-error",
-			Title:          "internal server error",
+			Title:          internalServerErrorMsg,
 			Detail:         "an internal server error occurred.",
 			Instance:       url,
 		}
@@ -232,7 +237,7 @@ func ErrorToHTTPJSONProblemDetail(
 		pbDetail = ProblemDetail{
 			HTTPStatusCode: http.StatusInternalServerError,
 			Type:           "errors/internal-server-error",
-			Title:          "internal server error",
+			Title:          internalServerErrorMsg,
 			Detail:         "an internal server error occurred.",
 			Instance:       url,
 		}
@@ -244,12 +249,12 @@ func ErrorToHTTPJSONProblemDetail(
 	if errJ != nil {
 		errorAttrs = append(errorAttrs, slog.Any("err_marshal", errJ))
 
-		http.Error(respW, "internal server error", http.StatusInternalServerError)
+		http.Error(respW, internalServerErrorMsg, http.StatusInternalServerError)
 
 		return
 	}
 
-	respW.Header().Set("Content-Type", "application/problem+json")
+	respW.Header().Set(headerContentType, "application/problem+json")
 	respW.WriteHeader(pbDetail.HTTPStatusCode)
 
 	if _, errW := respW.Write(resp); errW != nil {

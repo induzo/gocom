@@ -4,125 +4,127 @@ version = '2'
 [issues]
 fix = true
 
-# golangci-lint linters --disable=exhaustruct,funlen,godot,inamedparam,ireturn,musttag,tagliatelle,testpackage,wsl,funcorder,embeddedstructfieldcheck
+# golangci-lint linters --disable=exhaustruct,gomodguard,funlen,godot,inamedparam,ireturn,musttag,tagliatelle,testpackage,wsl,funcorder,embeddedstructfieldcheck
 [linters]
 default = 'none'
 enable = [
-  'arangolint',
-  'asasalint',
-  'asciicheck',
-  'bidichk',
-  'bodyclose',
-  'canonicalheader',
-  'containedctx',
-  'contextcheck',
-  'copyloopvar',
-  'cyclop',
-  'decorder',
-  'depguard',
-  'dogsled',
-  'dupl',
-  'dupword',
-  'durationcheck',
-  'err113',
-  'errcheck',
-  'errchkjson',
-  'errname',
-  'errorlint',
-  'exhaustive',
-  'exptostd',
-  'fatcontext',
-  'forbidigo',
-  'forcetypeassert',
-  'ginkgolinter',
-  'gocheckcompilerdirectives',
-  'gochecknoglobals',
-  'gochecknoinits',
-  'gochecksumtype',
-  'gocognit',
-  'goconst',
-  'gocritic',
-  'gocyclo',
-  'godox',
-  'goheader',
-  'gomoddirectives',
-  'gomodguard',
-  'goprintffuncname',
-  'gosec',
-  'gosmopolitan',
-  'govet',
-  'grouper',
-  'iface',
-  'importas',
-  'ineffassign',
-  'interfacebloat',
-  'intrange',
-  'lll',
-  'loggercheck',
-  'maintidx',
-  'makezero',
-  'mirror',
-  'misspell',
-  'mnd',
-  'modernize',
-  'nakedret',
-  'nestif',
-  'nilerr',
-  'nilnesserr',
-  'nilnil',
-  'nlreturn',
-  'noctx',
-  'nolintlint',
-  'nonamedreturns',
-  'nosprintfhostport',
-  'paralleltest',
-  'perfsprint',
-  'prealloc',
-  'predeclared',
-  'promlinter',
-  'protogetter',
-  'reassign',
-  'revive',
-  'rowserrcheck',
-  'sloglint',
-  'spancheck',
-  'sqlclosecheck',
-  'staticcheck',
-  'tagalign',
-  'testableexamples',
-  'testifylint',
-  'thelper',
-  'tparallel',
-  'unconvert',
-  'unparam',
-  'unused',
-  'usestdlibvars',
-  'usetesting',
-  'varnamelen',
-  'wastedassign',
-  'whitespace',
-  'wrapcheck',
-  'wsl_v5',
+	'arangolint',
+	'asasalint',
+	'asciicheck',
+	'bidichk',
+	'bodyclose',
+	'canonicalheader',
+	'containedctx',
+	'contextcheck',
+	'copyloopvar',
+	'cyclop',
+	'decorder',
+	'depguard',
+	'dogsled',
+	'dupl',
+	'dupword',
+	'durationcheck',
+	'err113',
+	'errcheck',
+	'errchkjson',
+	'errname',
+	'errorlint',
+	'exhaustive',
+	'exptostd',
+	'fatcontext',
+	'forbidigo',
+	'forcetypeassert',
+	'ginkgolinter',
+	'gocheckcompilerdirectives',
+	'gochecknoglobals',
+	'gochecknoinits',
+	'gochecksumtype',
+	'gocognit',
+	'goconst',
+	'gocritic',
+	'gocyclo',
+	'godox',
+	'goheader',
+	'gomoddirectives',
+	'goprintffuncname',
+	'gosec',
+	'gosmopolitan',
+	'govet',
+	'grouper',
+	'iface',
+	'importas',
+	'ineffassign',
+	'interfacebloat',
+	'intrange',
+	'lll',
+	'loggercheck',
+	'maintidx',
+	'makezero',
+	'mirror',
+	'misspell',
+	'mnd',
+	'modernize',
+	'nakedret',
+	'nestif',
+	'nilerr',
+	'nilnesserr',
+	'nilnil',
+	'nlreturn',
+	'noctx',
+	'nolintlint',
+	'nonamedreturns',
+	'nosprintfhostport',
+	'paralleltest',
+	'perfsprint',
+	'prealloc',
+	'predeclared',
+	'promlinter',
+	'protogetter',
+	'reassign',
+	'revive',
+	'rowserrcheck',
+	'sloglint',
+	'spancheck',
+	'sqlclosecheck',
+	'staticcheck',
+	'tagalign',
+	'testableexamples',
+	'testifylint',
+	'thelper',
+	'tparallel',
+	'unconvert',
+	'unparam',
+	'unused',
+	'usestdlibvars',
+	'usetesting',
+	'varnamelen',
+	'wastedassign',
+	'whitespace',
+	'wrapcheck',
+	'wsl_v5',
 
-  # Disabled by your configuration linters:
-  # embeddedstructfieldcheck: Embedded types should be at the top of the field list of a struct, and there must be an empty line separating embedded fields from regular fields. [fast]
-  # exhaustruct: Checks if all structure fields are initialized.
-  # funcorder: Checks the order of functions, methods, and constructors. [fast]
-  # funlen: Checks for long functions. [fast]
-  # godoclint: Checks Golang's documentation practice (godoc). [fast]
-  # godot: Check if comments end in a period. [fast, auto-fix]
-  # inamedparam: Reports interfaces with unnamed method parameters. [fast]
-  # iotamixing: Checks if iotas are being used in const blocks with other non-iota declarations. [fast]
-  # ireturn: Accept Interfaces, Return Concrete Types.
-  # modernize: A suite of analyzers that suggest simplifications to Go code, using modern language and library features.
-  # musttag: Enforce field tags in (un)marshaled structs.
-  # noinlineerr: Disallows inline error handling (`if err := ...; err != nil {`).
-  # recvcheck: Checks for receiver type consistency.
-  # tagliatelle: Checks the struct tags.
-  # testpackage: Linter that makes you use a separate _test package. [fast]
-  # unqueryvet: Detects SELECT * in SQL queries and SQL builders, preventing performance issues and encouraging explicit column selection. [fast]
-  # zerologlint: Detects the wrong usage of `zerolog` that a user forgets to dispatch with `Send` or `Msg`.
-  # wsl [deprecated]: Add or remove empty lines. [fast, auto-fix]
+	'gomodguard_v2',
+	'iotamixing',
+	'unqueryvet',
+
+	# Disabled by your configuration linters:
+	# clickhouselint: Detects common mistakes with the ClickHouse native Go driver API.
+	# embeddedstructfieldcheck: Embedded types should be at the top of the field list of a struct, and there must be an empty line separating embedded fields from regular fields. [fast]
+	# exhaustruct: Checks if all structure fields are initialized.
+	# funcorder: Checks the order of functions, methods, and constructors. [fast]
+	# funlen: Checks for long functions. [fast]
+	# godoclint: Checks Golang's documentation practice (godoc). [fast]
+	# godot: Check if comments end in a period. [fast, auto-fix]
+	# inamedparam: Reports interfaces with unnamed method parameters. [fast]
+	# ireturn: Accept Interfaces, Return Concrete Types.
+	# musttag: Enforce field tags in (un)marshaled structs.
+	# noinlineerr: Disallows inline error handling (`if err := ...; err != nil {`). [auto-fix]
+	# recvcheck: Checks for receiver type consistency.
+	# tagliatelle: Checks the struct tags.
+	# testpackage: Linter that makes you use a separate _test package. [fast]
+	# zerologlint: Detects the wrong usage of `zerolog` that a user forgets to dispatch with `Send` or `Msg`.
+	# gomodguard [deprecated]: Allow and blocklist linter for direct Go module dependencies. This is different from depguard where there are different block types for example version constraints and module recommendations. [fast]
+	# wsl [deprecated]: Add or remove empty lines. [fast, auto-fix]
 ]
 
 [linters.settings]
@@ -250,6 +252,7 @@ linters = [
   'gocognit',
   'goconst',
   'gocritic',
+  'gosec',
   'interfacer',
   'lll',
   'nlreturn',
@@ -257,6 +260,7 @@ linters = [
   'wrapcheck',
   'maintidx',
   'noctx',
+  'unqueryvet',
 ]
 path = '(.+)_test\.go'
 

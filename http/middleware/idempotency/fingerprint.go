@@ -36,7 +36,7 @@ func buildRequestFingerprint(req *http.Request) ([]byte, error) {
 	whitelistedHeaders := []string{
 		"Accept",
 		"Accept-Encoding",
-		"Content-Type",
+		headerContentType,
 	}
 
 	// Optionally add some headers if you want them in the signature

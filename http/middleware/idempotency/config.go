@@ -66,7 +66,7 @@ func defaultUserIDExtractor(req *http.Request) string {
 // defaultAllowedReplayHeaders returns safe headers to replay.
 func defaultAllowedReplayHeaders() []string {
 	return []string{
-		"Content-Type",
+		headerContentType,
 		"Content-Language",
 		"Cache-Control",
 		"Expires",

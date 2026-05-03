@@ -21,6 +21,12 @@ const (
 	DefaultTimeout = 3 * time.Second
 )
 
+const (
+	errorCodeTimeout  = "timeout_error"
+	errorCodeCheck    = "check_error"
+	errorCodeInternal = "internal_error"
+)
+
 // TimeoutError is an error returned when the health check function exceeds the timeout duration.
 type TimeoutError struct {
 	name        string
@@ -168,10 +174,10 @@ func errorToErrorCode(err error) string {
 
 	switch {
 	case errors.As(err, &timeoutErr):
-		return "timeout_error"
+		return errorCodeTimeout
 	case errors.As(err, &checkErr):
-		return "check_error"
+		return errorCodeCheck
 	default:
-		return "internal_error"
+		return errorCodeInternal
 	}
 }

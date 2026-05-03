@@ -19,11 +19,10 @@ repos:
     - id: conventional-pre-commit
       stages: [commit-msg]
       args: []
-- repo: https://github.com/Yelp/detect-secrets
-  rev: v1.5.0
+- repo: https://github.com/gitleaks/gitleaks
+  rev: v8.24.2
   hooks:
-  - id: detect-secrets
-    args: ['--baseline', '.secrets.baseline', '--base64-limit', '6']
+    - id: gitleaks
 - repo: local
   hooks:
   - id: go-tidy
