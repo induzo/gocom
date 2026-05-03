@@ -2,7 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/health/v1.1.25] - 2026-05-03
+
+### Bug Fixes
+
+- Go 1.25.6
+
+### Miscellaneous Tasks
+
+- Update deps
+
+### Styling
+
+- Golangci linter
+
 ## [http/health/v1.1.24] - 2025-12-30
+
+### Documentation
+
+- Update CHANGELOG.md for http/health/v1.1.24
+- Update docs for module http/health
 
 ### Features
 
