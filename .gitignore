@@ -17,3 +17,6 @@
 # IDE config
 .idea
 .vscode
+
+.claude
+.worktrees
