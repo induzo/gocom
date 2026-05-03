@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1777804770578,
+  "lastUpdate": 1777806863931,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -2680,6 +2680,54 @@ window.BENCHMARK_DATA = {
           {
             "name": "BenchmarkShutdown - allocs/op",
             "value": 31,
+            "unit": "allocs/op",
+            "extra": "94 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "61e0dfcd3ceeabc311d50d29761f5ee93770ba5e",
+          "message": "chore: fix linting errs",
+          "timestamp": "2026-05-03T13:13:03+02:00",
+          "tree_id": "cf3e87a8a6fdfdf85f614f5557ba1c5a593a13d1",
+          "url": "https://github.com/induzo/gocom/commit/61e0dfcd3ceeabc311d50d29761f5ee93770ba5e"
+        },
+        "date": 1777806862739,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkShutdown",
+            "value": 12481042,
+            "unit": "ns/op\t    1980 B/op\t      33 allocs/op",
+            "extra": "94 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkShutdown - ns/op",
+            "value": 12481042,
+            "unit": "ns/op",
+            "extra": "94 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkShutdown - B/op",
+            "value": 1980,
+            "unit": "B/op",
+            "extra": "94 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkShutdown - allocs/op",
+            "value": 33,
             "unit": "allocs/op",
             "extra": "94 times\n4 procs"
           }
