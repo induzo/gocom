@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1777809380190,
+  "lastUpdate": 1777809667116,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -2016,6 +2016,54 @@ window.BENCHMARK_DATA = {
             "value": 24,
             "unit": "allocs/op",
             "extra": "109526 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "d0e43ff766f58b09c5900a4296cd9ed5054a097d",
+          "message": "docs(changelog): update CHANGELOG.md for http/middleware/idempotency/v0.9.1",
+          "timestamp": "2026-05-03T13:59:59+02:00",
+          "tree_id": "10718826735305e13ce1bf41ebd394a9f5ea1a4f",
+          "url": "https://github.com/induzo/gocom/commit/d0e43ff766f58b09c5900a4296cd9ed5054a097d"
+        },
+        "date": 1777809666083,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkMiddleware",
+            "value": 10515,
+            "unit": "ns/op\t   34399 B/op\t      24 allocs/op",
+            "extra": "111600 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMiddleware - ns/op",
+            "value": 10515,
+            "unit": "ns/op",
+            "extra": "111600 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMiddleware - B/op",
+            "value": 34399,
+            "unit": "B/op",
+            "extra": "111600 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMiddleware - allocs/op",
+            "value": 24,
+            "unit": "allocs/op",
+            "extra": "111600 times\n4 procs"
           }
         ]
       }
