@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1777809385600,
+  "lastUpdate": 1777809819183,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -1344,6 +1344,54 @@ window.BENCHMARK_DATA = {
             "value": 38,
             "unit": "allocs/op",
             "extra": "2403 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "491219dacdb278f1771e584520edd716747bdb92",
+          "message": "docs(changelog): update CHANGELOG.md for http/middleware/valkeydempotency/v0.4.9",
+          "timestamp": "2026-05-03T14:02:25+02:00",
+          "tree_id": "0d75504d41c0880a0ebfced4f9860639c19f1b66",
+          "url": "https://github.com/induzo/gocom/commit/491219dacdb278f1771e584520edd716747bdb92"
+        },
+        "date": 1777809818824,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkStoreStoreResponse",
+            "value": 536698,
+            "unit": "ns/op\t    2700 B/op\t      38 allocs/op",
+            "extra": "2209 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - ns/op",
+            "value": 536698,
+            "unit": "ns/op",
+            "extra": "2209 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - B/op",
+            "value": 2700,
+            "unit": "B/op",
+            "extra": "2209 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkStoreStoreResponse - allocs/op",
+            "value": 38,
+            "unit": "allocs/op",
+            "extra": "2209 times\n4 procs"
           }
         ]
       }
