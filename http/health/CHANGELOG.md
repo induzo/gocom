@@ -2,11 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/health/v1.1.26] - 2026-05-03
+
+### Miscellaneous Tasks
+
+- Fix linting errs
+
 ## [http/health/v1.1.25] - 2026-05-03
 
 ### Bug Fixes
 
 - Go 1.25.6
+
+### Documentation
+
+- Update CHANGELOG.md for http/health/v1.1.25
 
 ### Miscellaneous Tasks
 
