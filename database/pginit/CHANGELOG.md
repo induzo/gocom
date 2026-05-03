@@ -2,11 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/pginit/v2.2.34] - 2026-05-03
+
+### Miscellaneous Tasks
+
+- Update deps
+
 ## [database/pginit/v2.2.33] - 2026-05-03
 
 ### Bug Fixes
 
 - Go 1.25.6
+
+### Documentation
+
+- Update CHANGELOG.md for database/pginit/v2.2.33
 
 ### Miscellaneous Tasks
 
