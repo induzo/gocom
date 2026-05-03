@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1777809369971,
+  "lastUpdate": 1777809836426,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -1848,6 +1848,54 @@ window.BENCHMARK_DATA = {
             "value": 5,
             "unit": "allocs/op",
             "extra": "2860046 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "ad4d106a485c3d2ea6789703ccd36ee021c59589",
+          "message": "docs(changelog): update CHANGELOG.md for http/middleware/writablecontext/v0.1.10",
+          "timestamp": "2026-05-03T14:03:03+02:00",
+          "tree_id": "b0ab52567f5ccd889fd4051737c1ac152d845256",
+          "url": "https://github.com/induzo/gocom/commit/ad4d106a485c3d2ea6789703ccd36ee021c59589"
+        },
+        "date": 1777809835349,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkFromRequest",
+            "value": 390.4,
+            "unit": "ns/op\t     723 B/op\t       5 allocs/op",
+            "extra": "2850204 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromRequest - ns/op",
+            "value": 390.4,
+            "unit": "ns/op",
+            "extra": "2850204 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromRequest - B/op",
+            "value": 723,
+            "unit": "B/op",
+            "extra": "2850204 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkFromRequest - allocs/op",
+            "value": 5,
+            "unit": "allocs/op",
+            "extra": "2850204 times\n4 procs"
           }
         ]
       }
