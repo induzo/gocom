@@ -2,7 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/pgx-slog/v1.0.36] - 2026-05-03
+
+### Bug Fixes
+
+- Go 1.25.6
+
+### Miscellaneous Tasks
+
+- Update deps
+
 ## [database/pgx-slog/v1.0.35] - 2026-01-15
+
+### Documentation
+
+- Update CHANGELOG.md for database/pgx-slog/v1.0.35
+- Update docs for module database/pgx-slog
 
 ### Miscellaneous Tasks
 
