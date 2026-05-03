@@ -2,11 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [shutdown/v1.3.5] - 2026-05-03
+
+### Bug Fixes
+
+- Go 1.25.6
+
 ## [shutdown/v1.3.4] - 2025-12-20
 
 ### Bug Fixes
 
 - Modernize
+
+### Documentation
+
+- Update CHANGELOG.md for shutdown/v1.3.4
 
 ## [shutdown/v1.3.3] - 2025-12-20
 
