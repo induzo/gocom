@@ -2,7 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/pginit/v2.2.33] - 2026-05-03
+
+### Bug Fixes
+
+- Go 1.25.6
+
+### Miscellaneous Tasks
+
+- Sync deps
+- Go mod tidy
+- Release side effects
+- Update deps
+
 ## [database/pginit/v2.2.32] - 2026-01-26
+
+### Documentation
+
+- Update CHANGELOG.md for database/pginit/v2.2.31
+- Update CHANGELOG.md for database/pginit/v2.2.32
+
+### Miscellaneous Tasks
+
+- Update deps
+
+## [database/pginit/v2.2.31] - 2026-01-15
 
 ### Bug Fixes
 
@@ -12,11 +36,9 @@ All notable changes to this project will be documented in this file.
 
 - Update CHANGELOG.md for database/pginit/v2.2.31
 - Update docs for module database/pginit
-- Update CHANGELOG.md for database/pginit/v2.2.31
 
 ### Miscellaneous Tasks
 
-- Update deps
 - Update deps
 
 ### Styling
