@@ -37,7 +37,7 @@ jobs:
             ${{ runner.os }}-golangci-lint-
       - name: Install golangci-lint
         run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $HOME/.local/bin v"$LINTER_VERSION"
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/v"$LINTER_VERSION"/install.sh | sh -s -- -b $HOME/.local/bin v"$LINTER_VERSION"
       - name: Lint all modules with golangci-lint
         run: |
           git config --global url."https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com".insteadOf "https://github.com"
