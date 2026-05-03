@@ -2,11 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/writablecontext/v0.1.10] - 2026-05-03
+
+### Bug Fixes
+
+- Go 1.25.6
+
 ## [http/middleware/writablecontext/v0.1.9] - 2025-12-20
 
 ### Bug Fixes
 
 - Modernize
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/writablecontext/v0.1.9
 
 ## [http/middleware/writablecontext/v0.1.8] - 2025-12-20
 
