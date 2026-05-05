@@ -10,7 +10,14 @@ import (
 	"github.com/induzo/gocom/http/middleware/idempotency"
 )
 
-// Middleware enforces idempotency on non-GET requests.
+// NewMiddleware constructs a Valkey-backed [idempotency.Store] and wraps
+// it with [idempotency.NewMiddleware]. It returns the middleware, a
+// closer that releases the underlying valkeylock client, and any setup
+// error.
+//
+// ttl is the response cache TTL; it must be at least one second
+// (sub-second TTLs return TTLIncorrectError because Valkey SETEX rejects
+// 0-second expirations at runtime). lockerOption must be non-nil.
 func NewMiddleware(
 	lockerOption *valkeylock.LockerOption,
 	ttl time.Duration,

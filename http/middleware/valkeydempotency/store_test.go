@@ -2,6 +2,8 @@ package valkeydempotency
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"reflect"
 	"testing"
@@ -35,6 +37,18 @@ func TestNewStore(t *testing.T) {
 			name:         "error - ttl is zero",
 			lockerOption: &valkeylock.LockerOption{},
 			ttl:          0,
+			wantErr:      true,
+		},
+		{
+			name:         "error - ttl is sub-second",
+			lockerOption: &valkeylock.LockerOption{},
+			ttl:          500 * time.Millisecond,
+			wantErr:      true,
+		},
+		{
+			name:         "error - nil locker option",
+			lockerOption: nil,
+			ttl:          1 * time.Second,
 			wantErr:      true,
 		},
 	}
@@ -315,7 +329,7 @@ func BenchmarkStoreStoreResponse(b *testing.B) {
 			KeyMajority:    1,    // Use KeyMajority=1 if you have only one Valkey instance. Also make sure that all your `Locker`s share the same KeyMajority.
 			NoLoopTracking: true, // Enable this to have better performance if all your Valkey are >= 7.0.5.
 		},
-		1*time.Second,
+		60*time.Second,
 	)
 	if errNS != nil {
 		b.Fatalf("NewStore() error = %v", errNS)
@@ -323,17 +337,30 @@ func BenchmarkStoreStoreResponse(b *testing.B) {
 
 	defer storeValkey.Close()
 
+	resp := &idempotency.StoredResponse{
+		StatusCode:  http.StatusOK,
+		Header:      nil,
+		Body:        []byte("body"),
+		RequestHash: []byte("signature"),
+	}
+
+	i := 0
+
 	for b.Loop() {
+		key := fmt.Sprintf("bench-key-%d", i)
+		i++
+
 		ctx := context.Background()
 
-		ctx, cancel, _ := storeValkey.TryLock(ctx, "key")
+		_, cancel, errL := storeValkey.TryLock(ctx, key)
+		if errL != nil {
+			b.Fatalf("TryLock: %v", errL)
+		}
 
-		storeValkey.StoreResponse(ctx, "key", &idempotency.StoredResponse{
-			StatusCode:  http.StatusOK,
-			Header:      nil,
-			Body:        []byte("body"),
-			RequestHash: []byte("signature"),
-		})
+		if err := storeValkey.StoreResponse(ctx, key, resp); err != nil {
+			cancel()
+			b.Fatalf("StoreResponse: %v", err)
+		}
 
 		cancel()
 	}
@@ -342,13 +369,20 @@ func BenchmarkStoreStoreResponse(b *testing.B) {
 func TestTTLIncorrectError_Error(t *testing.T) {
 	t.Parallel()
 
-	ttl := 1 * time.Second
+	ttl := 500 * time.Millisecond
 	err := &TTLIncorrectError{ttl: ttl}
 
-	if err.Error() != "ttl must be greater than 0, got 1s" {
-		t.Errorf(
-			"expected error message to be 'ttl must be greater than 0, got 1s', got '%s'",
-			err.Error(),
-		)
+	const want = "ttl must be at least 1s, got 500ms"
+	if err.Error() != want {
+		t.Errorf("expected error message to be %q, got %q", want, err.Error())
+	}
+}
+
+func TestNewStore_NilLockerSentinel(t *testing.T) {
+	t.Parallel()
+
+	_, err := NewStore(nil, 1*time.Second)
+	if !errors.Is(err, ErrNilLockerOption) {
+		t.Errorf("expected ErrNilLockerOption, got %v", err)
 	}
 }
