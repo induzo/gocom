@@ -22,7 +22,7 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(respW http.ResponseWriter, req *http.Request) {
-			if !slices.Contains(conf.affectedMethods, req.Method) {
+			if !slices.Contains(conf.affectedMethods, strings.ToUpper(req.Method)) {
 				next.ServeHTTP(respW, req)
 
 				return
@@ -198,7 +198,15 @@ func handleRequestWithIdempotency(
 ) bool {
 	resp, exists, err := store.GetStoredResponse(req.Context(), storeKey)
 	if err != nil {
-		conf.errorToHTTPFn(respW, req, err)
+		conf.errorToHTTPFn(respW, req, GetStoredResponseError{
+			RequestContext: RequestContext{
+				URL:       req.URL.String(),
+				Method:    req.Method,
+				KeyHeader: conf.idempotencyKeyHeader,
+				Key:       originalKey,
+			},
+			Err: err,
+		})
 
 		return true
 	}
@@ -221,7 +229,7 @@ func handleRequestWithIdempotency(
 
 		endReplay := conf.tracerFn(req, "idempotency.replay_response")
 
-		replayResponse(conf, respW, resp)
+		replayResponse(conf, respW, req, resp)
 		endReplay()
 
 		return true
@@ -253,8 +261,13 @@ func buildRequestHash(
 	return hash[:], nil
 }
 
-// replayResponse writes a previously stored response to a ResponseWriter
-func replayResponse(conf *config, respW http.ResponseWriter, resp *StoredResponse) {
+// replayResponse writes a previously stored response to a ResponseWriter.
+func replayResponse(
+	conf *config,
+	respW http.ResponseWriter,
+	req *http.Request,
+	resp *StoredResponse,
+) {
 	// Create a map of allowed headers for fast lookup
 	allowedHeaders := make(map[string]bool)
 	for _, hdr := range conf.allowedReplayHeaders {
@@ -283,7 +296,7 @@ func replayResponse(conf *config, respW http.ResponseWriter, resp *StoredRespons
 		if _, errW := respW.Write(resp.Body); errW != nil {
 			conf.errorToHTTPFn(
 				respW,
-				nil,
+				req,
 				fmt.Errorf("failed writing replayed response body: %w", errW),
 			)
 		}

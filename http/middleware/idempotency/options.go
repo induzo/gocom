@@ -2,6 +2,8 @@ package idempotency
 
 import (
 	"net/http"
+	"slices"
+	"strings"
 )
 
 type Option func(*config)
@@ -35,25 +37,47 @@ func WithErrorToHTTPFn(fn func(http.ResponseWriter, *http.Request, error)) Optio
 }
 
 // WithFingerprinter sets a function to build a request fingerprint.
+//
+// The custom fingerprinter is invoked instead of the default one and is
+// fully responsible for any body buffering or size limiting. The
+// WithMaxFingerprintBodyBytes option only affects the default fingerprinter.
 func WithFingerprinter(fn func(*http.Request) ([]byte, error)) Option {
 	return func(cfg *config) {
 		cfg.fingerprinterFn = fn
 	}
 }
 
+// WithMaxFingerprintBodyBytes bounds the maximum number of request body
+// bytes the default fingerprinter reads. Requests with bodies larger than
+// n trigger BodyTooLargeError, which the default error mapper renders as
+// HTTP 413. The default is DefaultMaxFingerprintBodyBytes. Has no effect
+// when WithFingerprinter is used.
+func WithMaxFingerprintBodyBytes(n int64) Option {
+	return func(cfg *config) {
+		cfg.maxFingerprintBodyBytes = n
+	}
+}
+
 // WithAffectedMethods sets the methods that are affected by idempotency.
-// By default, POST only are affected.
+// By default, POST only are affected. Method names are normalized to
+// uppercase so the option is case-insensitive.
 func WithAffectedMethods(methods ...string) Option {
 	return func(cfg *config) {
-		cfg.affectedMethods = methods
+		normalized := make([]string, 0, len(methods))
+		for _, m := range methods {
+			normalized = append(normalized, strings.ToUpper(m))
+		}
+
+		cfg.affectedMethods = normalized
 	}
 }
 
 // WithIgnoredURLPaths sets the URL paths that are ignored by idempotency.
-// By default, no URLs are ignored.
+// Paths are matched case-insensitively (lowercased on entry) and
+// deduplicated. By default, no URLs are ignored.
 func WithIgnoredURLPaths(urlPaths ...string) Option {
 	return func(cfg *config) {
-		// remove duplicates and empty paths
+		// remove duplicates, empty paths, normalize casing.
 		urlPathsMap := make(map[string]struct{})
 
 		for _, url := range urlPaths {
@@ -61,14 +85,16 @@ func WithIgnoredURLPaths(urlPaths ...string) Option {
 				continue
 			}
 
-			urlPathsMap[url] = struct{}{}
+			urlPathsMap[strings.ToLower(url)] = struct{}{}
 		}
 
-		// convert map keys to slice
+		// convert map keys to slice in deterministic order.
 		urlPaths = make([]string, 0, len(urlPathsMap))
 		for url := range urlPathsMap {
 			urlPaths = append(urlPaths, url)
 		}
+
+		slices.Sort(urlPaths)
 
 		cfg.ignoredURLPaths = urlPaths
 	}

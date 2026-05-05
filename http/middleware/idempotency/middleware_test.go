@@ -400,7 +400,7 @@ func TestMiddleware_ServeHTTP(t *testing.T) {
 				0: {
 					key:    "samekey",
 					status: http.StatusInternalServerError,
-					body:   "internal server error",
+					body:   "internal server error: error getting stored response: GetStoredResponse: get stored response error",
 				},
 			},
 			expectedCounter: 0,
@@ -518,7 +518,7 @@ func TestReplayResponse(t *testing.T) {
 		idempotentReplayedHeader: DefaultIdempotentReplayedResponseHeader,
 		errorToHTTPFn:            errorToString,
 		allowedReplayHeaders:     []string{"Content-Type", "X-Test"},
-	}, respRec, storedResp)
+	}, respRec, httptest.NewRequest(http.MethodPost, "/replay", nil), storedResp)
 
 	resp := respRec.Result()
 
@@ -925,6 +925,85 @@ func TestMiddleware_WithTracer(t *testing.T) {
 			t.Error("expected tracer to be called for concurrent requests")
 		}
 	})
+}
+
+// TestMiddleware_RequestInFlight_Deterministic exercises the in-flight
+// path without timing-based sleeps: the first request blocks inside the
+// handler on a barrier; while it is blocked the second request fires and
+// must observe a 409 Conflict (RequestInFlightError) from the lock.
+func TestMiddleware_RequestInFlight_Deterministic(t *testing.T) {
+	t.Parallel()
+
+	store := NewInMemStore()
+	t.Cleanup(store.Close)
+
+	var (
+		started = make(chan struct{}, 1)
+		release = make(chan struct{})
+	)
+
+	handler := NewMiddleware(store, WithErrorToHTTPFn(errorToString))(http.HandlerFunc(
+		func(w http.ResponseWriter, _ *http.Request) {
+			select {
+			case started <- struct{}{}:
+			default:
+			}
+
+			<-release
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("ok"))
+		}))
+
+	server := httptest.NewServer(handler)
+	defer server.Close()
+
+	const key = "deterministic-key"
+
+	type result struct {
+		status int
+		body   string
+		err    error
+	}
+
+	first := make(chan result, 1)
+
+	go func() {
+		s, b, err := sendReq(context.Background(), http.MethodPost, "/", server, key, "body")
+		first <- result{status: s, body: b, err: err}
+	}()
+
+	<-started
+
+	secondStatus, secondBody, err := sendReq(
+		context.Background(),
+		http.MethodPost,
+		"/",
+		server,
+		key,
+		"body",
+	)
+	if err != nil {
+		t.Fatalf("second request: %v", err)
+	}
+
+	if secondStatus != http.StatusConflict {
+		t.Errorf("second request status = %d, want %d", secondStatus, http.StatusConflict)
+	}
+
+	if !strings.Contains(secondBody, "RequestInFlightError") {
+		t.Errorf("second request body = %q, want it to contain RequestInFlightError", secondBody)
+	}
+
+	close(release)
+
+	r := <-first
+	if r.err != nil {
+		t.Fatalf("first request: %v", r.err)
+	}
+
+	if r.status != http.StatusOK {
+		t.Errorf("first request status = %d, want %d", r.status, http.StatusOK)
+	}
 }
 
 // containsSpan checks if a span name exists in the slice

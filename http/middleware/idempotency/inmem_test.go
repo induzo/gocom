@@ -3,6 +3,8 @@ package idempotency
 import (
 	"context"
 	"net/http"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -99,7 +101,10 @@ func TestInMemStoreStoreResponse(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "key exists",
+			// StoreResponse now overwrites any prior entry for the key
+			// rather than refusing, so that retries after a transient
+			// failure can succeed.
+			name: "key exists is overwritten",
 			key:  "doesKeyexist",
 			resp: &StoredResponse{
 				StatusCode:  http.StatusOK,
@@ -108,7 +113,7 @@ func TestInMemStoreStoreResponse(t *testing.T) {
 				RequestHash: []byte("signature"),
 			},
 			doesKeyExist: true,
-			wantErr:      true,
+			wantErr:      false,
 		},
 	}
 
@@ -129,12 +134,81 @@ func TestInMemStoreStoreResponse(t *testing.T) {
 				return
 			}
 
-			resp, ok := store.responses.Load(tt.key)
-			if !ok || resp == nil {
+			value, ok := store.responses.Load(tt.key)
+			if !ok || value == nil {
 				t.Errorf("response not stored for key %s", tt.key)
+			}
+
+			if _, ok := value.(*storedEntry); !ok {
+				t.Errorf("stored value type = %T, want *storedEntry (overwrite expected)", value)
 			}
 		})
 	}
+}
+
+// TestInMemStore_TryLock_ExpiredRaceSingleWinner exercises the CAS path in
+// TryLock when many goroutines simultaneously observe an expired lock.
+// Exactly one of them should succeed; the rest must see "key is already
+// locked".
+func TestInMemStore_TryLock_ExpiredRaceSingleWinner(t *testing.T) {
+	t.Parallel()
+
+	store := NewInMemStore()
+	t.Cleanup(store.Close)
+
+	const key = "race-key"
+
+	// Seed an already-expired lock so all callers race through the CAS path.
+	store.locks.Store(key, time.Now().Add(-time.Hour))
+
+	const goroutines = 64
+
+	var (
+		wg       sync.WaitGroup
+		winners  atomic.Int32
+		started  = make(chan struct{})
+		ctx      = context.Background()
+		successC = make(chan func(), goroutines)
+	)
+
+	wg.Add(goroutines)
+
+	for range goroutines {
+		go func() {
+			defer wg.Done()
+
+			<-started
+
+			_, cancel, err := store.TryLock(ctx, key)
+			if err != nil {
+				return
+			}
+
+			winners.Add(1)
+
+			successC <- cancel
+		}()
+	}
+
+	close(started)
+	wg.Wait()
+	close(successC)
+
+	if got := winners.Load(); got != 1 {
+		t.Errorf("winners = %d, want exactly 1 with CAS-protected expiry", got)
+	}
+
+	for cancel := range successC {
+		cancel()
+	}
+}
+
+func TestInMemStore_Close_Idempotent(t *testing.T) {
+	t.Parallel()
+
+	store := NewInMemStore()
+	store.Close()
+	store.Close() // must not panic on second call.
 }
 
 func TestInMemStoreGetStoredResponse(t *testing.T) {

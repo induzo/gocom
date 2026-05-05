@@ -70,12 +70,50 @@ func (e RequestInFlightError) Error() string {
 	return "request with key " + e.String() + " still in flight"
 }
 
+// MismatchedSignatureError is returned when a request shares an existing
+// key but does not match the previously stored request hash. The wire-level
+// term used by the middleware is "request hash"; the public error type
+// keeps the historical "signature" name for backwards compatibility.
 type MismatchedSignatureError struct {
 	RequestContext
 }
 
 func (e MismatchedSignatureError) Error() string {
-	return "mismatched signature for request with key " + e.String()
+	return "mismatched request hash for key " + e.String()
+}
+
+// BodyTooLargeError is returned when the request body exceeds the
+// configured fingerprint body limit.
+type BodyTooLargeError struct {
+	RequestContext
+	// Limit is the maximum number of body bytes the fingerprinter is
+	// allowed to read.
+	Limit int64
+	// Err is the underlying sentinel; errors.Is(BodyTooLargeError{}, ErrBodyTooLarge)
+	// returns true.
+	Err error
+}
+
+//nolint:gocritic //keep errors all the same
+func (e BodyTooLargeError) Error() string {
+	return fmt.Sprintf(
+		"request body exceeds %d bytes for key %s",
+		e.Limit,
+		e.RequestContext.String(),
+	)
+}
+
+//nolint:gocritic //keep errors all the same
+func (e BodyTooLargeError) Unwrap() error {
+	return e.Err
+}
+
+//nolint:gocritic //keep errors all the same
+func (e BodyTooLargeError) toAttrs() []slog.Attr {
+	return append(
+		e.RequestContext.toAttrs(),
+		slog.Int64("body_limit_bytes", e.Limit),
+	)
 }
 
 type StoreResponseError struct {
@@ -161,6 +199,7 @@ func ErrorToHTTPJSONProblemDetail(
 		mismatchedSignatureError         MismatchedSignatureError
 		storeResponseError               StoreResponseError
 		getStoredResponseError           GetStoredResponseError
+		bodyTooLargeError                BodyTooLargeError
 	)
 
 	defer func() {
@@ -215,6 +254,17 @@ func ErrorToHTTPJSONProblemDetail(
 
 		errorAttrs = append(errorAttrs, slog.Any("issue", mismatchedSignatureError))
 		errorAttrs = append(errorAttrs, mismatchedSignatureError.toAttrs()...)
+	case errors.As(err, &bodyTooLargeError):
+		pbDetail = ProblemDetail{
+			HTTPStatusCode: http.StatusRequestEntityTooLarge,
+			Type:           "errors/body-too-large",
+			Title:          "request body too large",
+			Detail:         errorString,
+			Instance:       url,
+		}
+
+		errorAttrs = append(errorAttrs, slog.Any("issue", bodyTooLargeError))
+		errorAttrs = append(errorAttrs, bodyTooLargeError.toAttrs()...)
 	case errors.As(err, &getStoredResponseError):
 		pbDetail = ProblemDetail{
 			HTTPStatusCode: http.StatusInternalServerError,

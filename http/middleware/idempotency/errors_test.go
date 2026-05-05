@@ -50,7 +50,7 @@ func TestMismatchedSignatureError_Error(t *testing.T) {
 		},
 	}
 
-	if err.Error() != "mismatched signature for request with key `X-Idempotency-Key`:`key`" {
+	if err.Error() != "mismatched request hash for key `X-Idempotency-Key`:`key`" {
 		t.Errorf("error method returned unexpected value: %s", err.Error())
 	}
 }
