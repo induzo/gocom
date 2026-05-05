@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/health/v1.2.0] - 2026-05-05
+
+### Bug Fixes
+
+- Correct WriteHeader ordering, recover panics, harden tests
+
 ## [http/health/v1.1.26] - 2026-05-03
+
+### Documentation
+
+- Update CHANGELOG.md for http/health/v1.1.26
 
 ### Miscellaneous Tasks
 
