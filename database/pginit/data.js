@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1777995416033,
+  "lastUpdate": 1777997740924,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -4474,6 +4474,54 @@ window.BENCHMARK_DATA = {
           {
             "name": "BenchmarkConnPool - B/op",
             "value": 100944,
+            "unit": "B/op",
+            "extra": "308 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - allocs/op",
+            "value": 399,
+            "unit": "allocs/op",
+            "extra": "308 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "b6ba7ee0df29f0ad80309502bced6c7f0c3685a0",
+          "message": "chore(database/pginit): update deps",
+          "timestamp": "2026-05-06T00:14:10+08:00",
+          "tree_id": "94918e6a7f17bf38c06b8ad5f81a1cbb6a96c10c",
+          "url": "https://github.com/induzo/gocom/commit/b6ba7ee0df29f0ad80309502bced6c7f0c3685a0"
+        },
+        "date": 1777997740436,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkConnPool",
+            "value": 3890344,
+            "unit": "ns/op\t  100928 B/op\t     399 allocs/op",
+            "extra": "308 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - ns/op",
+            "value": 3890344,
+            "unit": "ns/op",
+            "extra": "308 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - B/op",
+            "value": 100928,
             "unit": "B/op",
             "extra": "308 times\n4 procs"
           },
