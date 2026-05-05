@@ -2,7 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/idempotency/v0.10.0] - 2026-05-05
+
+### Bug Fixes
+
+- Close TryLock race, cap body, harden Store contract
+
+### Miscellaneous Tasks
+
+- Move the immem to same test file
+
 ## [http/middleware/idempotency/v0.9.1] - 2026-05-03
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/idempotency/v0.9.1
 
 ### Miscellaneous Tasks
 
