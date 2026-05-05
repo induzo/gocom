@@ -172,11 +172,11 @@ release-specific: ## release selection module, gen-changelog, gen docs, commit a
 		sed -i.bak -E "s:TAG_MODULE:$$module:g" ./cliff.toml && \
 		git cliff --tag $$TAG --include-path "**/$$module/*" -o ./$$module/CHANGELOG.md && \
 		mv ./cliff.toml.bak ./cliff.toml && \
-		git commit -m "docs(changelog): update CHANGELOG.md for $$TAG" ./$$module/CHANGELOG.md && \
+		{ git diff --quiet -- ./$$module/CHANGELOG.md || git commit -m "docs(changelog): update CHANGELOG.md for $$TAG" ./$$module/CHANGELOG.md; } && \
 		gomarkdoc --output ./$$module/README.md ./$$module/ && \
-		git commit -m "docs: update docs for module $$module" ./$$module/README.md && \
+		{ git diff --quiet -- ./$$module/README.md || git commit -m "docs: update docs for module $$module" ./$$module/README.md; } && \
 		go work sync && \
-		git commit -m "chore: update go.work" ./go.work ./go.work.sum && \
+		{ git diff --quiet -- ./go.work ./go.work.sum || git commit -m "chore: update go.work" ./go.work ./go.work.sum; } && \
 		git tag $$TAG && \
 		printf "\nrelease tagged $$TAG\nif everything looks good, run: git push origin $$TAG\n"; \
 		break; \
