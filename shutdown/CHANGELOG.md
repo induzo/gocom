@@ -2,11 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [shutdown/v1.4.0] - 2026-05-05
+
+### Features
+
+- Validate Add inputs, recover hook panics, default logger
+
 ## [shutdown/v1.3.5] - 2026-05-03
 
 ### Bug Fixes
 
 - Go 1.25.6
+
+### Documentation
+
+- Update CHANGELOG.md for shutdown/v1.3.5
 
 ## [shutdown/v1.3.4] - 2025-12-20
 
