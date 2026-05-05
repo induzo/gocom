@@ -2,11 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/writablecontext/v0.2.0] - 2026-05-05
+
+### Features
+
+- [**breaking**] Synchronize Store, unexport context key
+
 ## [http/middleware/writablecontext/v0.1.10] - 2026-05-03
 
 ### Bug Fixes
 
 - Go 1.25.6
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/writablecontext/v0.1.10
 
 ## [http/middleware/writablecontext/v0.1.9] - 2025-12-20
 
