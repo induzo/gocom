@@ -58,11 +58,11 @@ Let's take an example of an opentelemetry module.
 
 ### Depends on database/pgx-slog
 
-- database / pginit
+- database/pginit
 
-### Depends on contextslogger
+### Depends on http/middleware/idempotency
 
-- http / handlerwrap
+- http/middleware/valkeydempotency
 
 ## Contribution
 
