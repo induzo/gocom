@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/pgx-slog/v1.0.38] - 2026-05-05
+
+### Bug Fixes
+
+- Drop trailing nil attr on Debug/Info/Warn/Error
+
+## [database/pgx-slog/v1.0.37] - 2026-05-03
+
+### Documentation
+
+- Update CHANGELOG.md for database/pgx-slog/v1.0.37
+
 ## [database/pgx-slog/v1.0.36] - 2026-05-03
 
 ### Bug Fixes
