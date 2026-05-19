@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/induzo/gocom/database/pginit/v2"
+	"github.com/triple-a/gocom/database/pginit/v2"
 )
 
 //nolint:testableexamples // cannot run without db

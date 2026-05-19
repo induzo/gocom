@@ -9,3 +9,10 @@ use (
 	./http/middleware/writablecontext
 	./shutdown
 )
+
+// Cross-module replace directives for local development.
+// These map inter-workspace requires to local disk paths until the version
+// tags are published on github.com/triple-a/gocom.
+replace github.com/triple-a/gocom/database/pgx-slog v1.0.38 => ./database/pgx-slog
+
+replace github.com/triple-a/gocom/http/middleware/idempotency v0.10.0 => ./http/middleware/idempotency

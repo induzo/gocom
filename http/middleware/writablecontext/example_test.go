@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/induzo/gocom/http/middleware/writablecontext"
+	"github.com/triple-a/gocom/http/middleware/writablecontext"
 )
 
 // Using Middleware

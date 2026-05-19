@@ -1,4 +1,4 @@
-module github.com/induzo/gocom/http/health
+module github.com/triple-a/gocom/http/health
 
 go 1.25.6
 

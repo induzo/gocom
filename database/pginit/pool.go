@@ -14,7 +14,7 @@ import (
 	"github.com/jackc/pgx/v5/tracelog"
 	pgxGoogleUUID "github.com/vgarvardt/pgx-google-uuid/v5"
 
-	slogadapter "github.com/induzo/gocom/database/pgx-slog"
+	slogadapter "github.com/triple-a/gocom/database/pgx-slog"
 )
 
 // Option configures PGInit behaviour.

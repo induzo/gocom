@@ -1,4 +1,4 @@
-module github.com/induzo/gocom/http/middleware/writablecontext
+module github.com/triple-a/gocom/http/middleware/writablecontext
 
 go 1.25.6
 

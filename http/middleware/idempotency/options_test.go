@@ -152,3 +152,26 @@ func TestWithIgnoredURLPaths(t *testing.T) {
 		})
 	}
 }
+
+func TestWithShouldStoreResponse(t *testing.T) {
+	t.Parallel()
+
+	fn := func(statusCode int) bool {
+		return statusCode < http.StatusBadRequest
+	}
+
+	cfg := newDefaultConfig()
+	WithShouldStoreResponse(fn)(cfg)
+
+	if cfg.shouldStoreResponseFn == nil {
+		t.Fatal("shouldStoreResponseFn must not be nil after WithShouldStoreResponse")
+	}
+
+	if !cfg.shouldStoreResponseFn(http.StatusOK) {
+		t.Errorf("predicate should return true for %d", http.StatusOK)
+	}
+
+	if cfg.shouldStoreResponseFn(http.StatusBadRequest) {
+		t.Errorf("predicate should return false for %d", http.StatusBadRequest)
+	}
+}

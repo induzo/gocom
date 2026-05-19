@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/tracelog"
 
-	slogadapter "github.com/induzo/gocom/database/pgx-slog"
+	slogadapter "github.com/triple-a/gocom/database/pgx-slog"
 )
 
 //nolint:testableexamples // do not have testable output

@@ -1046,3 +1046,94 @@ func errorToString(
 		)
 	}
 }
+
+func TestMiddleware_WithShouldStoreResponse(t *testing.T) {
+	t.Parallel()
+
+	store := NewInMemStore()
+	t.Cleanup(store.Close)
+
+	handlerCalls := 0
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handlerCalls++
+
+		if r.Header.Get("X-Fail") == "1" {
+			http.Error(w, "bad request", http.StatusBadRequest)
+
+			return
+		}
+
+		fmt.Fprint(w, "success")
+	})
+
+	mw := NewMiddleware(store,
+		WithShouldStoreResponse(func(statusCode int) bool {
+			return statusCode < http.StatusBadRequest || statusCode >= http.StatusInternalServerError
+		}),
+	)
+
+	srv := httptest.NewServer(mw(handler))
+	t.Cleanup(srv.Close)
+
+	// First call: 400 response must NOT be stored; key stays reusable.
+	req1, _ := http.NewRequest(http.MethodPost, srv.URL+"/", strings.NewReader("body"))
+	req1.Header.Set("X-Idempotency-Key", "test-skip-key")
+	req1.Header.Set("X-Fail", "1")
+
+	resp1, err := http.DefaultClient.Do(req1)
+	if err != nil {
+		t.Fatalf("first request: %v", err)
+	}
+
+	resp1.Body.Close()
+
+	if resp1.StatusCode != http.StatusBadRequest {
+		t.Fatalf("first request: want 400, got %d", resp1.StatusCode)
+	}
+
+	// Second call with same key: key was not burned, handler is called again.
+	req2, _ := http.NewRequest(http.MethodPost, srv.URL+"/", strings.NewReader("corrected-body"))
+	req2.Header.Set("X-Idempotency-Key", "test-skip-key")
+
+	resp2, err := http.DefaultClient.Do(req2)
+	if err != nil {
+		t.Fatalf("second request: %v", err)
+	}
+
+	body2, _ := io.ReadAll(resp2.Body)
+	resp2.Body.Close()
+
+	if resp2.StatusCode != http.StatusOK {
+		t.Fatalf("second request: want 200, got %d", resp2.StatusCode)
+	}
+
+	if strings.TrimSpace(string(body2)) != "success" {
+		t.Fatalf("second request: unexpected body %q", string(body2))
+	}
+
+	// Third call with same key and same body: must replay stored 200 without calling the handler.
+	req3, _ := http.NewRequest(http.MethodPost, srv.URL+"/", strings.NewReader("corrected-body"))
+	req3.Header.Set("X-Idempotency-Key", "test-skip-key")
+
+	resp3, err := http.DefaultClient.Do(req3)
+	if err != nil {
+		t.Fatalf("third request: %v", err)
+	}
+
+	body3, _ := io.ReadAll(resp3.Body)
+	resp3.Body.Close()
+
+	if resp3.StatusCode != http.StatusOK {
+		t.Fatalf("third request: want replayed 200, got %d", resp3.StatusCode)
+	}
+
+	if strings.TrimSpace(string(body3)) != "success" {
+		t.Fatalf("third request: unexpected body %q", string(body3))
+	}
+
+	// Handler must have been called exactly twice: once for 400, once for 200.
+	if handlerCalls != 2 {
+		t.Fatalf("handler call count: want 2, got %d", handlerCalls)
+	}
+}

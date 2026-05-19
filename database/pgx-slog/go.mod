@@ -1,4 +1,4 @@
-module github.com/induzo/gocom/database/pgx-slog
+module github.com/triple-a/gocom/database/pgx-slog
 
 go 1.25.6
 

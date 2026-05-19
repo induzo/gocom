@@ -1,4 +1,4 @@
-module github.com/induzo/gocom/shutdown
+module github.com/triple-a/gocom/shutdown
 
 go 1.25.6
 

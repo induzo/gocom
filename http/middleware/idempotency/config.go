@@ -39,6 +39,14 @@ type UserIDExtractorFn func(*http.Request) string
 // The returned function should be called to ensure the span is ended.
 type TracerFn func(req *http.Request, spanName string) func()
 
+// ShouldStoreResponseFn decides whether a completed response should be
+// persisted in the idempotency store. Return false to leave the key
+// reusable (e.g. skip storage for client-error responses).
+type ShouldStoreResponseFn func(statusCode int) bool
+
+// defaultShouldStoreResponse always stores — preserves the original behaviour.
+func defaultShouldStoreResponse(_ int) bool { return true }
+
 type config struct {
 	idempotencyKeyIsOptional bool
 	idempotencyKeyHeader     string
@@ -51,6 +59,7 @@ type config struct {
 	allowedReplayHeaders     []string
 	tracerFn                 TracerFn
 	maxFingerprintBodyBytes  int64
+	shouldStoreResponseFn    ShouldStoreResponseFn
 }
 
 func newDefaultConfig() *config {
@@ -65,6 +74,7 @@ func newDefaultConfig() *config {
 		allowedReplayHeaders:     defaultAllowedReplayHeaders(),
 		tracerFn:                 noOpTracer,
 		maxFingerprintBodyBytes:  DefaultMaxFingerprintBodyBytes,
+		shouldStoreResponseFn:    defaultShouldStoreResponse,
 	}
 
 	// Bind the default fingerprinter via a closure so that

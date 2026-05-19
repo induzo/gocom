@@ -12,7 +12,7 @@ import (
 	"github.com/valkey-io/valkey-go"
 	"github.com/valkey-io/valkey-go/valkeylock"
 
-	"github.com/induzo/gocom/http/middleware/idempotency"
+	"github.com/triple-a/gocom/http/middleware/idempotency"
 )
 
 func TestNewStore(t *testing.T) {

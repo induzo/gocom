@@ -158,6 +158,10 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 
 			next.ServeHTTP(teeRespW, req)
 
+			if !conf.shouldStoreResponseFn(teeRespW.statusCode) {
+				return
+			}
+
 			endStore := conf.tracerFn(req, "idempotency.store_response")
 			errSR := store.StoreResponse(lockCtx, storeKey,
 				&StoredResponse{

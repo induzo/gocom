@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/induzo/gocom/http/health"
+	"github.com/triple-a/gocom/http/health"
 )
 
 // Using Health HTTP handler

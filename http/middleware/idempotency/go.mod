@@ -1,4 +1,4 @@
-module github.com/induzo/gocom/http/middleware/idempotency
+module github.com/triple-a/gocom/http/middleware/idempotency
 
 go 1.25.6
 

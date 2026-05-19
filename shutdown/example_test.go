@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/induzo/gocom/shutdown"
+	"github.com/triple-a/gocom/shutdown"
 )
 
 //nolint:testableexamples // do not have testable output

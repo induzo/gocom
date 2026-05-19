@@ -12,7 +12,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/induzo/gocom/http/middleware/idempotency"
+	"github.com/triple-a/gocom/http/middleware/idempotency"
 )
 
 // Using NewMiddleware
