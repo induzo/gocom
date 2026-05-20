@@ -3,7 +3,7 @@
 # pginit
 
 ```go
-import "github.com/induzo/gocom/database/pginit/v2"
+import "github.com/triple-a/gocom/database/pginit/v2"
 ```
 
 This package allows you to init a connection pool to postgres database via pgx
@@ -24,7 +24,7 @@ This package allows you to init a connection pool to postgres database via pgx
 
 
 <a name="ConnPoolHealthCheck"></a>
-## func [ConnPoolHealthCheck](<https://github.com/induzo/gocom/blob/main/database/pginit/healthcheck.go#L10>)
+## func [ConnPoolHealthCheck](<https://github.com/triple-a/gocom/blob/main/database/pginit/healthcheck.go#L10>)
 
 ```go
 func ConnPoolHealthCheck(pool *pgxpool.Pool) func(ctx context.Context) error
@@ -69,7 +69,7 @@ mux.HandleFunc("/sys/health", func(rw http.ResponseWriter, _ *http.Request) {
 </details>
 
 <a name="JSONRowToAddrOfStruct"></a>
-## func [JSONRowToAddrOfStruct](<https://github.com/induzo/gocom/blob/main/database/pginit/jsonrow.go#L10>)
+## func [JSONRowToAddrOfStruct](<https://github.com/triple-a/gocom/blob/main/database/pginit/jsonrow.go#L10>)
 
 ```go
 func JSONRowToAddrOfStruct[T any](row pgx.CollectableRow) (*T, error)
@@ -78,7 +78,7 @@ func JSONRowToAddrOfStruct[T any](row pgx.CollectableRow) (*T, error)
 
 
 <a name="Option"></a>
-## type [Option](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L21>)
+## type [Option](<https://github.com/triple-a/gocom/blob/main/database/pginit/pool.go#L21>)
 
 Option configures PGInit behaviour.
 
@@ -87,7 +87,7 @@ type Option func(*PGInit)
 ```
 
 <a name="WithDecimalType"></a>
-### func [WithDecimalType](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L92>)
+### func [WithDecimalType](<https://github.com/triple-a/gocom/blob/main/database/pginit/pool.go#L92>)
 
 ```go
 func WithDecimalType() Option
@@ -96,7 +96,7 @@ func WithDecimalType() Option
 WithDecimalType set pgx decimal type to shopspring/decimal.
 
 <a name="WithGoogleUUIDType"></a>
-### func [WithGoogleUUIDType](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L106>)
+### func [WithGoogleUUIDType](<https://github.com/triple-a/gocom/blob/main/database/pginit/pool.go#L106>)
 
 ```go
 func WithGoogleUUIDType() Option
@@ -105,7 +105,7 @@ func WithGoogleUUIDType() Option
 WithGoogleUUIDType set pgx uuid type to google/uuid.
 
 <a name="WithLogger"></a>
-### func [WithLogger](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L75>)
+### func [WithLogger](<https://github.com/triple-a/gocom/blob/main/database/pginit/pool.go#L75>)
 
 ```go
 func WithLogger(logger *slog.Logger, _ string) Option
@@ -114,7 +114,7 @@ func WithLogger(logger *slog.Logger, _ string) Option
 WithLogger Add logger to pgx. if the request context contains request id, can pass in the request id context key to reqIDKeyFromCtx and logger will log with the request id.
 
 <a name="WithTracer"></a>
-### func [WithTracer](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L85>)
+### func [WithTracer](<https://github.com/triple-a/gocom/blob/main/database/pginit/pool.go#L85>)
 
 ```go
 func WithTracer(opts ...otelpgx.Option) Option
@@ -123,7 +123,7 @@ func WithTracer(opts ...otelpgx.Option) Option
 WithTracer Add tracer to pgx.
 
 <a name="WithUUIDType"></a>
-### func [WithUUIDType](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L99>)
+### func [WithUUIDType](<https://github.com/triple-a/gocom/blob/main/database/pginit/pool.go#L99>)
 
 ```go
 func WithUUIDType() Option
@@ -132,7 +132,7 @@ func WithUUIDType() Option
 WithUUIDType set pgx uuid type to gofrs/uuid.
 
 <a name="PGInit"></a>
-## type [PGInit](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L24-L27>)
+## type [PGInit](<https://github.com/triple-a/gocom/blob/main/database/pginit/pool.go#L24-L27>)
 
 PGInit provides capabilities for connect to postgres with pgx.pool.
 
@@ -143,7 +143,7 @@ type PGInit struct {
 ```
 
 <a name="New"></a>
-### func [New](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L31>)
+### func [New](<https://github.com/triple-a/gocom/blob/main/database/pginit/pool.go#L31>)
 
 ```go
 func New(connString string, opts ...Option) (*PGInit, error)
@@ -152,7 +152,7 @@ func New(connString string, opts ...Option) (*PGInit, error)
 New initializes a PGInit using the provided Config and options. If opts is not provided it will initializes PGInit with default configuration.
 
 <a name="PGInit.ConnPool"></a>
-### func \(\*PGInit\) [ConnPool](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L57>)
+### func \(\*PGInit\) [ConnPool](<https://github.com/triple-a/gocom/blob/main/database/pginit/pool.go#L57>)
 
 ```go
 func (pgi *PGInit) ConnPool(ctx context.Context) (*pgxpool.Pool, error)

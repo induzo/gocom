@@ -1,0 +1,81 @@
+name: "release"
+
+on:
+  push:
+    tags:
+      - "**/v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing module tag to release, e.g. http/health/v1.2.0"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  verify-module:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      tag: ${{ steps.resolve.outputs.tag }}
+      module: ${{ steps.resolve.outputs.module }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: "go.work"
+
+      - name: Resolve tag and module
+        id: resolve
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TAG="${{ github.ref_name }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          fi
+
+          if [[ ! "$TAG" =~ ^.+/v[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid tag format: $TAG"
+            echo "Expected: module/path/vX.Y.Z"
+            exit 1
+          fi
+
+          MODULE="${TAG%/v*}"
+          if [ ! -d "$MODULE" ]; then
+            echo "Module path not found in repository: $MODULE"
+            exit 1
+          fi
+
+          if ! git rev-parse -q --verify "refs/tags/$TAG" > /dev/null; then
+            echo "Tag does not exist in repository: $TAG"
+            exit 1
+          fi
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "module=$MODULE" >> "$GITHUB_OUTPUT"
+
+      - name: Run module tests
+        env:
+          GOPRIVATE: github.com/triple-a/*
+        run: |
+          go test -race -failfast "./${{ steps.resolve.outputs.module }}/..."
+
+  publish-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: verify-module
+    steps:
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.verify-module.outputs.tag }}
+          generate_release_notes: true

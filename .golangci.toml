@@ -284,11 +284,11 @@ enable = [
 sections = [
   'standard',
   'default',
-  'prefix(github.com/induzo)'
+	'prefix(github.com/triple-a)'
 ]
 
 [formatters.settings.gofumpt]
-module-path = 'github.com/induzo'
+module-path = 'github.com/triple-a'
 extra-rules = true
 
 [formatters.settings.golines]

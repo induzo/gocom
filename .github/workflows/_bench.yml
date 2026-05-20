@@ -29,7 +29,7 @@ jobs:
       - name: Run benchmark
         working-directory: ${{ inputs.module }}
         env:
-          GOPRIVATE: "github.com/induzo/*"
+          GOPRIVATE: "github.com/triple-a/*"
         run: |
           git config --global url.https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/.insteadOf https://github.com/
           go test ./... -bench=. -benchmem | tee ./bench-continuous.txt

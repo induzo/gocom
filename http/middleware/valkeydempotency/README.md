@@ -3,7 +3,7 @@
 # valkeydempotency
 
 ```go
-import "github.com/induzo/gocom/http/middleware/valkeydempotency"
+import "github.com/triple-a/gocom/http/middleware/valkeydempotency"
 ```
 
 valkeydempotency is a package which implement the store interface for the idempotency package with valkey.
@@ -22,7 +22,7 @@ valkeydempotency is a package which implement the store interface for the idempo
 
 
 <a name="NewMiddleware"></a>
-## func [NewMiddleware](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/middleware.go#L14-L18>)
+## func [NewMiddleware](<https://github.com/triple-a/gocom/blob/main/http/middleware/valkeydempotency/middleware.go#L14-L18>)
 
 ```go
 func NewMiddleware(lockerOption *valkeylock.LockerOption, ttl time.Duration, options ...idempotency.Option) (func(http.Handler) http.Handler, func() error, error)
@@ -31,7 +31,7 @@ func NewMiddleware(lockerOption *valkeylock.LockerOption, ttl time.Duration, opt
 Middleware enforces idempotency on non\-GET requests.
 
 <a name="Store"></a>
-## type [Store](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L24-L28>)
+## type [Store](<https://github.com/triple-a/gocom/blob/main/http/middleware/valkeydempotency/store.go#L24-L28>)
 
 
 
@@ -42,7 +42,7 @@ type Store struct {
 ```
 
 <a name="NewStore"></a>
-### func [NewStore](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L44>)
+### func [NewStore](<https://github.com/triple-a/gocom/blob/main/http/middleware/valkeydempotency/store.go#L44>)
 
 ```go
 func NewStore(lockerOption *valkeylock.LockerOption, ttl time.Duration) (*Store, error)
@@ -51,7 +51,7 @@ func NewStore(lockerOption *valkeylock.LockerOption, ttl time.Duration) (*Store,
 
 
 <a name="Store.Close"></a>
-### func \(\*Store\) [Close](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L30>)
+### func \(\*Store\) [Close](<https://github.com/triple-a/gocom/blob/main/http/middleware/valkeydempotency/store.go#L30>)
 
 ```go
 func (sto *Store) Close() error
@@ -60,7 +60,7 @@ func (sto *Store) Close() error
 
 
 <a name="Store.GetStoredResponse"></a>
-### func \(\*Store\) [GetStoredResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L102-L105>)
+### func \(\*Store\) [GetStoredResponse](<https://github.com/triple-a/gocom/blob/main/http/middleware/valkeydempotency/store.go#L102-L105>)
 
 ```go
 func (sto *Store) GetStoredResponse(ctx context.Context, key string) (*idempotency.StoredResponse, bool, error)
@@ -69,7 +69,7 @@ func (sto *Store) GetStoredResponse(ctx context.Context, key string) (*idempoten
 
 
 <a name="Store.StoreResponse"></a>
-### func \(\*Store\) [StoreResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L76-L80>)
+### func \(\*Store\) [StoreResponse](<https://github.com/triple-a/gocom/blob/main/http/middleware/valkeydempotency/store.go#L76-L80>)
 
 ```go
 func (sto *Store) StoreResponse(ctx context.Context, key string, resp *idempotency.StoredResponse) error
@@ -78,7 +78,7 @@ func (sto *Store) StoreResponse(ctx context.Context, key string, resp *idempoten
 
 
 <a name="Store.TryLock"></a>
-### func \(\*Store\) [TryLock](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L64-L67>)
+### func \(\*Store\) [TryLock](<https://github.com/triple-a/gocom/blob/main/http/middleware/valkeydempotency/store.go#L64-L67>)
 
 ```go
 func (sto *Store) TryLock(ctx context.Context, key string) (context.Context, context.CancelFunc, error)
@@ -87,7 +87,7 @@ func (sto *Store) TryLock(ctx context.Context, key string) (context.Context, con
 
 
 <a name="TTLIncorrectError"></a>
-## type [TTLIncorrectError](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L36-L38>)
+## type [TTLIncorrectError](<https://github.com/triple-a/gocom/blob/main/http/middleware/valkeydempotency/store.go#L36-L38>)
 
 
 
@@ -98,7 +98,7 @@ type TTLIncorrectError struct {
 ```
 
 <a name="TTLIncorrectError.Error"></a>
-### func \(\*TTLIncorrectError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L40>)
+### func \(\*TTLIncorrectError\) [Error](<https://github.com/triple-a/gocom/blob/main/http/middleware/valkeydempotency/store.go#L40>)
 
 ```go
 func (e *TTLIncorrectError) Error() string

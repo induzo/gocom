@@ -3,7 +3,7 @@
 # slog
 
 ```go
-import "github.com/induzo/gocom/database/pgx-slog"
+import "github.com/triple-a/gocom/database/pgx-slog"
 ```
 
 Package slog provides a logger that writes to a go.uber.org/slog.Logger.
@@ -16,7 +16,7 @@ Package slog provides a logger that writes to a go.uber.org/slog.Logger.
 
 
 <a name="Logger"></a>
-## type [Logger](<https://github.com/induzo/gocom/blob/main/database/pgx-slog/adapter.go#L11-L13>)
+## type [Logger](<https://github.com/triple-a/gocom/blob/main/database/pgx-slog/adapter.go#L11-L13>)
 
 
 
@@ -27,7 +27,7 @@ type Logger struct {
 ```
 
 <a name="NewLogger"></a>
-### func [NewLogger](<https://github.com/induzo/gocom/blob/main/database/pgx-slog/adapter.go#L15>)
+### func [NewLogger](<https://github.com/triple-a/gocom/blob/main/database/pgx-slog/adapter.go#L15>)
 
 ```go
 func NewLogger(logger *slog.Logger) *Logger
@@ -50,7 +50,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/tracelog"
 
-	slogadapter "github.com/induzo/gocom/database/pgx-slog"
+	slogadapter "github.com/triple-a/gocom/database/pgx-slog"
 )
 
 func main() {
@@ -73,7 +73,7 @@ func main() {
 </details>
 
 <a name="Logger.Log"></a>
-### func \(\*Logger\) [Log](<https://github.com/induzo/gocom/blob/main/database/pgx-slog/adapter.go#L19-L24>)
+### func \(\*Logger\) [Log](<https://github.com/triple-a/gocom/blob/main/database/pgx-slog/adapter.go#L19-L24>)
 
 ```go
 func (pl *Logger) Log(ctx context.Context, level tracelog.LogLevel, msg string, data map[string]any)

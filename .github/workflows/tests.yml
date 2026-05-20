@@ -27,7 +27,7 @@ jobs:
       - name: run all tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GOPRIVATE: github.com/induzo/*
+          GOPRIVATE: github.com/triple-a/*
         run: |
           git config --global url."https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com".insteadOf "https://github.com"
           make test-all

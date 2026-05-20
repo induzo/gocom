@@ -3,7 +3,7 @@
 # writablecontext
 
 ```go
-import "github.com/induzo/gocom/http/middleware/writablecontext"
+import "github.com/triple-a/gocom/http/middleware/writablecontext"
 ```
 
 ## Index
@@ -17,7 +17,7 @@ import "github.com/induzo/gocom/http/middleware/writablecontext"
 
 
 <a name="Middleware"></a>
-## func [Middleware](<https://github.com/induzo/gocom/blob/main/http/middleware/writablecontext/writablecontext.go#L38>)
+## func [Middleware](<https://github.com/triple-a/gocom/blob/main/http/middleware/writablecontext/writablecontext.go#L38>)
 
 ```go
 func Middleware(next http.Handler) http.Handler
@@ -38,7 +38,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/induzo/gocom/http/middleware/writablecontext"
+	"github.com/triple-a/gocom/http/middleware/writablecontext"
 )
 
 func main() {
@@ -94,7 +94,7 @@ bar
 </details>
 
 <a name="Key"></a>
-## type [Key](<https://github.com/induzo/gocom/blob/main/http/middleware/writablecontext/writablecontext.go#L9>)
+## type [Key](<https://github.com/triple-a/gocom/blob/main/http/middleware/writablecontext/writablecontext.go#L9>)
 
 Key is the type for the context key.
 
@@ -103,7 +103,7 @@ type Key string
 ```
 
 <a name="Store"></a>
-## type [Store](<https://github.com/induzo/gocom/blob/main/http/middleware/writablecontext/writablecontext.go#L15>)
+## type [Store](<https://github.com/triple-a/gocom/blob/main/http/middleware/writablecontext/writablecontext.go#L15>)
 
 Store is a map of key/value pairs for the context.
 
@@ -112,7 +112,7 @@ type Store map[string]any
 ```
 
 <a name="FromContext"></a>
-### func [FromContext](<https://github.com/induzo/gocom/blob/main/http/middleware/writablecontext/writablecontext.go#L46>)
+### func [FromContext](<https://github.com/triple-a/gocom/blob/main/http/middleware/writablecontext/writablecontext.go#L46>)
 
 ```go
 func FromContext(ctx context.Context) Store
@@ -121,7 +121,7 @@ func FromContext(ctx context.Context) Store
 FromContext returns the writable context from the request.
 
 <a name="Store.Get"></a>
-### func \(Store\) [Get](<https://github.com/induzo/gocom/blob/main/http/middleware/writablecontext/writablecontext.go#L31>)
+### func \(Store\) [Get](<https://github.com/triple-a/gocom/blob/main/http/middleware/writablecontext/writablecontext.go#L31>)
 
 ```go
 func (s Store) Get(key string) (any, bool)
@@ -130,7 +130,7 @@ func (s Store) Get(key string) (any, bool)
 Get returns the value for a key in the context.
 
 <a name="Store.Set"></a>
-### func \(Store\) [Set](<https://github.com/induzo/gocom/blob/main/http/middleware/writablecontext/writablecontext.go#L22>)
+### func \(Store\) [Set](<https://github.com/triple-a/gocom/blob/main/http/middleware/writablecontext/writablecontext.go#L22>)
 
 ```go
 func (s Store) Set(key string, value any)
