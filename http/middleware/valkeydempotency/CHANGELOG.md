@@ -2,11 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [http/middleware/valkeydempotency/v0.4.10] - 2026-05-05
+## [http/middleware/valkeydempotency/v0.4.10] - 2026-06-01
 
 ### Bug Fixes
 
 - Namespace responses, validate TTL/locker, detach write ctx
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/valkeydempotency/v0.4.10
 
 ### Miscellaneous Tasks
 
