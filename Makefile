@@ -42,13 +42,10 @@ docs-gen: ## generate docs for every module, as markdown thanks to https://githu
 
 changelogs-gen: ## generate changelog for every module.
 	@for module in $(ALL_MODULES_SPACE_SEP); do \
-		awk -v module="$$module" '{gsub(/TAG_MODULE/, module); print}' ./cliff.toml > ./cliff.toml.tmp && \
-		mv ./cliff.toml.tmp ./cliff.toml && \
 		git cliff \
+			--tag-pattern "$$module/v[0-9]*" \
 			--include-path "**/$$module/*" \
 			-o ./$$module/CHANGELOG.md && \
-		awk -v module="$$module" '{gsub(module, "TAG_MODULE"); print}' ./cliff.toml > ./cliff.toml.tmp && \
-		mv ./cliff.toml.tmp ./cliff.toml && \
 		printf "\nchangelog generated for $$module!\n"; \
 		git commit -m "docs(changelog): update CHANGELOG.md for $$(git describe --abbrev=0 --tags $$(git rev-list --tags="$$module/v[0-9].*" --max-count=1))" ./$$module/CHANGELOG.md; \
 	done
@@ -169,9 +166,7 @@ release-specific: ## release selection module, gen-changelog, gen docs, commit a
 		git tag --list --sort=version:refname "$$module/v*" | tail -1; \
 		printf "new tag (form $$module/vX.Y.Z): "; \
 		read -r TAG; \
-		sed -i.bak -E "s:TAG_MODULE:$$module:g" ./cliff.toml && \
-		git cliff --tag $$TAG --include-path "**/$$module/*" -o ./$$module/CHANGELOG.md && \
-		mv ./cliff.toml.bak ./cliff.toml && \
+		git cliff --tag $$TAG --tag-pattern "$$module/v[0-9]*" --include-path "**/$$module/*" -o ./$$module/CHANGELOG.md && \
 		{ git diff --quiet -- ./$$module/CHANGELOG.md || git commit -m "docs(changelog): update CHANGELOG.md for $$TAG" ./$$module/CHANGELOG.md; } && \
 		gomarkdoc --output ./$$module/README.md ./$$module/ && \
 		{ git diff --quiet -- ./$$module/README.md || git commit -m "docs: update docs for module $$module" ./$$module/README.md; } && \
