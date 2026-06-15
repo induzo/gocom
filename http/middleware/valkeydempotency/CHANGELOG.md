@@ -4,8 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [http/middleware/valkeydempotency/v0.4.11] - 2026-06-15
 
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/valkeydempotency/v0.4.11
+- Update docs for module http/middleware/valkeydempotency
+
 ### Miscellaneous Tasks
 
+- Update deps
 - Update deps
 
 ## [http/middleware/valkeydempotency/v0.4.10] - 2026-06-01
