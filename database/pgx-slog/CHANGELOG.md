@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/pgx-slog/v1.0.40] - 2026-06-15
+
+### Documentation
+
+- Update CHANGELOG.md for database/pgx-slog/v1.0.40
+
 ## [database/pgx-slog/v1.0.39] - 2026-06-01
 
 ### Bug Fixes
