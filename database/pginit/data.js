@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1780275379961,
+  "lastUpdate": 1781536310964,
   "repoUrl": "https://github.com/induzo/gocom",
   "entries": {
     "Benchmark": [
@@ -4578,6 +4578,54 @@ window.BENCHMARK_DATA = {
             "value": 399,
             "unit": "allocs/op",
             "extra": "307 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "committer": {
+            "email": "vincent@serpoul.com",
+            "name": "VincentS",
+            "username": "vincentserpoul"
+          },
+          "distinct": true,
+          "id": "6bd2e7b3d5d3885f6e671d8900badb439021d8cb",
+          "message": "docs(readme): update latest versions",
+          "timestamp": "2026-06-15T23:09:59+08:00",
+          "tree_id": "b2a052ecb68611a8bc2d13a7db468c2649aa1abb",
+          "url": "https://github.com/induzo/gocom/commit/6bd2e7b3d5d3885f6e671d8900badb439021d8cb"
+        },
+        "date": 1781536310331,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkConnPool",
+            "value": 4040754,
+            "unit": "ns/op\t  101024 B/op\t     401 allocs/op",
+            "extra": "290 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - ns/op",
+            "value": 4040754,
+            "unit": "ns/op",
+            "extra": "290 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - B/op",
+            "value": 101024,
+            "unit": "B/op",
+            "extra": "290 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkConnPool - allocs/op",
+            "value": 401,
+            "unit": "allocs/op",
+            "extra": "290 times\n4 procs"
           }
         ]
       }
