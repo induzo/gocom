@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Update CHANGELOG.md for database/pgx-slog/v1.0.40
 - Update CHANGELOG.md for database/pgx-slog/v1.0.40
 - Update docs for module database/pgx-slog
+- Update CHANGELOG.md for database/pgx-slog/v1.0.41
 
 ### Miscellaneous Tasks
 
