@@ -2,11 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-## [database/pginit/v2.2.35] - 2026-06-01
+## [database/pginit/v2.2.36] - 2026-06-15
+
+### Documentation
+
+- Update CHANGELOG.md for database/pginit/v2.2.35
 
 ### Miscellaneous Tasks
 
 - Chain AfterConnect, fix benchmark, harden tests
+- Update deps
 - Update deps
 - Update deps
 
