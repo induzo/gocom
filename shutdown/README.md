@@ -6,10 +6,11 @@
 import "github.com/induzo/gocom/shutdown"
 ```
 
-This package allows you to gracefully shutdown your app.
+Package shutdown provides a small primitive for gracefully shutting down an application: register named hooks, wait for an OS signal, then run the hooks in FILO \(last\-registered, first\-run\) order under a shared grace period, with optional Before constraints that adjust ordering.
 
 ## Index
 
+- [Variables](<#variables>)
 - [type Hook](<#Hook>)
 - [type HookOption](<#HookOption>)
   - [func Before\(before string\) HookOption](<#Before>)
@@ -18,13 +19,33 @@ This package allows you to gracefully shutdown your app.
   - [func WithHooks\(hooks \[\]Hook\) Option](<#WithHooks>)
 - [type Shutdown](<#Shutdown>)
   - [func New\(logger \*slog.Logger, opts ...Option\) \*Shutdown](<#New>)
-  - [func \(s \*Shutdown\) Add\(name string, shutdownFunc func\(ctx context.Context\) error, hookOpts ...HookOption\)](<#Shutdown.Add>)
+  - [func \(s \*Shutdown\) Add\(name string, shutdownFunc func\(ctx context.Context\) error, hookOpts ...HookOption\) error](<#Shutdown.Add>)
   - [func \(s \*Shutdown\) Hooks\(\) \[\]Hook](<#Shutdown.Hooks>)
   - [func \(s \*Shutdown\) Listen\(ctx context.Context, signals ...os.Signal\) error](<#Shutdown.Listen>)
 
 
+## Variables
+
+<a name="ErrEmptyHookName"></a>Sentinel errors returned by Add when a hook is rejected.
+
+```go
+var (
+    // ErrEmptyHookName is returned when a hook is registered without a name.
+    ErrEmptyHookName = errors.New("hook name must not be empty")
+
+    // ErrNilShutdownFunc is returned when a hook is registered without a
+    // shutdown function.
+    ErrNilShutdownFunc = errors.New("hook shutdown function must not be nil")
+
+    // ErrDuplicateHookName is returned when a hook is registered with a
+    // name that is already in use. Each name must be unique within a
+    // Shutdown instance.
+    ErrDuplicateHookName = errors.New("hook with this name is already registered")
+)
+```
+
 <a name="Hook"></a>
-## type [Hook](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L18-L22>)
+## type [Hook](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L40-L44>)
 
 Hook is a shutdown hook that will be called when signal is received.
 
@@ -37,25 +58,25 @@ type Hook struct {
 ```
 
 <a name="HookOption"></a>
-## type [HookOption](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L76>)
+## type [HookOption](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L120>)
 
-
+HookOption configures a Hook at registration time.
 
 ```go
 type HookOption func(*Hook)
 ```
 
 <a name="Before"></a>
-### func [Before](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L78>)
+### func [Before](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L127>)
 
 ```go
 func Before(before string) HookOption
 ```
 
-
+Before declares that the hook should run before the named hook during Listen. Because Listen iterates the registered slice in reverse \(FILO\), "run before X" means "ordered after X in the slice". If the named target is empty, equal to the hook's own name, or unknown at registration time, Before is a no\-op.
 
 <a name="Option"></a>
-## type [Option](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L34>)
+## type [Option](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L56>)
 
 Option is the options type to configure Shutdown.
 
@@ -64,7 +85,7 @@ type Option func(*Shutdown)
 ```
 
 <a name="WithGracePeriodDuration"></a>
-### func [WithGracePeriodDuration](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L70>)
+### func [WithGracePeriodDuration](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L113>)
 
 ```go
 func WithGracePeriodDuration(gracePeriodDuration time.Duration) Option
@@ -73,16 +94,18 @@ func WithGracePeriodDuration(gracePeriodDuration time.Duration) Option
 WithGracePeriodDuration sets the grace period for all shutdown hooks to finish running. If not used, the default grace period is 30s.
 
 <a name="WithHooks"></a>
-### func [WithHooks](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L54>)
+### func [WithHooks](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L88>)
 
 ```go
 func WithHooks(hooks []Hook) Option
 ```
 
-WithHooks adds the hooks to be run as part of the graceful shutdown.
+WithHooks adds the hooks to be run as part of the graceful shutdown. Any hook that fails validation in Add \(empty name, nil shutdown function, duplicate name\) is logged at warning level and skipped; the remaining hooks are still registered.
+
+Note: Hook.before is unexported, so external callers using WithHooks cannot express a Before constraint. To use Before, register hooks via Add directly.
 
 <a name="Shutdown"></a>
-## type [Shutdown](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L25-L31>)
+## type [Shutdown](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L47-L53>)
 
 Shutdown provides a way to listen for signals and handle shutdown of an application gracefully.
 
@@ -104,7 +127,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"log/slog"
 	"net/http"
@@ -115,7 +137,7 @@ import (
 )
 
 func main() {
-	textHandler := slog.NewTextHandler(io.Discard, nil)
+	textHandler := slog.DiscardHandler
 	logger := slog.New(textHandler)
 
 	shutdownHandler := shutdown.New(
@@ -163,39 +185,41 @@ func main() {
 </details>
 
 <a name="New"></a>
-### func [New](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L37>)
+### func [New](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L60>)
 
 ```go
 func New(logger *slog.Logger, opts ...Option) *Shutdown
 ```
 
-New returns a new Shutdown with the provided options.
+New returns a new Shutdown with the provided options. If logger is nil, slog.Default\(\) is used.
 
 <a name="Shutdown.Add"></a>
-### func \(\*Shutdown\) [Add](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L87>)
+### func \(\*Shutdown\) [Add](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L138-L142>)
 
 ```go
-func (s *Shutdown) Add(name string, shutdownFunc func(ctx context.Context) error, hookOpts ...HookOption)
+func (s *Shutdown) Add(name string, shutdownFunc func(ctx context.Context) error, hookOpts ...HookOption) error
 ```
 
-Add adds a shutdown hook to be run when the signal is received.
+Add registers a shutdown hook. Returns ErrEmptyHookName if name is empty, ErrNilShutdownFunc if shutdownFunc is nil, or ErrDuplicateHookName if a hook with this name is already registered.
 
 <a name="Shutdown.Hooks"></a>
-### func \(\*Shutdown\) [Hooks](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L105>)
+### func \(\*Shutdown\) [Hooks](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L179>)
 
 ```go
 func (s *Shutdown) Hooks() []Hook
 ```
 
-Hooks returns a copy of the shutdown hooks, taking into account the before option
+Hooks returns the registered shutdown hooks ordered for execution. Hooks without a Before constraint keep registration order; Before constraints are applied so that each constrained hook is positioned to run before its named target during Listen's reverse iteration. If a circular dependency is detected, the unresolved hooks are appended at the end and a warning is logged.
 
 <a name="Shutdown.Listen"></a>
-### func \(\*Shutdown\) [Listen](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L183>)
+### func \(\*Shutdown\) [Listen](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L268>)
 
 ```go
 func (s *Shutdown) Listen(ctx context.Context, signals ...os.Signal) error
 ```
 
 Listen waits for the signals provided and executes each shutdown hook sequentially in FILO order. It will immediately stop and return once the grace period has passed.
+
+Hooks must honor the ctx passed to them and return promptly when it is cancelled; a hook that ignores ctx will leave its goroutine running after Listen returns when the grace period is exceeded.
 
 Generated by [gomarkdoc](<https://github.com/princjef/gomarkdoc>)
