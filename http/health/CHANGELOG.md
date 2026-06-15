@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 ### Documentation
 
 - Update CHANGELOG.md for http/health/v1.2.1
+- Update CHANGELOG.md for http/health/v1.2.1
+- Update docs for module http/health
 
 ### Miscellaneous Tasks
 
