@@ -2,7 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [http/middleware/writablecontext/v0.2.0] - 2026-05-05
+## [http/middleware/writablecontext/v0.2.1] - 2026-06-15
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/writablecontext/v0.2.0
 
 ### Features
 
