@@ -6,7 +6,7 @@
 import "github.com/induzo/gocom/http/middleware/idempotency"
 ```
 
-Package idempotency provides an HTTP middleware for managing idempotency. Idempotency ensures that multiple identical requests have the same effect as making a single request, which is useful for operations like payment processing where duplicate requests could lead to unintended consequences. This package is an http middleware that does manage idempotency.
+Package idempotency provides an HTTP middleware that ensures multiple identical requests have the same effect as a single request, by replaying a previously stored response keyed off a client\-supplied idempotency key. This is useful for operations like payment processing where duplicate requests would otherwise cause unintended side effects.
 
 ## Index
 
@@ -14,6 +14,9 @@ Package idempotency provides an HTTP middleware for managing idempotency. Idempo
 - [Variables](<#variables>)
 - [func ErrorToHTTPJSONProblemDetail\(respW http.ResponseWriter, req \*http.Request, err error\)](<#ErrorToHTTPJSONProblemDetail>)
 - [func NewMiddleware\(store Store, options ...Option\) func\(http.Handler\) http.Handler](<#NewMiddleware>)
+- [type BodyTooLargeError](<#BodyTooLargeError>)
+  - [func \(e BodyTooLargeError\) Error\(\) string](<#BodyTooLargeError.Error>)
+  - [func \(e BodyTooLargeError\) Unwrap\(\) error](<#BodyTooLargeError.Unwrap>)
 - [type ContextKey](<#ContextKey>)
 - [type ErrorToHTTPFn](<#ErrorToHTTPFn>)
 - [type GetStoredResponseError](<#GetStoredResponseError>)
@@ -41,10 +44,13 @@ Package idempotency provides an HTTP middleware for managing idempotency. Idempo
   - [func WithIdempotencyKeyHeader\(header string\) Option](<#WithIdempotencyKeyHeader>)
   - [func WithIdempotentReplayedHeader\(header string\) Option](<#WithIdempotentReplayedHeader>)
   - [func WithIgnoredURLPaths\(urlPaths ...string\) Option](<#WithIgnoredURLPaths>)
+  - [func WithMaxFingerprintBodyBytes\(n int64\) Option](<#WithMaxFingerprintBodyBytes>)
+  - [func WithMaxResponseBodyBytes\(n int64\) Option](<#WithMaxResponseBodyBytes>)
   - [func WithOptionalIdempotencyKey\(\) Option](<#WithOptionalIdempotencyKey>)
   - [func WithTracer\(tracerFn TracerFn\) Option](<#WithTracer>)
   - [func WithUserIDExtractor\(fn UserIDExtractorFn\) Option](<#WithUserIDExtractor>)
 - [type ProblemDetail](<#ProblemDetail>)
+  - [func \(pd ProblemDetail\) MarshalJSON\(\) \(\[\]byte, error\)](<#ProblemDetail.MarshalJSON>)
 - [type RequestContext](<#RequestContext>)
   - [func \(idrc RequestContext\) String\(\) string](<#RequestContext.String>)
 - [type RequestInFlightError](<#RequestInFlightError>)
@@ -66,6 +72,19 @@ Package idempotency provides an HTTP middleware for managing idempotency. Idempo
 const (
     DefaultIdempotencyKeyHeader             = "X-Idempotency-Key"
     DefaultIdempotentReplayedResponseHeader = "X-Idempotent-Replayed"
+
+    // DefaultMaxFingerprintBodyBytes bounds the request body bytes the
+    // default fingerprinter will read. Bodies above this size cause the
+    // middleware to reject the request with BodyTooLargeError.
+    DefaultMaxFingerprintBodyBytes int64 = 5 * 1024 * 1024 // 5 MiB
+
+    // DefaultMaxResponseBodyBytes bounds the response body bytes the
+    // middleware buffers for later replay. Responses larger than this are
+    // streamed through to the client unbuffered and are not stored, so a
+    // retry re-executes the handler rather than replaying. This prevents an
+    // unbounded handler response from being held entirely in memory.
+    DefaultMaxResponseBodyBytes int64 = 5 * 1024 * 1024 // 5 MiB
+
 )
 ```
 
@@ -82,7 +101,7 @@ var (
 ```
 
 <a name="ErrorToHTTPJSONProblemDetail"></a>
-## func [ErrorToHTTPJSONProblemDetail](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L132-L136>)
+## func [ErrorToHTTPJSONProblemDetail](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L239-L243>)
 
 ```go
 func ErrorToHTTPJSONProblemDetail(respW http.ResponseWriter, req *http.Request, err error)
@@ -220,8 +239,43 @@ Hello World! 1
 </p>
 </details>
 
+<a name="BodyTooLargeError"></a>
+## type [BodyTooLargeError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L87-L95>)
+
+BodyTooLargeError is returned when the request body exceeds the configured fingerprint body limit.
+
+```go
+type BodyTooLargeError struct {
+    RequestContext
+    // Limit is the maximum number of body bytes the fingerprinter is
+    // allowed to read.
+    Limit int64
+    // Err is the underlying sentinel; errors.Is(BodyTooLargeError{}, ErrBodyTooLarge)
+    // returns true.
+    Err error
+}
+```
+
+<a name="BodyTooLargeError.Error"></a>
+### func \(BodyTooLargeError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L98>)
+
+```go
+func (e BodyTooLargeError) Error() string
+```
+
+
+
+<a name="BodyTooLargeError.Unwrap"></a>
+### func \(BodyTooLargeError\) [Unwrap](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L107>)
+
+```go
+func (e BodyTooLargeError) Unwrap() error
+```
+
+
+
 <a name="ContextKey"></a>
-## type [ContextKey](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/middleware.go#L233>)
+## type [ContextKey](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/middleware.go#L248>)
 
 
 
@@ -236,7 +290,7 @@ const IdempotencyKeyCtxKey ContextKey = "idempotency_key"
 ```
 
 <a name="ErrorToHTTPFn"></a>
-## type [ErrorToHTTPFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/config.go#L12>)
+## type [ErrorToHTTPFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/config.go#L37>)
 
 
 
@@ -245,7 +299,7 @@ type ErrorToHTTPFn func(http.ResponseWriter, *http.Request, error)
 ```
 
 <a name="GetStoredResponseError"></a>
-## type [GetStoredResponseError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L96-L99>)
+## type [GetStoredResponseError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L139-L142>)
 
 
 
@@ -257,7 +311,7 @@ type GetStoredResponseError struct {
 ```
 
 <a name="GetStoredResponseError.Error"></a>
-### func \(GetStoredResponseError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L102>)
+### func \(GetStoredResponseError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L145>)
 
 ```go
 func (e GetStoredResponseError) Error() string
@@ -266,7 +320,7 @@ func (e GetStoredResponseError) Error() string
 
 
 <a name="GetStoredResponseError.Unwrap"></a>
-### func \(GetStoredResponseError\) [Unwrap](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L112>)
+### func \(GetStoredResponseError\) [Unwrap](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L155>)
 
 ```go
 func (e GetStoredResponseError) Unwrap() error
@@ -275,9 +329,9 @@ func (e GetStoredResponseError) Unwrap() error
 
 
 <a name="InMemStore"></a>
-## type [InMemStore](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L18-L26>)
+## type [InMemStore](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L18-L27>)
 
-
+InMemStore is a single\-process [Store](<#Store>) backed by [sync.Map](<https://pkg.go.dev/sync/#Map>). It is suitable for tests and single\-instance deployments; production deployments running multiple replicas should use a shared backend such as the sibling valkeydempotency package.
 
 ```go
 type InMemStore struct {
@@ -286,7 +340,7 @@ type InMemStore struct {
 ```
 
 <a name="NewInMemStore"></a>
-### func [NewInMemStore](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L34>)
+### func [NewInMemStore](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L40>)
 
 ```go
 func NewInMemStore() *InMemStore
@@ -295,52 +349,52 @@ func NewInMemStore() *InMemStore
 NewInMemStore initializes an in\-memory store with automatic cleanup.
 
 <a name="InMemStore.Close"></a>
-### func \(\*InMemStore\) [Close](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L52>)
+### func \(\*InMemStore\) [Close](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L59>)
 
 ```go
 func (s *InMemStore) Close()
 ```
 
-Close stops the background cleanup goroutine.
+Close stops the background cleanup goroutine. Safe to call more than once.
 
 <a name="InMemStore.GetStoredResponse"></a>
-### func \(\*InMemStore\) [GetStoredResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L153-L156>)
+### func \(\*InMemStore\) [GetStoredResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L168-L171>)
 
 ```go
 func (s *InMemStore) GetStoredResponse(_ context.Context, key string) (*StoredResponse, bool, error)
 ```
 
-
+GetStoredResponse returns the response previously stored for key, or \(nil, false, nil\) if none exists or the entry has expired.
 
 <a name="InMemStore.SetResponseTTL"></a>
-### func \(\*InMemStore\) [SetResponseTTL](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L192>)
+### func \(\*InMemStore\) [SetResponseTTL](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L208>)
 
 ```go
 func (s *InMemStore) SetResponseTTL(ttl time.Duration)
 ```
 
-SetResponseTTL configures how long responses should be cached.
+SetResponseTTL configures how long responses should be cached. It is safe to call concurrently with store operations.
 
 <a name="InMemStore.StoreResponse"></a>
-### func \(\*InMemStore\) [StoreResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L126-L130>)
+### func \(\*InMemStore\) [StoreResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L144-L148>)
 
 ```go
 func (s *InMemStore) StoreResponse(_ context.Context, key string, resp *StoredResponse) error
 ```
 
-
+StoreResponse persists resp under key with the configured response TTL. Subsequent calls overwrite any previous entry so retries after a transient failure can succeed.
 
 <a name="InMemStore.TryLock"></a>
-### func \(\*InMemStore\) [TryLock](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L99-L102>)
+### func \(\*InMemStore\) [TryLock](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/inmem.go#L104-L107>)
 
 ```go
 func (s *InMemStore) TryLock(ctx context.Context, key string) (context.Context, context.CancelFunc, error)
 ```
 
-
+TryLock attempts to take an in\-flight lock for key. The fast path uses LoadOrStore. If the existing lock has expired, TryLock retries via CompareAndSwap so that two concurrent callers cannot both observe an expired lock and both believe they hold it.
 
 <a name="InvalidIdempotencyKeyError"></a>
-## type [InvalidIdempotencyKeyError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L40-L43>)
+## type [InvalidIdempotencyKeyError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L45-L48>)
 
 
 
@@ -352,7 +406,7 @@ type InvalidIdempotencyKeyError struct {
 ```
 
 <a name="InvalidIdempotencyKeyError.Error"></a>
-### func \(InvalidIdempotencyKeyError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L46>)
+### func \(InvalidIdempotencyKeyError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L51>)
 
 ```go
 func (e InvalidIdempotencyKeyError) Error() string
@@ -361,7 +415,7 @@ func (e InvalidIdempotencyKeyError) Error() string
 
 
 <a name="InvalidIdempotencyKeyError.Unwrap"></a>
-### func \(InvalidIdempotencyKeyError\) [Unwrap](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L56>)
+### func \(InvalidIdempotencyKeyError\) [Unwrap](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L61>)
 
 ```go
 func (e InvalidIdempotencyKeyError) Unwrap() error
@@ -370,9 +424,9 @@ func (e InvalidIdempotencyKeyError) Unwrap() error
 
 
 <a name="MismatchedSignatureError"></a>
-## type [MismatchedSignatureError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L68-L70>)
+## type [MismatchedSignatureError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L77-L79>)
 
-
+MismatchedSignatureError is returned when a request shares an existing key but does not match the previously stored request hash. The wire\-level term used by the middleware is "request hash"; the public error type keeps the historical "signature" name for backwards compatibility.
 
 ```go
 type MismatchedSignatureError struct {
@@ -381,7 +435,7 @@ type MismatchedSignatureError struct {
 ```
 
 <a name="MismatchedSignatureError.Error"></a>
-### func \(MismatchedSignatureError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L72>)
+### func \(MismatchedSignatureError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L81>)
 
 ```go
 func (e MismatchedSignatureError) Error() string
@@ -390,7 +444,7 @@ func (e MismatchedSignatureError) Error() string
 
 
 <a name="MissingIdempotencyKeyHeaderError"></a>
-## type [MissingIdempotencyKeyHeaderError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L32-L34>)
+## type [MissingIdempotencyKeyHeaderError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L37-L39>)
 
 
 
@@ -401,7 +455,7 @@ type MissingIdempotencyKeyHeaderError struct {
 ```
 
 <a name="MissingIdempotencyKeyHeaderError.Error"></a>
-### func \(MissingIdempotencyKeyHeaderError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L36>)
+### func \(MissingIdempotencyKeyHeaderError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L41>)
 
 ```go
 func (e MissingIdempotencyKeyHeaderError) Error() string
@@ -410,7 +464,7 @@ func (e MissingIdempotencyKeyHeaderError) Error() string
 
 
 <a name="Option"></a>
-## type [Option](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L7>)
+## type [Option](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L9>)
 
 
 
@@ -419,16 +473,16 @@ type Option func(*config)
 ```
 
 <a name="WithAffectedMethods"></a>
-### func [WithAffectedMethods](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L46>)
+### func [WithAffectedMethods](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L77>)
 
 ```go
 func WithAffectedMethods(methods ...string) Option
 ```
 
-WithAffectedMethods sets the methods that are affected by idempotency. By default, POST only are affected.
+WithAffectedMethods sets the methods that are affected by idempotency. By default, POST only are affected. Method names are normalized to uppercase so the option is case\-insensitive.
 
 <a name="WithAllowedReplayHeaders"></a>
-### func [WithAllowedReplayHeaders](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L87>)
+### func [WithAllowedReplayHeaders](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L126>)
 
 ```go
 func WithAllowedReplayHeaders(headers ...string) Option
@@ -437,7 +491,7 @@ func WithAllowedReplayHeaders(headers ...string) Option
 WithAllowedReplayHeaders sets the list of headers that are safe to replay. Only these headers will be copied from the stored response.
 
 <a name="WithErrorToHTTPFn"></a>
-### func [WithErrorToHTTPFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L31>)
+### func [WithErrorToHTTPFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L33>)
 
 ```go
 func WithErrorToHTTPFn(fn func(http.ResponseWriter, *http.Request, error)) Option
@@ -446,7 +500,7 @@ func WithErrorToHTTPFn(fn func(http.ResponseWriter, *http.Request, error)) Optio
 WithErrorToHTTPFn sets a function to convert errors to HTTP status codes and content.
 
 <a name="WithFingerprinter"></a>
-### func [WithFingerprinter](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L38>)
+### func [WithFingerprinter](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L44>)
 
 ```go
 func WithFingerprinter(fn func(*http.Request) ([]byte, error)) Option
@@ -454,8 +508,10 @@ func WithFingerprinter(fn func(*http.Request) ([]byte, error)) Option
 
 WithFingerprinter sets a function to build a request fingerprint.
 
+The custom fingerprinter is invoked instead of the default one and is fully responsible for any body buffering or size limiting. The WithMaxFingerprintBodyBytes option only affects the default fingerprinter.
+
 <a name="WithIdempotencyKeyHeader"></a>
-### func [WithIdempotencyKeyHeader](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L17>)
+### func [WithIdempotencyKeyHeader](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L19>)
 
 ```go
 func WithIdempotencyKeyHeader(header string) Option
@@ -464,7 +520,7 @@ func WithIdempotencyKeyHeader(header string) Option
 WithIdempotencyKeyHeader sets the header to use for idempotency keys.
 
 <a name="WithIdempotentReplayedHeader"></a>
-### func [WithIdempotentReplayedHeader](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L24>)
+### func [WithIdempotentReplayedHeader](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L26>)
 
 ```go
 func WithIdempotentReplayedHeader(header string) Option
@@ -473,16 +529,34 @@ func WithIdempotentReplayedHeader(header string) Option
 WithIdempotentReplayedHeader sets the header to use for idempotent replayed responses.
 
 <a name="WithIgnoredURLPaths"></a>
-### func [WithIgnoredURLPaths](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L54>)
+### func [WithIgnoredURLPaths](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L91>)
 
 ```go
 func WithIgnoredURLPaths(urlPaths ...string) Option
 ```
 
-WithIgnoredURLPaths sets the URL paths that are ignored by idempotency. By default, no URLs are ignored.
+WithIgnoredURLPaths sets the URL paths that are ignored by idempotency. Paths are matched case\-insensitively \(lowercased on entry\) and deduplicated. By default, no URLs are ignored.
+
+<a name="WithMaxFingerprintBodyBytes"></a>
+### func [WithMaxFingerprintBodyBytes](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L55>)
+
+```go
+func WithMaxFingerprintBodyBytes(n int64) Option
+```
+
+WithMaxFingerprintBodyBytes bounds the maximum number of request body bytes the default fingerprinter reads. Requests with bodies larger than n trigger BodyTooLargeError, which the default error mapper renders as HTTP 413. The default is DefaultMaxFingerprintBodyBytes. Has no effect when WithFingerprinter is used.
+
+<a name="WithMaxResponseBodyBytes"></a>
+### func [WithMaxResponseBodyBytes](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L68>)
+
+```go
+func WithMaxResponseBodyBytes(n int64) Option
+```
+
+WithMaxResponseBodyBytes bounds the number of response body bytes the middleware buffers for later replay. Responses larger than n are streamed through to the client unbuffered and are not stored, so a subsequent identical request re\-executes the handler instead of replaying. A value of n \<= 0 disables the cap and buffers the full response \(not recommended for handlers that can return large bodies\). The default is DefaultMaxResponseBodyBytes.
 
 <a name="WithOptionalIdempotencyKey"></a>
-### func [WithOptionalIdempotencyKey](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L10>)
+### func [WithOptionalIdempotencyKey](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L12>)
 
 ```go
 func WithOptionalIdempotencyKey() Option
@@ -491,7 +565,7 @@ func WithOptionalIdempotencyKey() Option
 WithOptionalIdempotencyKey sets the idempotency key to optional.
 
 <a name="WithTracer"></a>
-### func [WithTracer](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L103>)
+### func [WithTracer](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L142>)
 
 ```go
 func WithTracer(tracerFn TracerFn) Option
@@ -509,7 +583,7 @@ func(req *http.Request, spanName string) func() {
 ```
 
 <a name="WithUserIDExtractor"></a>
-### func [WithUserIDExtractor](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L79>)
+### func [WithUserIDExtractor](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/options.go#L118>)
 
 ```go
 func WithUserIDExtractor(fn UserIDExtractorFn) Option
@@ -518,7 +592,7 @@ func WithUserIDExtractor(fn UserIDExtractorFn) Option
 WithUserIDExtractor sets a function to extract user/tenant ID from the request. This is used to scope idempotency keys to specific users/tenants.
 
 <a name="ProblemDetail"></a>
-## type [ProblemDetail](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L117-L125>)
+## type [ProblemDetail](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L160-L171>)
 
 Conforming to RFC9457 \(https://www.rfc-editor.org/rfc/rfc9457.html\)
 
@@ -526,16 +600,28 @@ Conforming to RFC9457 \(https://www.rfc-editor.org/rfc/rfc9457.html\)
 type ProblemDetail struct {
     HTTPStatusCode int `json:"-"`
 
-    Type             string         `json:"type"`
-    Title            string         `json:"title"`
-    Detail           string         `json:"detail"`
-    Instance         string         `json:"instance"`
-    ExtensionMembers map[string]any `json:",omitempty"`
+    Type     string `json:"type"`
+    Title    string `json:"title"`
+    Detail   string `json:"detail"`
+    Instance string `json:"instance"`
+    // ExtensionMembers are serialized as siblings of the standard members
+    // (RFC 9457 §3.2), not nested. Marshaling is handled by MarshalJSON, so
+    // this field carries no struct tag.
+    ExtensionMembers map[string]any `json:"-"`
 }
 ```
 
+<a name="ProblemDetail.MarshalJSON"></a>
+### func \(ProblemDetail\) [MarshalJSON](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L179>)
+
+```go
+func (pd ProblemDetail) MarshalJSON() ([]byte, error)
+```
+
+MarshalJSON renders the problem detail per RFC 9457: the standard members in their canonical order, with any extension members spliced in at the top level. Extension members never override a standard member. When there are no extension members the standard field order is preserved exactly.
+
 <a name="RequestContext"></a>
-## type [RequestContext](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L12-L17>)
+## type [RequestContext](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L17-L22>)
 
 
 
@@ -549,7 +635,7 @@ type RequestContext struct {
 ```
 
 <a name="RequestContext.String"></a>
-### func \(RequestContext\) [String](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L19>)
+### func \(RequestContext\) [String](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L24>)
 
 ```go
 func (idrc RequestContext) String() string
@@ -558,7 +644,7 @@ func (idrc RequestContext) String() string
 
 
 <a name="RequestInFlightError"></a>
-## type [RequestInFlightError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L60-L62>)
+## type [RequestInFlightError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L65-L67>)
 
 
 
@@ -569,7 +655,7 @@ type RequestInFlightError struct {
 ```
 
 <a name="RequestInFlightError.Error"></a>
-### func \(RequestInFlightError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L64>)
+### func \(RequestInFlightError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L69>)
 
 ```go
 func (e RequestInFlightError) Error() string
@@ -578,28 +664,36 @@ func (e RequestInFlightError) Error() string
 
 
 <a name="Store"></a>
-## type [Store](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/store.go#L21-L33>)
+## type [Store](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/store.go#L26-L44>)
 
-Store is the interface we need to implement for: Locking an idemkey Storing a response Retrieving a response
+Store is the persistence interface implementations must satisfy. The middleware uses it to \(1\) take an in\-flight lock on a composite key, \(2\) persist the final response so subsequent identical requests can replay, and \(3\) retrieve a previously stored response.
+
+Implementations are expected to be safe for concurrent use.
 
 ```go
 type Store interface {
-    // Lock inserts a marker that a request with a given key/signature is in-flight.
-    // The lock should have a timeout to prevent indefinite holding.
+    // TryLock attempts to acquire an in-flight lock for key. It returns a
+    // context that scopes the lock's lifetime, a cancel function the caller
+    // must invoke once the request has completed, and a non-nil error if
+    // the lock is already held by another in-flight request. The lock
+    // should have a server-side timeout so a crashed handler does not hold
+    // it forever.
     TryLock(ctx context.Context, key string) (context.Context, context.CancelFunc, error)
 
-    // MarkComplete records the final response for a request key.
+    // StoreResponse records the final response for key. Implementations
+    // must overwrite any previously stored value for the same key (last
+    // writer wins) so that retries after a transient failure can succeed.
     StoreResponse(ctx context.Context, key string, resp *StoredResponse) error
 
-    // GetStoredResponse returns the final stored response (if any) for this key.
-    // The second return value is false if the key is not found.
-    // The third return value is an error if the operation failed.
+    // GetStoredResponse returns the stored response for key, if any. The
+    // second return value is false when the key is not (or no longer)
+    // present; the third is non-nil if the lookup itself failed.
     GetStoredResponse(ctx context.Context, key string) (*StoredResponse, bool, error)
 }
 ```
 
 <a name="StoreResponseError"></a>
-## type [StoreResponseError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L76-L79>)
+## type [StoreResponseError](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L119-L122>)
 
 
 
@@ -611,7 +705,7 @@ type StoreResponseError struct {
 ```
 
 <a name="StoreResponseError.Error"></a>
-### func \(StoreResponseError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L82>)
+### func \(StoreResponseError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L125>)
 
 ```go
 func (e StoreResponseError) Error() string
@@ -620,7 +714,7 @@ func (e StoreResponseError) Error() string
 
 
 <a name="StoreResponseError.Unwrap"></a>
-### func \(StoreResponseError\) [Unwrap](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L92>)
+### func \(StoreResponseError\) [Unwrap](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/errors.go#L135>)
 
 ```go
 func (e StoreResponseError) Unwrap() error
@@ -629,22 +723,24 @@ func (e StoreResponseError) Unwrap() error
 
 
 <a name="StoredResponse"></a>
-## type [StoredResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/store.go#L9-L15>)
+## type [StoredResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/store.go#L12-L18>)
 
 StoredResponse holds what we need to check and replay a response.
+
+Signature is reserved for future use; the canonical hash field is RequestHash. Implementations of [Store](<#Store>) should leave Signature unset.
 
 ```go
 type StoredResponse struct {
     StatusCode  int
-    Signature   []byte
+    Signature   []byte // reserved; not currently used by the middleware
     Header      http.Header
     Body        []byte
-    RequestHash []byte // To verify the same request payload
+    RequestHash []byte // hash of the canonical request used to detect mismatched payloads
 }
 ```
 
 <a name="TracerFn"></a>
-## type [TracerFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/config.go#L22>)
+## type [TracerFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/config.go#L47>)
 
 TracerFn is a function that starts a span with the given name and returns a function to end the span. This allows integration with any tracing library \(OpenTelemetry, DataDog, Jaeger, etc.\). The returned function should be called to ensure the span is ended.
 
@@ -653,7 +749,7 @@ type TracerFn func(req *http.Request, spanName string) func()
 ```
 
 <a name="UserIDExtractorFn"></a>
-## type [UserIDExtractorFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/config.go#L16>)
+## type [UserIDExtractorFn](<https://github.com/induzo/gocom/blob/main/http/middleware/idempotency/config.go#L41>)
 
 UserIDExtractorFn extracts the user/tenant ID from the request context. Return empty string if no user context is available.
 
