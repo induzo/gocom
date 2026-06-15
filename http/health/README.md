@@ -6,7 +6,7 @@
 import "github.com/induzo/gocom/http/health"
 ```
 
-HTTP handler that retrieves health status of the application
+Package health provides an HTTP handler that runs a set of named check functions in parallel and returns 200 OK or 503 Service Unavailable depending on the aggregated outcome.
 
 ## Index
 
@@ -31,6 +31,8 @@ HTTP handler that retrieves health status of the application
 
 ```go
 const (
+    // DefaultTimeout is applied to a CheckConfig that does not set its own
+    // non-zero Timeout.
     DefaultTimeout = 3 * time.Second
 )
 ```
@@ -39,25 +41,35 @@ const (
 
 ```go
 const (
-    HealthEndpoint = "/sys/health" // URL used by infra team
+    // HealthEndpoint is a suggested URL path for mounting the health handler.
+    // Callers may mount it anywhere; this constant is provided for convenience.
+    HealthEndpoint = "/sys/health"
 )
 ```
 
 <a name="CheckConfig"></a>
-## type [CheckConfig](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L45-L49>)
+## type [CheckConfig](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L60-L72>)
 
 CheckConfig are the parameters used to run each check.
 
 ```go
 type CheckConfig struct {
-    Name    string
+    // Name is a stable identifier for the check; surfaced in errors and logs.
+    Name string
+
+    // CheckFn is the probe function. Implementations MUST honor ctx and
+    // return promptly when it is cancelled, otherwise the goroutine running
+    // the check will outlive the request and accumulate per probe.
     CheckFn func(ctx context.Context) error
+
+    // Timeout bounds a single invocation of CheckFn. When zero or negative,
+    // DefaultTimeout is applied.
     Timeout time.Duration
 }
 ```
 
 <a name="CheckError"></a>
-## type [CheckError](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L35-L38>)
+## type [CheckError](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L50-L53>)
 
 CheckError is an error returned when the health check function returns an error.
 
@@ -68,7 +80,7 @@ type CheckError struct {
 ```
 
 <a name="CheckError.Error"></a>
-### func \(\*CheckError\) [Error](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L40>)
+### func \(\*CheckError\) [Error](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L55>)
 
 ```go
 func (e *CheckError) Error() string
@@ -77,7 +89,7 @@ func (e *CheckError) Error() string
 
 
 <a name="Health"></a>
-## type [Health](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L58-L60>)
+## type [Health](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L82-L84>)
 
 Health provides http.Handler that retrieves the health status of the application based on the provided checks.
 
@@ -126,7 +138,7 @@ func main() {
 </details>
 
 <a name="NewHealth"></a>
-### func [NewHealth](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L66>)
+### func [NewHealth](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L90>)
 
 ```go
 func NewHealth(opts ...Option) *Health
@@ -135,16 +147,16 @@ func NewHealth(opts ...Option) *Health
 NewHealth returns a new Health with the provided options.
 
 <a name="Health.Handler"></a>
-### func \(\*Health\) [Handler](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L98>)
+### func \(\*Health\) [Handler](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L128>)
 
 ```go
 func (h *Health) Handler() http.Handler
 ```
 
-Handler returns a http.Handler that retrieves the health status of the application based on the provided check functions.
+Handler returns a http.Handler that retrieves the health status of the application based on the provided check functions. On success the handler writes 200 OK with an empty body; on failure it writes 503 Service Unavailable with a JSON [Response](<#Response>) body.
 
 <a name="Health.RegisterCheck"></a>
-### func \(\*Health\) [RegisterCheck](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L88>)
+### func \(\*Health\) [RegisterCheck](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L116>)
 
 ```go
 func (h *Health) RegisterCheck(conf CheckConfig)
@@ -152,8 +164,10 @@ func (h *Health) RegisterCheck(conf CheckConfig)
 
 RegisterCheck registers a check to be run as part of the health check.
 
+RegisterCheck is intended to be called during construction \(typically via WithChecks\) before Handler\(\) is wired into a server. It is not safe to call concurrently with requests that hit Handler\(\).
+
 <a name="Option"></a>
-## type [Option](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L63>)
+## type [Option](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L87>)
 
 Option is the options type to configure Health.
 
@@ -162,7 +176,7 @@ type Option func(*Health)
 ```
 
 <a name="WithChecks"></a>
-### func [WithChecks](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L79>)
+### func [WithChecks](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L103>)
 
 ```go
 func WithChecks(checkConf ...CheckConfig) Option
@@ -171,9 +185,9 @@ func WithChecks(checkConf ...CheckConfig) Option
 WithChecks adds the checks to be run as part of the health check.
 
 <a name="Response"></a>
-## type [Response](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L52-L55>)
+## type [Response](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L76-L79>)
 
-Response is the health check handler response.
+Response is the JSON body returned by Handler on a 503 response. A 200 response has an empty body.
 
 ```go
 type Response struct {
@@ -183,7 +197,7 @@ type Response struct {
 ```
 
 <a name="TimeoutError"></a>
-## type [TimeoutError](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L25-L28>)
+## type [TimeoutError](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L40-L43>)
 
 TimeoutError is an error returned when the health check function exceeds the timeout duration.
 
@@ -194,7 +208,7 @@ type TimeoutError struct {
 ```
 
 <a name="TimeoutError.Error"></a>
-### func \(\*TimeoutError\) [Error](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L30>)
+### func \(\*TimeoutError\) [Error](<https://github.com/induzo/gocom/blob/main/http/health/health.go#L45>)
 
 ```go
 func (e *TimeoutError) Error() string
