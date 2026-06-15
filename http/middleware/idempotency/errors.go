@@ -160,11 +160,75 @@ func (e GetStoredResponseError) Unwrap() error {
 type ProblemDetail struct {
 	HTTPStatusCode int `json:"-"`
 
-	Type             string         `json:"type"`
-	Title            string         `json:"title"`
-	Detail           string         `json:"detail"`
-	Instance         string         `json:"instance"`
-	ExtensionMembers map[string]any `json:",omitempty"`
+	Type     string `json:"type"`
+	Title    string `json:"title"`
+	Detail   string `json:"detail"`
+	Instance string `json:"instance"`
+	// ExtensionMembers are serialized as siblings of the standard members
+	// (RFC 9457 §3.2), not nested. Marshaling is handled by MarshalJSON, so
+	// this field carries no struct tag.
+	ExtensionMembers map[string]any `json:"-"`
+}
+
+// MarshalJSON renders the problem detail per RFC 9457: the standard members
+// in their canonical order, with any extension members spliced in at the top
+// level. Extension members never override a standard member. When there are
+// no extension members the standard field order is preserved exactly.
+//
+//nolint:gocritic // value receiver keeps ProblemDetail usable as a plain value
+func (pd ProblemDetail) MarshalJSON() ([]byte, error) {
+	type standard struct {
+		Type     string `json:"type"`
+		Title    string `json:"title"`
+		Detail   string `json:"detail"`
+		Instance string `json:"instance"`
+	}
+
+	std := standard{
+		Type:     pd.Type,
+		Title:    pd.Title,
+		Detail:   pd.Detail,
+		Instance: pd.Instance,
+	}
+
+	if len(pd.ExtensionMembers) == 0 {
+		out, err := json.Marshal(std)
+		if err != nil {
+			return nil, fmt.Errorf("marshaling problem detail: %w", err)
+		}
+
+		return out, nil
+	}
+
+	stdBytes, err := json.Marshal(std)
+	if err != nil {
+		return nil, fmt.Errorf("marshaling problem detail: %w", err)
+	}
+
+	merged := make(map[string]json.RawMessage)
+	if errU := json.Unmarshal(stdBytes, &merged); errU != nil {
+		return nil, fmt.Errorf("merging problem detail members: %w", errU)
+	}
+
+	for key, val := range pd.ExtensionMembers {
+		if _, exists := merged[key]; exists {
+			continue // standard members win
+		}
+
+		raw, errM := json.Marshal(val)
+		if errM != nil {
+			return nil, fmt.Errorf("marshaling extension member %q: %w", key, errM)
+		}
+
+		merged[key] = raw
+	}
+
+	out, err := json.Marshal(merged)
+	if err != nil {
+		return nil, fmt.Errorf("marshaling problem detail: %w", err)
+	}
+
+	return out, nil
 }
 
 // ErrorToHTTPJSONProblemDetail converts an error to a RFC9457 problem detail.

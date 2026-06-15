@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -20,7 +21,7 @@ type InMemStore struct {
 	withStoreResponseError     bool
 	withGetStoredResponseError bool
 	lockTimeout                time.Duration
-	responseTTL                time.Duration
+	responseTTL                atomic.Int64 // response TTL in nanoseconds
 	cancel                     context.CancelFunc
 	closeOnce                  sync.Once
 }
@@ -43,9 +44,9 @@ func NewInMemStore() *InMemStore {
 		locks:       sync.Map{},
 		responses:   sync.Map{},
 		lockTimeout: defaultLockTimeout,
-		responseTTL: defaultResponseTTL,
 		cancel:      cancel,
 	}
+	store.responseTTL.Store(int64(defaultResponseTTL))
 
 	// Start background cleanup goroutine.
 	go store.cleanup(ctx)
@@ -154,7 +155,7 @@ func (s *InMemStore) StoreResponse(
 
 	entry := &storedEntry{
 		response:  resp,
-		expiresAt: time.Now().Add(s.responseTTL),
+		expiresAt: time.Now().Add(time.Duration(s.responseTTL.Load())),
 	}
 
 	s.responses.Store(key, entry)
@@ -202,7 +203,8 @@ func (s *InMemStore) GetStoredResponse(
 	return entry.response, true, nil
 }
 
-// SetResponseTTL configures how long responses should be cached.
+// SetResponseTTL configures how long responses should be cached. It is safe
+// to call concurrently with store operations.
 func (s *InMemStore) SetResponseTTL(ttl time.Duration) {
-	s.responseTTL = ttl
+	s.responseTTL.Store(int64(ttl))
 }

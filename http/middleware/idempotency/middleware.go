@@ -154,15 +154,22 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 				endUnlock()
 			}()
 
-			teeRespW := newTeeResponseWriter(respW)
+			teeRespW := newTeeResponseWriter(respW, conf.maxResponseBodyBytes)
 
 			next.ServeHTTP(teeRespW, req)
+
+			if teeRespW.overflowed {
+				// The response exceeded the cacheable size and was streamed
+				// straight to the client. There is nothing complete to store,
+				// so leave the key unstored; a retry re-executes the handler.
+				return
+			}
 
 			endStore := conf.tracerFn(req, "idempotency.store_response")
 			errSR := store.StoreResponse(lockCtx, storeKey,
 				&StoredResponse{
 					StatusCode:  teeRespW.statusCode,
-					Header:      teeRespW.header(),
+					Header:      teeRespW.header().Clone(),
 					Body:        teeRespW.body.Bytes(),
 					RequestHash: requestHash,
 				},
@@ -307,15 +314,18 @@ func replayResponse(
 // while also passing writes through to the underlying ResponseWriter.
 type teeResponseWriter struct {
 	http.ResponseWriter
-	body       *bytes.Buffer
-	statusCode int
+	body         *bytes.Buffer
+	statusCode   int
+	maxBodyBytes int64
+	overflowed   bool
 }
 
-func newTeeResponseWriter(w http.ResponseWriter) *teeResponseWriter {
+func newTeeResponseWriter(w http.ResponseWriter, maxBodyBytes int64) *teeResponseWriter {
 	return &teeResponseWriter{
 		ResponseWriter: w,
 		body:           &bytes.Buffer{},
 		statusCode:     http.StatusOK, // Default
+		maxBodyBytes:   maxBodyBytes,
 	}
 }
 
@@ -325,18 +335,38 @@ func (tw *teeResponseWriter) WriteHeader(code int) {
 	tw.ResponseWriter.WriteHeader(code)
 }
 
-// Write copies the data into our buffer, then passes it on
+// Write copies the data into our buffer (up to maxBodyBytes), then passes it
+// on to the underlying writer. Once the buffered body would exceed
+// maxBodyBytes the tee stops buffering, drops what it has, and flags the
+// response as overflowed so the caller skips storing it; the client still
+// receives every byte. The returned count reflects the bytes written to the
+// underlying writer, per the io.Writer contract.
 func (tw *teeResponseWriter) Write(data []byte) (int, error) {
-	if _, errW := tw.body.Write(data); errW != nil {
-		return 0, fmt.Errorf("teeResponseWriter body Write: %w", errW)
+	if !tw.overflowed {
+		if tw.maxBodyBytes > 0 &&
+			int64(tw.body.Len())+int64(len(data)) > tw.maxBodyBytes {
+			tw.overflowed = true
+			tw.body.Reset()
+		} else {
+			// bytes.Buffer.Write only ever returns a nil error.
+			_, _ = tw.body.Write(data)
+		}
 	}
 
 	writtenBytesCount, errWR := tw.ResponseWriter.Write(data)
 	if errWR != nil {
-		return 0, fmt.Errorf("teeResponseWriter ResponseWriter Write: %w", errWR)
+		return writtenBytesCount, fmt.Errorf("teeResponseWriter ResponseWriter Write: %w", errWR)
 	}
 
 	return writtenBytesCount, nil
+}
+
+// Unwrap exposes the underlying ResponseWriter so that http.ResponseController
+// (and direct optional-interface assertions) can reach capabilities such as
+// http.Flusher, http.Hijacker, and SetWriteDeadline that the tee does not
+// implement itself.
+func (tw *teeResponseWriter) Unwrap() http.ResponseWriter {
+	return tw.ResponseWriter
 }
 
 // header returns the final response headers at the time this function is called.

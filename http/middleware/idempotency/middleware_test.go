@@ -552,7 +552,7 @@ func TestTeeResponseWriterWriteHeader(t *testing.T) {
 
 	buf := new(bytes.Buffer)
 
-	tee := newTeeResponseWriter(httptest.NewRecorder())
+	tee := newTeeResponseWriter(httptest.NewRecorder(), DefaultMaxResponseBodyBytes)
 
 	tee.WriteHeader(http.StatusOK)
 
@@ -570,7 +570,7 @@ func TestTeeResponseWriterWrite(t *testing.T) {
 
 	buf := httptest.NewRecorder()
 
-	tee := newTeeResponseWriter(buf)
+	tee := newTeeResponseWriter(buf, DefaultMaxResponseBodyBytes)
 
 	_, _ = tee.Write([]byte("hola"))
 
@@ -1044,5 +1044,109 @@ func errorToString(
 			"internal server error",
 			http.StatusInternalServerError,
 		)
+	}
+}
+
+// flushOnlyWriter wraps an http.ResponseWriter and exposes http.Flusher only
+// through Unwrap (not directly), to verify http.ResponseController can reach
+// it through the teeResponseWriter.
+type flushTrackingWriter struct {
+	http.ResponseWriter
+	flushed bool
+}
+
+func (w *flushTrackingWriter) Flush() {
+	w.flushed = true
+	if f, ok := w.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
+}
+
+func TestTeeResponseWriter_UnwrapReachesFlusher(t *testing.T) {
+	t.Parallel()
+
+	underlying := &flushTrackingWriter{ResponseWriter: httptest.NewRecorder()}
+	tee := newTeeResponseWriter(underlying, DefaultMaxResponseBodyBytes)
+
+	// http.ResponseController relies on Unwrap to find the Flusher.
+	if err := http.NewResponseController(tee).Flush(); err != nil {
+		t.Fatalf("ResponseController.Flush via Unwrap failed: %v", err)
+	}
+
+	if !underlying.flushed {
+		t.Error("expected underlying writer's Flush to be called through Unwrap")
+	}
+}
+
+func TestTeeResponseWriter_OverflowStopsBuffering(t *testing.T) {
+	t.Parallel()
+
+	rec := httptest.NewRecorder()
+	tee := newTeeResponseWriter(rec, 4) // 4-byte cap
+
+	// First write fits.
+	if _, err := tee.Write([]byte("ab")); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Second write tips it over the cap.
+	n, err := tee.Write([]byte("cde"))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if n != 3 {
+		t.Errorf("expected Write to report 3 bytes written, got %d", n)
+	}
+
+	if !tee.overflowed {
+		t.Error("expected tee to be flagged overflowed")
+	}
+
+	if tee.body.Len() != 0 {
+		t.Errorf("expected buffered body to be dropped, got %d bytes", tee.body.Len())
+	}
+
+	// The client still receives every byte.
+	if got := rec.Body.String(); got != "abcde" {
+		t.Errorf("expected client to receive full body, got %q", got)
+	}
+}
+
+func TestMiddleware_OversizedResponseIsNotReplayed(t *testing.T) {
+	t.Parallel()
+
+	store := NewInMemStore()
+	defer store.Close()
+
+	var calls atomic.Int32
+
+	mw := NewMiddleware(store, WithMaxResponseBodyBytes(8))
+	handler := mw(http.HandlerFunc(func(respW http.ResponseWriter, _ *http.Request) {
+		calls.Add(1)
+
+		_, _ = respW.Write([]byte("this body is well beyond eight bytes"))
+	}))
+
+	server := httptest.NewServer(handler)
+	defer server.Close()
+
+	ctx := context.Background()
+
+	for range 2 {
+		code, _, err := sendReq(ctx, http.MethodPost, "/pay", server, "same-key", "body")
+		if err != nil {
+			t.Fatalf("request failed: %v", err)
+		}
+
+		if code != http.StatusOK {
+			t.Fatalf("expected 200, got %d", code)
+		}
+	}
+
+	// Because the oversized response was never stored, the handler runs both
+	// times rather than the second being replayed.
+	if got := calls.Load(); got != 2 {
+		t.Errorf("expected handler to run twice (no replay), ran %d times", got)
 	}
 }

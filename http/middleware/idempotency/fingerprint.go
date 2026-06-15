@@ -22,6 +22,10 @@ var errBodyTooLarge = errors.New("request body exceeds idempotency fingerprint l
 //
 // maxBodyBytes bounds the body bytes consumed; requests above the limit
 // return a BodyTooLargeError so the middleware can reject them with HTTP 413.
+//
+// The path is lowercased to match buildStoreKey's normalization, so
+// case-only path differences are treated as the same request on
+// case-sensitive routers.
 func buildRequestFingerprint(req *http.Request, maxBodyBytes int64) ([]byte, error) {
 	hasher := sha256.New()
 

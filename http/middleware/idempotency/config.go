@@ -13,6 +13,13 @@ const (
 	// middleware to reject the request with BodyTooLargeError.
 	DefaultMaxFingerprintBodyBytes int64 = 5 * 1024 * 1024 // 5 MiB
 
+	// DefaultMaxResponseBodyBytes bounds the response body bytes the
+	// middleware buffers for later replay. Responses larger than this are
+	// streamed through to the client unbuffered and are not stored, so a
+	// retry re-executes the handler rather than replaying. This prevents an
+	// unbounded handler response from being held entirely in memory.
+	DefaultMaxResponseBodyBytes int64 = 5 * 1024 * 1024 // 5 MiB
+
 	// userIDCtxKeyLegacy is the historical untyped string key the default
 	// extractor and fingerprinter consulted; it is still honored as a
 	// fallback for backwards compatibility, behind UserIDCtxKey.
@@ -51,6 +58,7 @@ type config struct {
 	allowedReplayHeaders     []string
 	tracerFn                 TracerFn
 	maxFingerprintBodyBytes  int64
+	maxResponseBodyBytes     int64
 }
 
 func newDefaultConfig() *config {
@@ -65,6 +73,7 @@ func newDefaultConfig() *config {
 		allowedReplayHeaders:     defaultAllowedReplayHeaders(),
 		tracerFn:                 noOpTracer,
 		maxFingerprintBodyBytes:  DefaultMaxFingerprintBodyBytes,
+		maxResponseBodyBytes:     DefaultMaxResponseBodyBytes,
 	}
 
 	// Bind the default fingerprinter via a closure so that
@@ -77,9 +86,14 @@ func newDefaultConfig() *config {
 	return cfg
 }
 
+// noOpEnd is the shared end-span function returned by noOpTracer. Reusing a
+// single value avoids allocating a fresh closure on every span the
+// middleware opens (~8 per request) when no tracer is configured.
+var noOpEnd = func() {} //nolint:gochecknoglobals // shared no-op sentinel
+
 // noOpTracer is a no-op tracer that does nothing.
 func noOpTracer(_ *http.Request, _ string) func() {
-	return func() {}
+	return noOpEnd
 }
 
 // defaultUserIDExtractor reads the user ID from the request context. It

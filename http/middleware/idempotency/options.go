@@ -58,6 +58,19 @@ func WithMaxFingerprintBodyBytes(n int64) Option {
 	}
 }
 
+// WithMaxResponseBodyBytes bounds the number of response body bytes the
+// middleware buffers for later replay. Responses larger than n are streamed
+// through to the client unbuffered and are not stored, so a subsequent
+// identical request re-executes the handler instead of replaying. A value
+// of n <= 0 disables the cap and buffers the full response (not
+// recommended for handlers that can return large bodies). The default is
+// DefaultMaxResponseBodyBytes.
+func WithMaxResponseBodyBytes(n int64) Option {
+	return func(cfg *config) {
+		cfg.maxResponseBodyBytes = n
+	}
+}
+
 // WithAffectedMethods sets the methods that are affected by idempotency.
 // By default, POST only are affected. Method names are normalized to
 // uppercase so the option is case-insensitive.

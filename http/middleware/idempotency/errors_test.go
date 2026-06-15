@@ -1,6 +1,7 @@
 package idempotency
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -224,5 +225,72 @@ func TestErrorToHTTPJSONProblemDetail(t *testing.T) {
 				t.Errorf("unexpected body: %s", respWriter.Body.String())
 			}
 		})
+	}
+}
+
+func TestProblemDetail_MarshalJSON_NoExtensions(t *testing.T) {
+	t.Parallel()
+
+	pd := ProblemDetail{
+		Type:     "errors/x",
+		Title:    "x",
+		Detail:   "detail",
+		Instance: "/x",
+	}
+
+	got, err := json.Marshal(pd)
+	if err != nil {
+		t.Fatalf("marshal failed: %v", err)
+	}
+
+	// Standard member order is preserved when there are no extensions.
+	want := `{"type":"errors/x","title":"x","detail":"detail","instance":"/x"}`
+	if string(got) != want {
+		t.Errorf("unexpected JSON\n got: %s\nwant: %s", got, want)
+	}
+}
+
+func TestProblemDetail_MarshalJSON_FlattensExtensions(t *testing.T) {
+	t.Parallel()
+
+	pd := ProblemDetail{
+		Type:     "errors/x",
+		Title:    "x",
+		Detail:   "detail",
+		Instance: "/x",
+		ExtensionMembers: map[string]any{
+			"balance":  100,
+			"type":     "should-not-override", // standard member must win
+			"accounts": []string{"a", "b"},
+		},
+	}
+
+	got, err := json.Marshal(pd)
+	if err != nil {
+		t.Fatalf("marshal failed: %v", err)
+	}
+
+	var decoded map[string]any
+	if errU := json.Unmarshal(got, &decoded); errU != nil {
+		t.Fatalf("result is not valid JSON: %v", errU)
+	}
+
+	// Extension members are siblings of the standard members.
+	if _, ok := decoded["balance"]; !ok {
+		t.Error("expected extension member 'balance' to be flattened to top level")
+	}
+
+	if _, ok := decoded["accounts"]; !ok {
+		t.Error("expected extension member 'accounts' to be flattened to top level")
+	}
+
+	// Standard member is not clobbered by a colliding extension key.
+	if decoded["type"] != "errors/x" {
+		t.Errorf("standard member 'type' was overridden, got %v", decoded["type"])
+	}
+
+	// No nested ExtensionMembers object leaks into the output.
+	if _, ok := decoded["ExtensionMembers"]; ok {
+		t.Error("ExtensionMembers should not appear as a nested object")
 	}
 }

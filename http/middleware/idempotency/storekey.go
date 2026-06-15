@@ -53,6 +53,12 @@ func validateIdempotencyKey(key string) error {
 //
 // Format: {userID}:{method}:{path}:{key}
 // Example: user123:POST:/api/payment:abc-123
+//
+// The path is lowercased for normalization, so requests to a case-sensitive
+// router that differ only by path casing (e.g. /Pay vs /pay) share an
+// idempotency scope. This is intentional for the common case of
+// case-insensitive routing; deployments with case-sensitive routes should
+// account for it.
 func buildStoreKey(
 	req *http.Request,
 	idempotencyKey string,
