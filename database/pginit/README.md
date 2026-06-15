@@ -6,7 +6,7 @@
 import "github.com/induzo/gocom/database/pginit/v2"
 ```
 
-This package allows you to init a connection pool to postgres database via pgx
+Package pginit provides a small wrapper around pgxpool that bundles common defaults \(slog tracer, OpenTelemetry tracer, custom type registration\) for connecting to a PostgreSQL database.
 
 ## Index
 
@@ -38,44 +38,62 @@ ConnPoolHealthCheck returns a health check function for pgxpool.Pool that can be
 Using standard net/http package. We can also simply pass healthCheck as a CheckFn in gocom/http/health/v2.
 
 ```go
-pgi, err := pginit.New(
-	"postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m",
+package main
+
+import (
+	"context"
+	"log"
+	"net/http"
+
+	"github.com/induzo/gocom/database/pginit/v2"
 )
-if err != nil {
-	log.Fatalf("init pgi config: %v", err)
-}
 
-ctx := context.Background()
-
-pool, err := pgi.ConnPool(ctx)
-if err != nil {
-	log.Fatalf("init pgi config: %v", err)
-}
-
-defer pool.Close()
-
-healthCheck := pginit.ConnPoolHealthCheck(pool)
-
-mux := http.NewServeMux()
-
-mux.HandleFunc("/sys/health", func(rw http.ResponseWriter, _ *http.Request) {
-	if err := healthCheck(ctx); err != nil {
-		rw.WriteHeader(http.StatusServiceUnavailable)
+func main() {
+	pgi, err := pginit.New(
+		"postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m",
+	)
+	if err != nil {
+		log.Fatalf("init pgi config: %v", err)
 	}
-})
+
+	ctx := context.Background()
+
+	pool, err := pgi.ConnPool(ctx)
+	if err != nil {
+		log.Fatalf("init pgi config: %v", err)
+	}
+
+	defer pool.Close()
+
+	healthCheck := pginit.ConnPoolHealthCheck(pool)
+
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/sys/health", func(rw http.ResponseWriter, _ *http.Request) {
+		if err := healthCheck(ctx); err != nil {
+			rw.WriteHeader(http.StatusServiceUnavailable)
+		}
+	})
+}
 ```
 
 </p>
 </details>
 
 <a name="JSONRowToAddrOfStruct"></a>
-## func [JSONRowToAddrOfStruct](<https://github.com/induzo/gocom/blob/main/database/pginit/jsonrow.go#L10>)
+## func [JSONRowToAddrOfStruct](<https://github.com/induzo/gocom/blob/main/database/pginit/jsonrow.go#L18>)
 
 ```go
 func JSONRowToAddrOfStruct[T any](row pgx.CollectableRow) (*T, error)
 ```
 
+JSONRowToAddrOfStruct is a generic \[pgx.RowToFunc\] that scans a single JSON\-encoded column from row and unmarshals it into a freshly\-allocated \*T. Convenient for queries shaped like
 
+```
+SELECT json_agg(...) FROM (...)  // returns one JSON column.
+```
+
+Callers using \[pgx.CollectRows\] / \[pgx.CollectExactlyOneRow\] can pass JSONRowToAddrOfStruct\[MyType\] as the row collector.
 
 <a name="Option"></a>
 ## type [Option](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L21>)
@@ -87,7 +105,7 @@ type Option func(*PGInit)
 ```
 
 <a name="WithDecimalType"></a>
-### func [WithDecimalType](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L92>)
+### func [WithDecimalType](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L113>)
 
 ```go
 func WithDecimalType() Option
@@ -96,7 +114,7 @@ func WithDecimalType() Option
 WithDecimalType set pgx decimal type to shopspring/decimal.
 
 <a name="WithGoogleUUIDType"></a>
-### func [WithGoogleUUIDType](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L106>)
+### func [WithGoogleUUIDType](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L127>)
 
 ```go
 func WithGoogleUUIDType() Option
@@ -105,7 +123,7 @@ func WithGoogleUUIDType() Option
 WithGoogleUUIDType set pgx uuid type to google/uuid.
 
 <a name="WithLogger"></a>
-### func [WithLogger](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L75>)
+### func [WithLogger](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L92>)
 
 ```go
 func WithLogger(logger *slog.Logger, _ string) Option
@@ -113,8 +131,10 @@ func WithLogger(logger *slog.Logger, _ string) Option
 
 WithLogger Add logger to pgx. if the request context contains request id, can pass in the request id context key to reqIDKeyFromCtx and logger will log with the request id.
 
+Note: WithLogger and WithTracer both set ConnConfig.Tracer; only the last one applied takes effect. To use both, wrap them externally before calling New.
+
 <a name="WithTracer"></a>
-### func [WithTracer](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L85>)
+### func [WithTracer](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L106>)
 
 ```go
 func WithTracer(opts ...otelpgx.Option) Option
@@ -122,8 +142,10 @@ func WithTracer(opts ...otelpgx.Option) Option
 
 WithTracer Add tracer to pgx.
 
+Note: WithTracer and WithLogger both set ConnConfig.Tracer; only the last one applied takes effect. To use both, wrap them externally before calling New.
+
 <a name="WithUUIDType"></a>
-### func [WithUUIDType](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L99>)
+### func [WithUUIDType](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L120>)
 
 ```go
 func WithUUIDType() Option
@@ -143,7 +165,7 @@ type PGInit struct {
 ```
 
 <a name="New"></a>
-### func [New](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L31>)
+### func [New](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L35>)
 
 ```go
 func New(connString string, opts ...Option) (*PGInit, error)
@@ -151,8 +173,10 @@ func New(connString string, opts ...Option) (*PGInit, error)
 
 New initializes a PGInit using the provided Config and options. If opts is not provided it will initializes PGInit with default configuration.
 
+If a custom\-type option \(WithDecimalType, WithUUIDType, WithGoogleUUIDType\) or a connection string that ships its own AfterConnect hook is in play, New chains them so both run on every new physical connection.
+
 <a name="PGInit.ConnPool"></a>
-### func \(\*PGInit\) [ConnPool](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L57>)
+### func \(\*PGInit\) [ConnPool](<https://github.com/induzo/gocom/blob/main/database/pginit/pool.go#L70>)
 
 ```go
 func (pgi *PGInit) ConnPool(ctx context.Context) (*pgxpool.Pool, error)
@@ -166,24 +190,35 @@ ConnPool initiates connection to database and return a pgxpool.Pool.
 
 
 ```go
-pgi, err := pginit.New(
-	"postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m",
+package main
+
+import (
+	"context"
+	"log"
+
+	"github.com/induzo/gocom/database/pginit/v2"
 )
-if err != nil {
-	log.Fatalf("init pgi config: %v", err)
-}
 
-ctx := context.Background()
+func main() {
+	pgi, err := pginit.New(
+		"postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m",
+	)
+	if err != nil {
+		log.Fatalf("init pgi config: %v", err)
+	}
 
-pool, err := pgi.ConnPool(ctx)
-if err != nil {
-	log.Fatalf("init pgi config: %v", err)
-}
+	ctx := context.Background()
 
-defer pool.Close()
+	pool, err := pgi.ConnPool(ctx)
+	if err != nil {
+		log.Fatalf("init pgi config: %v", err)
+	}
 
-if err := pool.Ping(ctx); err != nil {
-	log.Fatalf("ping: %v", err)
+	defer pool.Close()
+
+	if err := pool.Ping(ctx); err != nil {
+		log.Fatalf("ping: %v", err)
+	}
 }
 ```
 
@@ -196,30 +231,42 @@ if err := pool.Ping(ctx); err != nil {
 
 
 ```go
-textHandler := slog.DiscardHandler
-logger := slog.New(textHandler)
+package main
 
-pgi, err := pginit.New(
-	"postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m",
-	pginit.WithLogger(logger, "request-id"),
-	pginit.WithDecimalType(),
-	pginit.WithUUIDType(),
+import (
+	"context"
+	"log"
+	"log/slog"
+
+	"github.com/induzo/gocom/database/pginit/v2"
 )
-if err != nil {
-	log.Fatalf("init pgi config: %v", err)
-}
 
-ctx := context.Background()
+func main() {
+	textHandler := slog.DiscardHandler
+	logger := slog.New(textHandler)
 
-pool, err := pgi.ConnPool(ctx)
-if err != nil {
-	log.Fatalf("init pgi config: %v", err)
-}
+	pgi, err := pginit.New(
+		"postgres://postgres:postgres@localhost:5432/datawarehouse?sslmode=disable&pool_max_conns=10&pool_max_conn_lifetime=1m",
+		pginit.WithLogger(logger, "request-id"),
+		pginit.WithDecimalType(),
+		pginit.WithUUIDType(),
+	)
+	if err != nil {
+		log.Fatalf("init pgi config: %v", err)
+	}
 
-defer pool.Close()
+	ctx := context.Background()
 
-if err := pool.Ping(ctx); err != nil {
-	log.Fatalf("ping: %v", err)
+	pool, err := pgi.ConnPool(ctx)
+	if err != nil {
+		log.Fatalf("init pgi config: %v", err)
+	}
+
+	defer pool.Close()
+
+	if err := pool.Ping(ctx); err != nil {
+		log.Fatalf("ping: %v", err)
+	}
 }
 ```
 
