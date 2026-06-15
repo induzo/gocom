@@ -2,11 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-## [http/middleware/idempotency/v0.10.0] - 2026-05-05
+## [http/middleware/idempotency/v0.10.1] - 2026-06-15
 
 ### Bug Fixes
 
 - Close TryLock race, cap body, harden Store contract
+- Harden response buffering, header replay, and ttl race
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/idempotency/v0.10.0
 
 ### Miscellaneous Tasks
 
