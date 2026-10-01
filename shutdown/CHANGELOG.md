@@ -2,11 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [shutdown/v1.3.7] - 2026-10-01
+
+### Miscellaneous Tasks
+
+- Update deps
+- Update deps
+
 ## [shutdown/v1.3.6] - 2026-06-15
 
 ### Documentation
 
 - Update CHANGELOG.md for shutdown/v1.4.0
+- Update CHANGELOG.md for shutdown/v1.3.6
+- Update docs for module shutdown
 
 ### Features
 
