@@ -1,6 +1,6 @@
 module github.com/induzo/gocom/http/health
 
-go 1.26
+go 1.26.0
 
 require (
 	github.com/goccy/go-json v0.11.2
