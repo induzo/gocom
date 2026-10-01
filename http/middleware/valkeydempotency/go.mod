@@ -3,9 +3,9 @@ module github.com/induzo/gocom/http/middleware/valkeydempotency
 go 1.26.0
 
 require (
-	github.com/induzo/gocom/http/middleware/idempotency v0.10.1
+	github.com/induzo/gocom/http/middleware/idempotency v0.10.2
 	github.com/ory/dockertest/v3 v3.12.0
-	github.com/valkey-io/valkey-go v1.0.76
+	github.com/valkey-io/valkey-go v1.0.78
 	go.uber.org/goleak v1.3.0
 )
 
