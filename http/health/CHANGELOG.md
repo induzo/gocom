@@ -2,7 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/health/v1.2.4] - 2026-10-01
+
+### Miscellaneous Tasks
+
+- Update deps
+- Update deps
+- Update deps
+
 ## [http/health/v1.2.3] - 2026-07-29
+
+### Documentation
+
+- Update CHANGELOG.md for http/health/v1.2.3
 
 ### Miscellaneous Tasks
 
