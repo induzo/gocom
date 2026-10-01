@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [database/pgx-slog/v1.0.46] - 2026-10-01
+
+### Miscellaneous Tasks
+
+- Sec update
+
 ## [database/pgx-slog/v1.0.45] - 2026-10-01
+
+### Documentation
+
+- Update CHANGELOG.md for database/pgx-slog/v1.0.45
 
 ### Miscellaneous Tasks
 
