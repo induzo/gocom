@@ -259,7 +259,7 @@ sections = ['standard', 'default', 'prefix(github.com/induzo)']
 
 [formatters.settings.gofumpt]
 module-path = 'github.com/induzo'
-extra-rules = true
+extra.group-params = true
 
 [formatters.settings.golines]
 reformat-tags = false
