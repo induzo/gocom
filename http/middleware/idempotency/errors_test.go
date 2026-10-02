@@ -14,10 +14,8 @@ func TestMissingIdempotencyKeyHeaderError_Error(t *testing.T) {
 	t.Parallel()
 
 	err := MissingIdempotencyKeyHeaderError{
-		RequestContext: RequestContext{
-			Key:       "key",
-			KeyHeader: DefaultIdempotencyKeyHeader,
-		},
+		Key:       "key",
+		KeyHeader: DefaultIdempotencyKeyHeader,
 	}
 
 	if err.Error() != "missing idempotency key header `X-Idempotency-Key`" {
@@ -29,10 +27,8 @@ func TestRequestStillInFlightError_Error(t *testing.T) {
 	t.Parallel()
 
 	err := &RequestInFlightError{
-		RequestContext: RequestContext{
-			Key:       "key",
-			KeyHeader: DefaultIdempotencyKeyHeader,
-		},
+		Key:       "key",
+		KeyHeader: DefaultIdempotencyKeyHeader,
 	}
 
 	if err.Error() != "request with key `X-Idempotency-Key`:`key` still in flight" {
@@ -45,10 +41,8 @@ func TestMismatchedSignatureError_Error(t *testing.T) {
 	t.Parallel()
 
 	err := &MismatchedSignatureError{
-		RequestContext: RequestContext{
-			Key:       "key",
-			KeyHeader: DefaultIdempotencyKeyHeader,
-		},
+		Key:       "key",
+		KeyHeader: DefaultIdempotencyKeyHeader,
 	}
 
 	if err.Error() != "mismatched request hash for key `X-Idempotency-Key`:`key`" {
@@ -61,11 +55,9 @@ func TestStoreResponseError_Error(t *testing.T) {
 	t.Parallel()
 
 	err := StoreResponseError{
-		RequestContext: RequestContext{
-			Key:       "key",
-			KeyHeader: DefaultIdempotencyKeyHeader,
-		},
-		Err: errors.New("test"),
+		Key:       "key",
+		KeyHeader: DefaultIdempotencyKeyHeader,
+		Err:       errors.New("test"),
 	}
 
 	if err.Error() != "error storing response: test" {
@@ -78,11 +70,9 @@ func TestStoreResponseError_Unwrap(t *testing.T) {
 	t.Parallel()
 
 	err := StoreResponseError{
-		RequestContext: RequestContext{
-			Key:       "key",
-			KeyHeader: DefaultIdempotencyKeyHeader,
-		},
-		Err: errors.New("test"),
+		Key:       "key",
+		KeyHeader: DefaultIdempotencyKeyHeader,
+		Err:       errors.New("test"),
 	}
 
 	if err.Unwrap().Error() != "test" {
@@ -95,11 +85,9 @@ func TestGetStoredResponseError_Error(t *testing.T) {
 	t.Parallel()
 
 	err := GetStoredResponseError{
-		RequestContext: RequestContext{
-			Key:       "key",
-			KeyHeader: DefaultIdempotencyKeyHeader,
-		},
-		Err: errors.New("test"),
+		Key:       "key",
+		KeyHeader: DefaultIdempotencyKeyHeader,
+		Err:       errors.New("test"),
 	}
 
 	if err.Error() != "error getting stored response: test" {
@@ -112,11 +100,9 @@ func TestGetStoredResponseError_Unwrap(t *testing.T) {
 	t.Parallel()
 
 	err := GetStoredResponseError{
-		RequestContext: RequestContext{
-			Key:       "key",
-			KeyHeader: DefaultIdempotencyKeyHeader,
-		},
-		Err: errors.New("test"),
+		Key:       "key",
+		KeyHeader: DefaultIdempotencyKeyHeader,
+		Err:       errors.New("test"),
 	}
 
 	if err.Unwrap().Error() != "test" {
@@ -181,11 +167,9 @@ func TestErrorToHTTPJSONProblemDetail(t *testing.T) {
 		{
 			name: "get stored response",
 			err: &GetStoredResponseError{
-				RequestContext: RequestContext{
-					Key:       "key",
-					KeyHeader: DefaultIdempotencyKeyHeader,
-				},
-				Err: errors.New("test"),
+				Key:       "key",
+				KeyHeader: DefaultIdempotencyKeyHeader,
+				Err:       errors.New("test"),
 			},
 			expectedStatusCode:   http.StatusInternalServerError,
 			expectedBodyContains: `"title": "internal server error"`,
@@ -193,10 +177,8 @@ func TestErrorToHTTPJSONProblemDetail(t *testing.T) {
 		{
 			name: "wrapped mismatched signature",
 			err: fmt.Errorf("wrapped: %w", MismatchedSignatureError{
-				RequestContext: RequestContext{
-					Key:       "key",
-					KeyHeader: DefaultIdempotencyKeyHeader,
-				},
+				Key:       "key",
+				KeyHeader: DefaultIdempotencyKeyHeader,
 			}),
 			expectedStatusCode:   http.StatusUnprocessableEntity,
 			expectedBodyContains: `"title": "mismatched signature"`,

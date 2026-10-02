@@ -69,13 +69,11 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			if err != nil {
 				conf.errorToHTTPFn(respW, req,
 					InvalidIdempotencyKeyError{
-						RequestContext: RequestContext{
-							URL:       req.URL.String(),
-							Method:    req.Method,
-							Key:       key,
-							KeyHeader: conf.idempotencyKeyHeader,
-						},
-						Err: err,
+						URL:       req.URL.String(),
+						Method:    req.Method,
+						Key:       key,
+						KeyHeader: conf.idempotencyKeyHeader,
+						Err:       err,
 					},
 				)
 
@@ -179,13 +177,11 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 
 			if errSR != nil {
 				conf.errorToHTTPFn(respW, req, StoreResponseError{
-					RequestContext: RequestContext{
-						URL:       req.URL.String(),
-						Method:    req.Method,
-						KeyHeader: conf.idempotencyKeyHeader,
-						Key:       key,
-					},
-					Err: errSR,
+					URL:       req.URL.String(),
+					Method:    req.Method,
+					KeyHeader: conf.idempotencyKeyHeader,
+					Key:       key,
+					Err:       errSR,
 				})
 
 				return
@@ -206,13 +202,11 @@ func handleRequestWithIdempotency(
 	resp, exists, err := store.GetStoredResponse(req.Context(), storeKey)
 	if err != nil {
 		conf.errorToHTTPFn(respW, req, GetStoredResponseError{
-			RequestContext: RequestContext{
-				URL:       req.URL.String(),
-				Method:    req.Method,
-				KeyHeader: conf.idempotencyKeyHeader,
-				Key:       originalKey,
-			},
-			Err: err,
+			URL:       req.URL.String(),
+			Method:    req.Method,
+			KeyHeader: conf.idempotencyKeyHeader,
+			Key:       originalKey,
+			Err:       err,
 		})
 
 		return true
