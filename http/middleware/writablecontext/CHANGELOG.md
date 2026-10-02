@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/writablecontext/v0.3.0] - 2026-10-02
+
+### Miscellaneous Tasks
+
+- Update deps
+
 ## [http/middleware/writablecontext/v0.2.2] - 2026-10-01
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/writablecontext/v0.2.2
 
 ### Miscellaneous Tasks
 
