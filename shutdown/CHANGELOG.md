@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [shutdown/v2.0.0] - 2026-10-02
+
+### Features
+
+- New v2 version
+
 ## [shutdown/v1.3.7] - 2026-10-01
+
+### Documentation
+
+- Update CHANGELOG.md for shutdown/v1.3.7
 
 ### Miscellaneous Tasks
 
