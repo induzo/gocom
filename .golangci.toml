@@ -46,6 +46,7 @@ enable = [
 	'godox',
 	'goheader',
 	'gomoddirectives',
+	'gomodguard_v2',
 	'goprintffuncname',
 	'gosec',
 	'gosmopolitan',
@@ -56,6 +57,7 @@ enable = [
 	'ineffassign',
 	'interfacebloat',
 	'intrange',
+	'iotamixing',
 	'lll',
 	'loggercheck',
 	'maintidx',
@@ -94,6 +96,7 @@ enable = [
 	'tparallel',
 	'unconvert',
 	'unparam',
+	'unqueryvet',
 	'unused',
 	'usestdlibvars',
 	'usetesting',
@@ -103,14 +106,10 @@ enable = [
 	'wrapcheck',
 	'wsl_v5',
 
-	'gomodguard_v2',
-	'iotamixing',
-	'unqueryvet',
-
 	# Disabled by your configuration linters:
 	# clickhouselint: Detects common mistakes with the ClickHouse native Go driver API.
 	# embeddedstructfieldcheck: Embedded types should be at the top of the field list of a struct, and there must be an empty line separating embedded fields from regular fields. [fast]
-	# exhaustruct: Checks if all structure fields are initialized.
+	# exhaustruct_v5: Checks if all structure fields are initialized.
 	# funcorder: Checks the order of functions, methods, and constructors. [fast]
 	# funlen: Checks for long functions. [fast]
 	# godoclint: Checks Golang's documentation practice (godoc). [fast]
@@ -123,6 +122,7 @@ enable = [
 	# tagliatelle: Checks the struct tags.
 	# testpackage: Linter that makes you use a separate _test package. [fast]
 	# zerologlint: Detects the wrong usage of `zerolog` that a user forgets to dispatch with `Send` or `Msg`.
+	# exhaustruct [deprecated]: Checks if all structure fields are initialized.
 	# gomodguard [deprecated]: Allow and blocklist linter for direct Go module dependencies. This is different from depguard where there are different block types for example version constraints and module recommendations. [fast]
 	# wsl [deprecated]: Add or remove empty lines. [fast, auto-fix]
 ]
@@ -170,32 +170,23 @@ msg = """
 Use 'decimal.PowWithPrecision(x, y, money.Precision)' instead of 'decimal.Pow(x, y)'."""
 
 [linters.settings.gocritic]
-disabled-checks = [
-  'whyNoLint',
-  'unnamedResult'
-]
+disabled-checks = ['whyNoLint', 'unnamedResult']
 enabled-tags = [
-  'diagnostic',
-  'experimental',
-  'opinionated',
-  'performance',
-  'style'
+	'diagnostic',
+	'experimental',
+	'opinionated',
+	'performance',
+	'style',
 ]
 
 [linters.settings.gomoddirectives]
-replace-allow-list = [
-  'github.com/docker/cli'
-]
+replace-allow-list = ['github.com/docker/cli']
 
 [linters.settings.gosec]
-excludes = [
-  'G601'
-]
+excludes = ['G601']
 
 [linters.settings.govet]
-disable = [
-  'fieldalignment',
-]
+disable = ['fieldalignment']
 enable-all = true
 
 [linters.settings.staticcheck]
@@ -218,74 +209,53 @@ align = false
 
 [linters.settings.wrapcheck]
 ignore-sigs = [
-  'fmt.Errorf(',
-  'errors.Join(',
-  'go.temporal.io/sdk/temporal.NewApplicationError('
+	'fmt.Errorf(',
+	'errors.Join(',
+	'go.temporal.io/sdk/temporal.NewApplicationError(',
 ]
 
 [linters.exclusions]
 generated = 'lax'
-presets = [
-  'comments',
-  'common-false-positives',
-  'legacy',
-  'std-error-handling'
-]
-paths = [
-  'third_party$',
-  'builtin$',
-  'examples$'
-]
+presets = ['comments', 'common-false-positives', 'legacy', 'std-error-handling']
+paths = ['third_party$', 'builtin$', 'examples$']
 
 [[linters.exclusions.rules]]
 linters = [
-  'contextcheck',
-  'cyclop',
-  'dupl',
-  'dupword',
-  'err113',
-  'errcheck',
-  'errorlint',
-  'forcetypeassert',
-  'funlen',
-  'gochecknoglobals',
-  'gocognit',
-  'goconst',
-  'gocritic',
-  'gosec',
-  'interfacer',
-  'lll',
-  'nlreturn',
-  'varnamelen',
-  'wrapcheck',
-  'maintidx',
-  'noctx',
-  'unqueryvet',
+	'contextcheck',
+	'cyclop',
+	'dupl',
+	'dupword',
+	'err113',
+	'errcheck',
+	'errorlint',
+	'forcetypeassert',
+	'funlen',
+	'gochecknoglobals',
+	'gocognit',
+	'goconst',
+	'gocritic',
+	'gosec',
+	'interfacer',
+	'lll',
+	'nlreturn',
+	'varnamelen',
+	'wrapcheck',
+	'maintidx',
+	'noctx',
+	'unqueryvet',
 ]
 path = '(.+)_test\.go'
 
 [[linters.exclusions.rules]]
-linters = [
-  'lll'
-]
+linters = ['lll']
 source = '^//go:generate '
 
 [formatters]
-enable = [
-  'gci',
-  'gofmt',
-  'gofumpt',
-  'goimports',
-  'golines',
-]
+enable = ['gci', 'gofmt', 'gofumpt', 'goimports', 'golines']
 
 [formatters.settings]
 [formatters.settings.gci]
-sections = [
-  'standard',
-  'default',
-  'prefix(github.com/induzo)'
-]
+sections = ['standard', 'default', 'prefix(github.com/induzo)']
 
 [formatters.settings.gofumpt]
 module-path = 'github.com/induzo'
@@ -296,8 +266,4 @@ reformat-tags = false
 
 [formatters.exclusions]
 generated = 'lax'
-paths = [
-  'third_party$',
-  'builtin$',
-  'examples$'
-]
+paths = ['third_party$', 'builtin$', 'examples$']
