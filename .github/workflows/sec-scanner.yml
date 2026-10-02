@@ -14,8 +14,8 @@ permissions:
   contents: read
 
 env:
-  TRIVY_VERSION: "0.70.0"
-  GOVULNCHECK_VERSION: "v1.3.0"
+  TRIVY_VERSION: "0.74.0"
+  GOVULNCHECK_VERSION: "v1.8.0"
 
 jobs:
   sec-scan:
@@ -23,11 +23,11 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0 # we use 0 here as we need it for gitguardian to inspect everything
       - name: Install Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: 'go.work'
       - name: Install trivy
@@ -46,7 +46,7 @@ jobs:
           git config --global url."https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com".insteadOf "https://github.com"
           make vuln-scan-all
       - name: GitGuardian scan
-        uses: GitGuardian/ggshield-action@33598664f24734b2c3f8eeac2f1bf3db0426a474 # v1.50.0
+        uses: GitGuardian/ggshield-action@7f66d3be9c59a821dcf4f45ee5d929203a1a0b90 # v1.55.0
         env:
           GITHUB_PUSH_BEFORE_SHA: ${{ github.event.before }}
           GITHUB_PUSH_BASE_SHA: ${{ github.event.base }}
