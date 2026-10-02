@@ -3,10 +3,21 @@
 # shutdown
 
 ```go
-import "github.com/induzo/gocom/shutdown"
+import "github.com/induzo/gocom/shutdown/v2"
 ```
 
-Package shutdown provides a small primitive for gracefully shutting down an application: register named hooks, wait for an OS signal, then run the hooks in FILO \(last\-registered, first\-run\) order under a shared grace period, with optional Before constraints that adjust ordering.
+Package shutdown provides a small, logger\-free primitive for gracefully shutting down an application: register named hooks, inspect their execution order, then run them sequentially in FILO \(last\-registered, first\-run\) order under one shared grace period, with optional Before constraints that adjust ordering.
+
+The package does not handle signals. The application owns signal handling \(typically through signal.NotifyContext\) and calls Shutdown exactly once, usually from a single deferred call:
+
+```
+s := shutdown.New(shutdown.WithGracePeriodDuration(25 * time.Second))
+defer func() {
+	err = errors.Join(err, s.Shutdown(context.WithoutCancel(ctx)))
+}()
+```
+
+Hooks must cooperate with cancellation: the runner cannot terminate a hook goroutine that ignores its context once the shared deadline has passed.
 
 ## Index
 
@@ -16,12 +27,11 @@ Package shutdown provides a small primitive for gracefully shutting down an appl
   - [func Before\(before string\) HookOption](<#Before>)
 - [type Option](<#Option>)
   - [func WithGracePeriodDuration\(gracePeriodDuration time.Duration\) Option](<#WithGracePeriodDuration>)
-  - [func WithHooks\(hooks \[\]Hook\) Option](<#WithHooks>)
 - [type Shutdown](<#Shutdown>)
-  - [func New\(logger \*slog.Logger, opts ...Option\) \*Shutdown](<#New>)
+  - [func New\(opts ...Option\) \*Shutdown](<#New>)
   - [func \(s \*Shutdown\) Add\(name string, shutdownFunc func\(ctx context.Context\) error, hookOpts ...HookOption\) error](<#Shutdown.Add>)
-  - [func \(s \*Shutdown\) Hooks\(\) \[\]Hook](<#Shutdown.Hooks>)
-  - [func \(s \*Shutdown\) Listen\(ctx context.Context, signals ...os.Signal\) error](<#Shutdown.Listen>)
+  - [func \(s \*Shutdown\) Hooks\(\) \(\[\]Hook, error\)](<#Shutdown.Hooks>)
+  - [func \(s \*Shutdown\) Shutdown\(ctx context.Context\) error](<#Shutdown.Shutdown>)
 
 
 ## Variables
@@ -44,10 +54,25 @@ var (
 )
 ```
 
-<a name="Hook"></a>
-## type [Hook](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L40-L44>)
+<a name="ErrUnknownBeforeTarget"></a>Sentinel errors returned by Hooks \(and therefore Shutdown\) when the Before constraints cannot be satisfied.
 
-Hook is a shutdown hook that will be called when signal is received.
+```go
+var (
+    // ErrUnknownBeforeTarget is returned when a hook declares Before on a
+    // name that is not registered. The hook is treated as unconstrained.
+    ErrUnknownBeforeTarget = errors.New("before target is not registered")
+
+    // ErrCircularDependency is returned when Before constraints form a
+    // cycle. The unresolved hooks (cycle members and hooks depending on
+    // them) run first, in reverse registration order.
+    ErrCircularDependency = errors.New("circular dependency between hooks")
+)
+```
+
+<a name="Hook"></a>
+## type [Hook](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L65-L69>)
+
+Hook is a named shutdown hook executed by Shutdown.
 
 ```go
 type Hook struct {
@@ -58,7 +83,7 @@ type Hook struct {
 ```
 
 <a name="HookOption"></a>
-## type [HookOption](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L120>)
+## type [HookOption](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L111>)
 
 HookOption configures a Hook at registration time.
 
@@ -67,16 +92,16 @@ type HookOption func(*Hook)
 ```
 
 <a name="Before"></a>
-### func [Before](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L127>)
+### func [Before](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L118>)
 
 ```go
 func Before(before string) HookOption
 ```
 
-Before declares that the hook should run before the named hook during Listen. Because Listen iterates the registered slice in reverse \(FILO\), "run before X" means "ordered after X in the slice". If the named target is empty, equal to the hook's own name, or unknown at registration time, Before is a no\-op.
+Before declares that the hook must run before the named hook. The target may be registered later: Add does not validate it, Hooks does. An empty or unknown target is reported by Hooks as ErrUnknownBeforeTarget; a hook naming itself is reported as ErrCircularDependency. If several Before options are supplied, the first one wins.
 
 <a name="Option"></a>
-## type [Option](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L56>)
+## type [Option](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L81>)
 
 Option is the options type to configure Shutdown.
 
@@ -85,29 +110,18 @@ type Option func(*Shutdown)
 ```
 
 <a name="WithGracePeriodDuration"></a>
-### func [WithGracePeriodDuration](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L113>)
+### func [WithGracePeriodDuration](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L104>)
 
 ```go
 func WithGracePeriodDuration(gracePeriodDuration time.Duration) Option
 ```
 
-WithGracePeriodDuration sets the grace period for all shutdown hooks to finish running. If not used, the default grace period is 30s.
-
-<a name="WithHooks"></a>
-### func [WithHooks](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L88>)
-
-```go
-func WithHooks(hooks []Hook) Option
-```
-
-WithHooks adds the hooks to be run as part of the graceful shutdown. Any hook that fails validation in Add \(empty name, nil shutdown function, duplicate name\) is logged at warning level and skipped; the remaining hooks are still registered.
-
-Note: Hook.before is unexported, so external callers using WithHooks cannot express a Before constraint. To use Before, register hooks via Add directly.
+WithGracePeriodDuration sets the shared budget for all shutdown hooks to finish running. If not used, the default grace period is 30s. A zero or negative duration makes the deadline expire immediately, so Shutdown skips every hook and reports the first one with context.DeadlineExceeded.
 
 <a name="Shutdown"></a>
-## type [Shutdown](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L47-L53>)
+## type [Shutdown](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L73-L78>)
 
-Shutdown provides a way to listen for signals and handle shutdown of an application gracefully.
+Shutdown is a registry of named hooks that are run sequentially, under one shared deadline, when Shutdown is called.
 
 ```go
 type Shutdown struct {
@@ -127,99 +141,133 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
-	"log/slog"
-	"net/http"
+	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/induzo/gocom/shutdown"
+	"github.com/induzo/gocom/shutdown/v2"
 )
 
-func main() {
-	textHandler := slog.DiscardHandler
-	logger := slog.New(textHandler)
+// run owns the whole application lifecycle: it creates the signal context,
+// registers the cleanup hooks, validates their order, waits for a stop
+// signal, and runs cleanup exactly once from a single deferred call. Startup
+// and cleanup errors are both reported to the caller through errors.Join.
+//
+// Never call log.Fatal or os.Exit inside run or its workers: they bypass the
+// deferred cleanup. Do not discard the cleanup error with a bare
+// `defer s.Shutdown(...)` either.
+func run(ctx context.Context) (err error) {
+	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
-	shutdownHandler := shutdown.New(
-		logger,
-		shutdown.WithHooks(
-			[]shutdown.Hook{
-				{
-					Name: "do something",
-					ShutdownFn: func(_ context.Context) error {
-						return nil
-					},
-				},
-			},
-		),
-		shutdown.WithGracePeriodDuration(time.Second))
+	s := shutdown.New(shutdown.WithGracePeriodDuration(25 * time.Second))
 
-	var srv http.Server
+	defer func() {
+		// Restore default signal behavior first, so a second SIGINT during
+		// a slow cleanup terminates the process instead of being swallowed.
+		stop()
 
-	go func() {
-		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("http server listen and serve: %s", err)
-		}
+		// ctx is already canceled when a signal arrives, so detach it:
+		// hooks still get the 25s grace period as their deadline.
+		err = errors.Join(err, s.Shutdown(context.WithoutCancel(ctx)))
 	}()
 
-	shutdownHandler.Add("http server", func(ctx context.Context) error {
-		if err := srv.Shutdown(ctx); err != nil {
-			return fmt.Errorf("http server shutdown: %w", err)
-		}
+	// A real application closes its database pool here.
+	if addErr := s.Add("database", func(_ context.Context) error {
+		fmt.Println("database closed")
 
 		return nil
-	})
-
-	if err := shutdownHandler.Listen(
-		context.Background(),
-		syscall.SIGHUP,
-		syscall.SIGINT,
-		syscall.SIGTERM,
-		syscall.SIGQUIT); err != nil {
-		log.Fatalf("graceful shutdown failed: %s. forcing exit.", err)
+	}); addErr != nil {
+		return fmt.Errorf("register database hook: %w", addErr)
 	}
+
+	// A real application calls srv.Shutdown(ctx) here. Before("database")
+	// guarantees in-flight requests finish before the pool is closed.
+	if addErr := s.Add("http server", func(_ context.Context) error {
+		fmt.Println("http server stopped")
+
+		return nil
+	}, shutdown.Before("database")); addErr != nil {
+		return fmt.Errorf("register http server hook: %w", addErr)
+	}
+
+	// Validate the ordering constraints before serving traffic.
+	if _, hooksErr := s.Hooks(); hooksErr != nil {
+		return fmt.Errorf("validate shutdown order: %w", hooksErr)
+	}
+
+	// Serve until SIGINT/SIGTERM (or the parent context) ends ctx.
+	<-ctx.Done()
+
+	return nil
 }
+
+func main() {
+	// A real application passes context.Background() and run returns when a
+	// signal arrives. The example passes an already-canceled context so that
+	// run returns immediately and the output is deterministic.
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	if err := run(ctx); err != nil {
+		fmt.Println("run failed:", err)
+	}
+
+}
+```
+
+#### Output
+
+```
+http server stopped
+database closed
 ```
 
 </p>
 </details>
 
 <a name="New"></a>
-### func [New](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L60>)
+### func [New](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L85>)
 
 ```go
-func New(logger *slog.Logger, opts ...Option) *Shutdown
+func New(opts ...Option) *Shutdown
 ```
 
-New returns a new Shutdown with the provided options. If logger is nil, slog.Default\(\) is used.
+New returns an empty registry with the provided options applied. The default grace period is 30s.
 
 <a name="Shutdown.Add"></a>
-### func \(\*Shutdown\) [Add](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L138-L142>)
+### func \(\*Shutdown\) [Add](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L130-L134>)
 
 ```go
 func (s *Shutdown) Add(name string, shutdownFunc func(ctx context.Context) error, hookOpts ...HookOption) error
 ```
 
-Add registers a shutdown hook. Returns ErrEmptyHookName if name is empty, ErrNilShutdownFunc if shutdownFunc is nil, or ErrDuplicateHookName if a hook with this name is already registered.
+Add registers a shutdown hook. Returns ErrEmptyHookName if name is empty, ErrNilShutdownFunc if shutdownFunc is nil, or ErrDuplicateHookName if a hook with this name is already registered. Dependency completeness is not checked here; call Hooks after all registrations to validate it.
 
 <a name="Shutdown.Hooks"></a>
-### func \(\*Shutdown\) [Hooks](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L179>)
+### func \(\*Shutdown\) [Hooks](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L181>)
 
 ```go
-func (s *Shutdown) Hooks() []Hook
+func (s *Shutdown) Hooks() ([]Hook, error)
 ```
 
-Hooks returns the registered shutdown hooks ordered for execution. Hooks without a Before constraint keep registration order; Before constraints are applied so that each constrained hook is positioned to run before its named target during Listen's reverse iteration. If a circular dependency is detected, the unresolved hooks are appended at the end and a warning is logged.
+Hooks returns an independent snapshot of the registered hooks in the exact order Shutdown will run them, together with any ordering diagnostics. Hooks without a Before constraint run in reverse registration order \(FILO\); a constrained hook is moved to run right before its target, and hooks sharing a target keep their registration order.
 
-<a name="Shutdown.Listen"></a>
-### func \(\*Shutdown\) [Listen](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L268>)
+Every registered hook is returned exactly once, even on error. A hook whose target is missing is reported with ErrUnknownBeforeTarget and run as if unconstrained. Hooks that cannot be placed because of a cycle are reported with ErrCircularDependency and run first, in reverse registration order. Multiple diagnostics are joined with errors.Join and remain matchable with errors.Is.
+
+Hooks never executes callbacks or modifies registration state, and mutating the returned slice does not affect later cleanup.
+
+<a name="Shutdown.Shutdown"></a>
+### func \(\*Shutdown\) [Shutdown](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L298>)
 
 ```go
-func (s *Shutdown) Listen(ctx context.Context, signals ...os.Signal) error
+func (s *Shutdown) Shutdown(ctx context.Context) error
 ```
 
-Listen waits for the signals provided and executes each shutdown hook sequentially in FILO order. It will immediately stop and return once the grace period has passed.
+Shutdown runs every registered hook sequentially, in the order returned by Hooks, under one deadline derived from ctx and the configured grace period. It returns the aggregate of: ordering diagnostics from Hooks, callback failures and recovered panics \(each wrapped with the hook name\), and a context error naming the first hook that was not started because the shared context had already ended.
 
-Hooks must honor the ctx passed to them and return promptly when it is cancelled; a hook that ignores ctx will leave its goroutine running after Listen returns when the grace period is exceeded.
+Ordering errors do not abort cleanup. A hook that panics does not crash the process or prevent later hooks from running. Hooks must honor the ctx passed to them: a hook that ignores it leaves its goroutine running after Shutdown returns once the deadline is exceeded.
+
+Shutdown is not idempotent: each call reruns the hooks. The caller owns the exactly\-once rule, typically with a single deferred call. If the application context may already be canceled when cleanup starts, pass context.WithoutCancel\(ctx\) explicitly.
 
 Generated by [gomarkdoc](<https://github.com/princjef/gomarkdoc>)

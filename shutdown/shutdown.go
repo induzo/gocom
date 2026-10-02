@@ -1,16 +1,28 @@
-// Package shutdown provides a small primitive for gracefully shutting down
-// an application: register named hooks, wait for an OS signal, then run the
-// hooks in FILO (last-registered, first-run) order under a shared grace
-// period, with optional Before constraints that adjust ordering.
+// Package shutdown provides a small, logger-free primitive for gracefully
+// shutting down an application: register named hooks, inspect their
+// execution order, then run them sequentially in FILO (last-registered,
+// first-run) order under one shared grace period, with optional Before
+// constraints that adjust ordering.
+//
+// The package does not handle signals. The application owns signal handling
+// (typically through signal.NotifyContext) and calls Shutdown exactly once,
+// usually from a single deferred call:
+//
+//	s := shutdown.New(shutdown.WithGracePeriodDuration(25 * time.Second))
+//	defer func() {
+//		err = errors.Join(err, s.Shutdown(context.WithoutCancel(ctx)))
+//	}()
+//
+// Hooks must cooperate with cancellation: the runner cannot terminate a hook
+// goroutine that ignores its context once the shared deadline has passed.
 package shutdown
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
-	"os"
-	"os/signal"
+	"slices"
+	"strings"
 	"sync"
 	"time"
 )
@@ -32,42 +44,50 @@ var (
 	ErrDuplicateHookName = errors.New("hook with this name is already registered")
 )
 
+// Sentinel errors returned by Hooks (and therefore Shutdown) when the
+// Before constraints cannot be satisfied.
+var (
+	// ErrUnknownBeforeTarget is returned when a hook declares Before on a
+	// name that is not registered. The hook is treated as unconstrained.
+	ErrUnknownBeforeTarget = errors.New("before target is not registered")
+
+	// ErrCircularDependency is returned when Before constraints form a
+	// cycle. The unresolved hooks (cycle members and hooks depending on
+	// them) run first, in reverse registration order.
+	ErrCircularDependency = errors.New("circular dependency between hooks")
+)
+
 // errHookPanic is the underlying error wrapped when a hook panics during
-// Listen.
+// Shutdown.
 var errHookPanic = errors.New("hook panicked")
 
-// Hook is a shutdown hook that will be called when signal is received.
+// Hook is a named shutdown hook executed by Shutdown.
 type Hook struct {
 	Name       string
 	ShutdownFn func(ctx context.Context) error
 	before     *string
 }
 
-// Shutdown provides a way to listen for signals and handle shutdown of an application gracefully.
+// Shutdown is a registry of named hooks that are run sequentially, under
+// one shared deadline, when Shutdown is called.
 type Shutdown struct {
 	hooks               []Hook
 	hookNames           map[string]struct{}
 	mutex               *sync.Mutex
-	logger              *slog.Logger
 	gracePeriodDuration time.Duration
 }
 
 // Option is the options type to configure Shutdown.
 type Option func(*Shutdown)
 
-// New returns a new Shutdown with the provided options. If logger is nil,
-// slog.Default() is used.
-func New(logger *slog.Logger, opts ...Option) *Shutdown {
-	if logger == nil {
-		logger = slog.Default()
-	}
-
+// New returns an empty registry with the provided options applied. The
+// default grace period is 30s.
+func New(opts ...Option) *Shutdown {
 	shutdown := &Shutdown{
 		hooks:               []Hook{},
-		mutex:               &sync.Mutex{},
-		logger:              logger,
-		gracePeriodDuration: defaultGracePeriodDuration,
 		hookNames:           map[string]struct{}{},
+		mutex:               &sync.Mutex{},
+		gracePeriodDuration: defaultGracePeriodDuration,
 	}
 
 	for _, opt := range opts {
@@ -77,39 +97,10 @@ func New(logger *slog.Logger, opts ...Option) *Shutdown {
 	return shutdown
 }
 
-// WithHooks adds the hooks to be run as part of the graceful shutdown. Any
-// hook that fails validation in Add (empty name, nil shutdown function,
-// duplicate name) is logged at warning level and skipped; the remaining
-// hooks are still registered.
-//
-// Note: Hook.before is unexported, so external callers using WithHooks
-// cannot express a Before constraint. To use Before, register hooks via
-// Add directly.
-func WithHooks(hooks []Hook) Option {
-	return func(shutdown *Shutdown) {
-		for _, hook := range hooks {
-			var err error
-
-			if hook.before != nil {
-				err = shutdown.Add(hook.Name, hook.ShutdownFn, Before(*hook.before))
-			} else {
-				err = shutdown.Add(hook.Name, hook.ShutdownFn)
-			}
-
-			if err != nil {
-				shutdown.logger.WarnContext(
-					context.Background(),
-					"skipped shutdown hook",
-					slog.String("name", hook.Name),
-					slog.String("err", err.Error()),
-				)
-			}
-		}
-	}
-}
-
-// WithGracePeriodDuration sets the grace period for all shutdown hooks to finish running.
-// If not used, the default grace period is 30s.
+// WithGracePeriodDuration sets the shared budget for all shutdown hooks to
+// finish running. If not used, the default grace period is 30s. A zero or
+// negative duration makes the deadline expire immediately, so Shutdown
+// skips every hook and reports the first one with context.DeadlineExceeded.
 func WithGracePeriodDuration(gracePeriodDuration time.Duration) Option {
 	return func(shutdown *Shutdown) {
 		shutdown.gracePeriodDuration = gracePeriodDuration
@@ -119,14 +110,14 @@ func WithGracePeriodDuration(gracePeriodDuration time.Duration) Option {
 // HookOption configures a Hook at registration time.
 type HookOption func(*Hook)
 
-// Before declares that the hook should run before the named hook during
-// Listen. Because Listen iterates the registered slice in reverse (FILO),
-// "run before X" means "ordered after X in the slice". If the named target
-// is empty, equal to the hook's own name, or unknown at registration time,
-// Before is a no-op.
+// Before declares that the hook must run before the named hook. The target
+// may be registered later: Add does not validate it, Hooks does. An empty
+// or unknown target is reported by Hooks as ErrUnknownBeforeTarget; a hook
+// naming itself is reported as ErrCircularDependency. If several Before
+// options are supplied, the first one wins.
 func Before(before string) HookOption {
 	return func(hook *Hook) {
-		if hook.before == nil && before != "" && before != hook.Name {
+		if hook.before == nil {
 			hook.before = &before
 		}
 	}
@@ -134,7 +125,8 @@ func Before(before string) HookOption {
 
 // Add registers a shutdown hook. Returns ErrEmptyHookName if name is empty,
 // ErrNilShutdownFunc if shutdownFunc is nil, or ErrDuplicateHookName if a
-// hook with this name is already registered.
+// hook with this name is already registered. Dependency completeness is
+// not checked here; call Hooks after all registrations to validate it.
 func (s *Shutdown) Add(
 	name string,
 	shutdownFunc func(ctx context.Context) error,
@@ -170,55 +162,84 @@ func (s *Shutdown) Add(
 	return nil
 }
 
-// Hooks returns the registered shutdown hooks ordered for execution. Hooks
-// without a Before constraint keep registration order; Before constraints
-// are applied so that each constrained hook is positioned to run before
-// its named target during Listen's reverse iteration. If a circular
-// dependency is detected, the unresolved hooks are appended at the end and
-// a warning is logged.
-func (s *Shutdown) Hooks() []Hook {
+// Hooks returns an independent snapshot of the registered hooks in the
+// exact order Shutdown will run them, together with any ordering
+// diagnostics. Hooks without a Before constraint run in reverse
+// registration order (FILO); a constrained hook is moved to run right
+// before its target, and hooks sharing a target keep their registration
+// order.
+//
+// Every registered hook is returned exactly once, even on error. A hook
+// whose target is missing is reported with ErrUnknownBeforeTarget and run as
+// if unconstrained. Hooks that cannot be placed because of a cycle are
+// reported with ErrCircularDependency and run first, in reverse
+// registration order. Multiple diagnostics are joined with errors.Join and
+// remain matchable with errors.Is.
+//
+// Hooks never executes callbacks or modifies registration state, and
+// mutating the returned slice does not affect later cleanup.
+func (s *Shutdown) Hooks() ([]Hook, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	hooks := make([]Hook, 0, len(s.hooks))
-	hooksWithValidBefore := make([]Hook, 0, len(s.hooks))
+	var oErr error
 
-	// First, place all hooks without a (resolvable) before constraint.
+	placed := make([]Hook, 0, len(s.hooks))
+	pending := make([]Hook, 0, len(s.hooks))
+
+	// First, place all hooks without a (resolvable) before constraint, in
+	// registration order.
 	for _, hook := range s.hooks {
-		if hook.before != nil {
-			if _, ok := s.hookNames[*hook.before]; ok {
-				hooksWithValidBefore = append(hooksWithValidBefore, hook)
+		if hook.before == nil {
+			placed = append(placed, hook)
 
-				continue
-			}
+			continue
 		}
 
-		hooks = append(hooks, hook)
+		if _, ok := s.hookNames[*hook.before]; !ok {
+			oErr = errors.Join(oErr, fmt.Errorf(
+				"hook %q before %q: %w", hook.Name, *hook.before, ErrUnknownBeforeTarget,
+			))
+
+			placed = append(placed, hook)
+
+			continue
+		}
+
+		pending = append(pending, hook)
 	}
 
 	// Then, place the constrained hooks. Each pass tries to insert each
 	// pending hook after its target; if a full pass makes no progress,
-	// the remaining set has a circular or unresolvable dependency.
-	for len(hooksWithValidBefore) > 0 {
+	// the remaining set has a circular dependency.
+	for len(pending) > 0 {
 		var madeProgress bool
 
-		hooksWithValidBefore, hooks, madeProgress = placeHooksRound(hooksWithValidBefore, hooks)
+		pending, placed, madeProgress = placeHooksRound(pending, placed)
 		if !madeProgress {
 			break
 		}
 	}
 
-	if len(hooksWithValidBefore) > 0 {
-		// Append remaining (unresolvable) hooks at the end and warn.
-		hooks = append(hooks, hooksWithValidBefore...)
+	if len(pending) > 0 {
+		names := make([]string, 0, len(pending))
+		for _, hook := range pending {
+			names = append(names, hook.Name)
+		}
 
-		s.logger.WarnContext(
-			context.Background(),
-			"circular dependency detected in hooks, running them not in order",
+		oErr = errors.Join(
+			oErr,
+			fmt.Errorf("%w: %s", ErrCircularDependency, strings.Join(names, ", ")),
 		)
+
+		placed = append(placed, pending...)
 	}
 
-	return hooks
+	// placed is in registration order (adjusted by Before); execution is
+	// the reverse of it.
+	slices.Reverse(placed)
+
+	return placed, oErr
 }
 
 // placeHooksRound walks pending once and inserts each hook whose Before
@@ -239,7 +260,7 @@ func placeHooksRound(pending, placed []Hook) ([]Hook, []Hook, bool) {
 		}
 
 		// Insert right after the target so it runs before the target
-		// during the reverse iteration in Listen.
+		// once the slice is reversed into execution order.
 		placed = append(placed[:beforeIndex+1], append([]Hook{hook}, placed[beforeIndex+1:]...)...)
 		madeProgress = true
 	}
@@ -258,71 +279,71 @@ func indexOfHook(hooks []Hook, name string) int {
 	return -1
 }
 
-// Listen waits for the signals provided and executes each shutdown hook
-// sequentially in FILO order. It will immediately stop and return once the
-// grace period has passed.
+// Shutdown runs every registered hook sequentially, in the order returned
+// by Hooks, under one deadline derived from ctx and the configured grace
+// period. It returns the aggregate of: ordering diagnostics from Hooks,
+// callback failures and recovered panics (each wrapped with the hook name),
+// and a context error naming the first hook that was not started because
+// the shared context had already ended.
 //
-// Hooks must honor the ctx passed to them and return promptly when it is
-// cancelled; a hook that ignores ctx will leave its goroutine running
-// after Listen returns when the grace period is exceeded.
-func (s *Shutdown) Listen(ctx context.Context, signals ...os.Signal) error {
-	signalCtx, stopSignalCtx := signal.NotifyContext(ctx, signals...)
-	defer stopSignalCtx()
-
-	<-signalCtx.Done()
-
-	start := time.Now()
-
-	// Derive the shutdown deadline from the caller's ctx (not signalCtx) so
-	// the signal-cancellation does not propagate into hooks; they should
-	// observe a budget that times out only on the grace period.
+// Ordering errors do not abort cleanup. A hook that panics does not crash
+// the process or prevent later hooks from running. Hooks must honor the ctx
+// passed to them: a hook that ignores it leaves its goroutine running after
+// Shutdown returns once the deadline is exceeded.
+//
+// Shutdown is not idempotent: each call reruns the hooks. The caller owns
+// the exactly-once rule, typically with a single deferred call. If the
+// application context may already be canceled when cleanup starts, pass
+// context.WithoutCancel(ctx) explicitly.
+func (s *Shutdown) Shutdown(ctx context.Context) error {
 	shutdownCtx, shutdownCancel := context.WithTimeout(ctx, s.gracePeriodDuration)
 	defer shutdownCancel()
 
-	var sErr error
+	hooks, sErr := s.Hooks()
 
-	hooks := s.Hooks() //nolint:contextcheck // Hooks() does not need ctx; it only inspects already-registered state.
-
-loop:
-	for i := range hooks {
-		hook := hooks[len(hooks)-1-i]
-
-		s.logger.InfoContext(ctx, hook.Name+" is shutting down")
-
-		errChan := make(chan error, 1)
-
-		// Run the hook in a goroutine so we can race it against the
-		// shutdown deadline. Recover panics so a single bad hook doesn't
-		// take the process down.
-		go func() {
-			defer func() {
-				if r := recover(); r != nil {
-					errChan <- fmt.Errorf("%w: %v", errHookPanic, r)
-				}
-			}()
-
-			errChan <- hook.ShutdownFn(shutdownCtx)
-		}()
-
-		select {
-		case <-shutdownCtx.Done():
-			sErr = errors.Join(
+	for _, hook := range hooks {
+		if err := shutdownCtx.Err(); err != nil {
+			return errors.Join(
 				sErr,
-				fmt.Errorf(
-					"%s did not shutdown within grace period of %v: %w",
-					hook.Name, s.gracePeriodDuration, shutdownCtx.Err(),
-				),
+				fmt.Errorf("%s skipped, shutdown context is done: %w", hook.Name, err),
 			)
+		}
 
-			break loop
-		case err := <-errChan:
-			if err != nil {
-				sErr = errors.Join(sErr, fmt.Errorf("%s shutdown error: %w", hook.Name, err))
-			}
+		if err := s.runHook(shutdownCtx, hook); err != nil {
+			sErr = errors.Join(sErr, err)
 		}
 	}
 
-	s.logger.InfoContext(ctx, fmt.Sprintf("time taken for shutdown: %v", time.Since(start)))
-
 	return sErr
+}
+
+// runHook runs one hook in a goroutine, racing it against the shared
+// shutdown deadline, and recovers panics so a single bad hook does not take
+// the process down.
+func (s *Shutdown) runHook(ctx context.Context, hook Hook) error {
+	errChan := make(chan error, 1)
+
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				errChan <- fmt.Errorf("%w: %v", errHookPanic, r)
+			}
+		}()
+
+		errChan <- hook.ShutdownFn(ctx)
+	}()
+
+	select {
+	case <-ctx.Done():
+		return fmt.Errorf(
+			"%s did not finish before the shutdown context ended (grace period %v): %w",
+			hook.Name, s.gracePeriodDuration, ctx.Err(),
+		)
+	case err := <-errChan:
+		if err != nil {
+			return fmt.Errorf("%s shutdown error: %w", hook.Name, err)
+		}
+
+		return nil
+	}
 }
