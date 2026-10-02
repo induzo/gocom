@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [shutdown/v2.0.1] - 2026-10-02
+
+### Miscellaneous Tasks
+
+- Update deps
+
 ## [shutdown/v2.0.0] - 2026-10-02
+
+### Documentation
+
+- Update CHANGELOG.md for shutdown/v2.0.0
 
 ### Features
 
