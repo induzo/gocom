@@ -184,46 +184,66 @@ func (s *Shutdown) Hooks() ([]Hook, error) {
 
 	var oErr error
 
-	placed := make([]Hook, 0, len(s.hooks))
-	pending := make([]Hook, 0, len(s.hooks))
+	// Group hooks under their Before target, in registration order. Hooks
+	// without a resolvable target are roots.
+	roots := make([]Hook, 0, len(s.hooks))
+	children := make(map[string][]Hook, len(s.hooks))
 
-	// First, place all hooks without a (resolvable) before constraint, in
-	// registration order.
 	for _, hook := range s.hooks {
 		if hook.before == nil {
-			placed = append(placed, hook)
+			roots = append(roots, hook)
 
 			continue
 		}
 
-		if _, ok := s.hookNames[*hook.before]; !ok {
+		if _, known := s.hookNames[*hook.before]; !known {
 			oErr = errors.Join(oErr, fmt.Errorf(
 				"hook %q before %q: %w", hook.Name, *hook.before, ErrUnknownBeforeTarget,
 			))
 
-			placed = append(placed, hook)
+			roots = append(roots, hook)
 
 			continue
 		}
 
-		pending = append(pending, hook)
+		children[*hook.before] = append(children[*hook.before], hook)
 	}
 
-	// Then, place the constrained hooks. Each pass tries to insert each
-	// pending hook after its target; if a full pass makes no progress,
-	// the remaining set has a circular dependency.
-	for len(pending) > 0 {
-		var madeProgress bool
+	// Walk the roots last-registered first; each hook runs right after
+	// the hooks constrained before it, which keep their registration
+	// order. A hook has at most one target, so a cycle is never reachable
+	// from a root and the walk always terminates.
+	ordered := make([]Hook, 0, len(s.hooks))
+	visited := make(map[string]struct{}, len(s.hooks))
 
-		pending, placed, madeProgress = placeHooksRound(pending, placed)
-		if !madeProgress {
-			break
+	var visit func(hook Hook)
+
+	visit = func(hook Hook) {
+		for _, child := range children[hook.Name] {
+			visit(child)
+		}
+
+		visited[hook.Name] = struct{}{}
+		ordered = append(ordered, hook)
+	}
+
+	for _, root := range slices.Backward(roots) {
+		visit(root)
+	}
+
+	// Anything not reached sits on, or behind, a cycle: run it first, in
+	// reverse registration order.
+	var unresolved []Hook
+
+	for _, hook := range s.hooks {
+		if _, ok := visited[hook.Name]; !ok {
+			unresolved = append(unresolved, hook)
 		}
 	}
 
-	if len(pending) > 0 {
-		names := make([]string, 0, len(pending))
-		for _, hook := range pending {
+	if len(unresolved) > 0 {
+		names := make([]string, 0, len(unresolved))
+		for _, hook := range unresolved {
 			names = append(names, hook.Name)
 		}
 
@@ -232,51 +252,11 @@ func (s *Shutdown) Hooks() ([]Hook, error) {
 			fmt.Errorf("%w: %s", ErrCircularDependency, strings.Join(names, ", ")),
 		)
 
-		placed = append(placed, pending...)
+		slices.Reverse(unresolved)
+		ordered = append(unresolved, ordered...)
 	}
 
-	// placed is in registration order (adjusted by Before); execution is
-	// the reverse of it.
-	slices.Reverse(placed)
-
-	return placed, oErr
-}
-
-// placeHooksRound walks pending once and inserts each hook whose Before
-// target is present in placed at the correct index. Returns hooks that
-// could not be placed, the updated placed slice, and whether any insertion
-// happened in this round.
-func placeHooksRound(pending, placed []Hook) ([]Hook, []Hook, bool) {
-	next := pending[:0:0]
-
-	madeProgress := false
-
-	for _, hook := range pending {
-		beforeIndex := indexOfHook(placed, *hook.before)
-		if beforeIndex == -1 {
-			next = append(next, hook)
-
-			continue
-		}
-
-		// Insert right after the target so it runs before the target
-		// once the slice is reversed into execution order.
-		placed = append(placed[:beforeIndex+1], append([]Hook{hook}, placed[beforeIndex+1:]...)...)
-		madeProgress = true
-	}
-
-	return next, placed, madeProgress
-}
-
-// indexOfHook returns the index of name in hooks, or -1 if not present.
-func indexOfHook(hooks []Hook, name string) int {
-	for i, h := range hooks {
-		if h.Name == name {
-			return i
-		}
-	}
-
-	return -1
+	return ordered, oErr
 }
 
 // Shutdown runs every registered hook sequentially, in the order returned

@@ -258,7 +258,7 @@ Every registered hook is returned exactly once, even on error. A hook whose targ
 Hooks never executes callbacks or modifies registration state, and mutating the returned slice does not affect later cleanup.
 
 <a name="Shutdown.Shutdown"></a>
-### func \(\*Shutdown\) [Shutdown](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L298>)
+### func \(\*Shutdown\) [Shutdown](<https://github.com/induzo/gocom/blob/main/shutdown/shutdown.go#L278>)
 
 ```go
 func (s *Shutdown) Shutdown(ctx context.Context) error

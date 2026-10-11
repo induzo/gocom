@@ -577,6 +577,22 @@ func TestHooks_ExecutionOrder(t *testing.T) {
 			wantOrder: []string{"a", "b", "c"},
 		},
 		{
+			// b is registered after c, so it shares c as a target with a
+			// but is resolvable before a is: registration order must still
+			// win over resolution order.
+			name: "shared target resolved across passes",
+			register: func(t *testing.T, s *Shutdown) {
+				t.Helper()
+				register(t, s, []hookSpec{
+					{name: "a", fn: noop, before: "c", useBefore: true},
+					{name: "c", fn: noop, before: "d", useBefore: true},
+					{name: "b", fn: noop, before: "c", useBefore: true},
+					{name: "d", fn: noop},
+				})
+			},
+			wantOrder: []string{"a", "b", "c", "d"},
+		},
+		{
 			name: "first before wins",
 			register: func(t *testing.T, s *Shutdown) {
 				t.Helper()
