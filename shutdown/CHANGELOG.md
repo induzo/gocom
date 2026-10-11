@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [shutdown/v2.0.2] - 2026-10-11
+
+### Bug Fixes
+
+- Ordering fix
+
 ## [shutdown/v2.0.1] - 2026-10-02
+
+### Documentation
+
+- Update CHANGELOG.md for shutdown/v2.0.1
 
 ### Miscellaneous Tasks
 
