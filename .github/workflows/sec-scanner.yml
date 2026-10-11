@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 env:
-  TRIVY_VERSION: "0.74.0"
+  TRIVY_VERSION: "0.75.0"
   GOVULNCHECK_VERSION: "v1.8.0"
 
 jobs:
