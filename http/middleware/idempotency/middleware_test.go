@@ -705,6 +705,8 @@ func TestMiddleware_WithTracer(t *testing.T) {
 			"idempotency.handle_response:end",
 			"idempotency.try_lock:start",
 			"idempotency.try_lock:end",
+			"idempotency.recheck_response:start",
+			"idempotency.recheck_response:end",
 			"idempotency.store_response:start",
 			"idempotency.store_response:end",
 			"idempotency.unlock:start",
@@ -1003,6 +1005,126 @@ func TestMiddleware_RequestInFlight_Deterministic(t *testing.T) {
 
 	if r.status != http.StatusOK {
 		t.Errorf("first request status = %d, want %d", r.status, http.StatusOK)
+	}
+}
+
+// staleCheckStore misses on its first GetStoredResponse call, as a request
+// does when its pre-lock check runs before a concurrent request with the
+// same key has stored its response.
+type staleCheckStore struct {
+	*InMemStore
+
+	getCalls   atomic.Int32
+	recheckErr error
+}
+
+func (s *staleCheckStore) GetStoredResponse(
+	ctx context.Context,
+	key string,
+) (*StoredResponse, bool, error) {
+	if s.getCalls.Add(1) == 1 {
+		return nil, false, nil
+	}
+
+	if s.recheckErr != nil {
+		return nil, false, s.recheckErr
+	}
+
+	return s.InMemStore.GetStoredResponse(ctx, key)
+}
+
+// TestMiddleware_RecheckUnderLock covers a duplicate whose pre-lock check
+// missed, but which only acquired the lock after the first request stored
+// its response and unlocked. It must not run the handler again.
+func TestMiddleware_RecheckUnderLock(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name         string
+		dupBody      string
+		recheckErr   error
+		wantStatus   int
+		wantReplayed bool
+	}{
+		{
+			name:         "same payload replays the stored response",
+			dupBody:      `{"a":1}`,
+			wantStatus:   http.StatusCreated,
+			wantReplayed: true,
+		},
+		{
+			name:       "different payload is rejected",
+			dupBody:    `{"a":2}`,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "failed recheck does not run the handler",
+			dupBody:    `{"a":1}`,
+			recheckErr: errors.New("valkey timeout"),
+			wantStatus: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			inmem := NewInMemStore()
+			defer inmem.Close()
+
+			var handlerRuns atomic.Int32
+
+			newHandler := func(store Store) http.Handler {
+				return NewMiddleware(store, WithErrorToHTTPFn(errorToString))(
+					http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+						handlerRuns.Add(1)
+						w.WriteHeader(http.StatusCreated)
+					}),
+				)
+			}
+
+			send := func(h http.Handler, body string) *httptest.ResponseRecorder {
+				req := httptest.NewRequest(http.MethodPost, "/quotes", strings.NewReader(body))
+				req.Header.Set(DefaultIdempotencyKeyHeader, "race-key")
+
+				rec := httptest.NewRecorder()
+				h.ServeHTTP(rec, req)
+
+				return rec
+			}
+
+			// The first request completes: response stored, lock released.
+			if rec := send(newHandler(inmem), `{"a":1}`); rec.Code != http.StatusCreated {
+				t.Fatalf("first request status = %d, want %d", rec.Code, http.StatusCreated)
+			}
+
+			dup := send(
+				newHandler(&staleCheckStore{InMemStore: inmem, recheckErr: tt.recheckErr}),
+				tt.dupBody,
+			)
+
+			if dup.Code != tt.wantStatus {
+				t.Errorf("duplicate status = %d, want %d", dup.Code, tt.wantStatus)
+			}
+
+			if got := dup.Header().Get(DefaultIdempotentReplayedResponseHeader) == "true"; got != tt.wantReplayed {
+				t.Errorf("duplicate replayed = %v, want %v", got, tt.wantReplayed)
+			}
+
+			if got := handlerRuns.Load(); got != 1 {
+				t.Errorf("handler runs = %d, want 1", got)
+			}
+
+			// The duplicate gave the lock back.
+			_, unlock, err := inmem.TryLock(t.Context(), buildStoreKey(
+				httptest.NewRequest(http.MethodPost, "/quotes", nil), "race-key", defaultUserIDExtractor,
+			))
+			if err != nil {
+				t.Fatalf("lock not released: %v", err)
+			}
+
+			unlock()
+		})
 	}
 }
 

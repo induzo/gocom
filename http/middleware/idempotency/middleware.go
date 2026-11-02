@@ -154,6 +154,23 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 				endUnlock()
 			}()
 
+			endRecheck := conf.tracerFn(req, "idempotency.recheck_response")
+			isFound = handleRequestWithIdempotency(
+				conf,
+				store,
+				storeKey,
+				requestHash,
+				respW,
+				req,
+				key,
+			)
+
+			endRecheck()
+
+			if isFound {
+				return
+			}
+
 			teeRespW := newTeeResponseWriter(respW)
 
 			next.ServeHTTP(teeRespW, req)
