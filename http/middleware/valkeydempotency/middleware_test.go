@@ -451,13 +451,17 @@ func errorToString(
 	err error,
 ) {
 	storeRespErr := &idempotency.StoreResponseError{}
-
 	getRespErr := &idempotency.GetStoredResponseError{}
+	tryLockErr := &idempotency.TryLockError{}
+
 	switch {
 	case errors.As(err, &idempotency.MissingIdempotencyKeyHeaderError{}):
 		http.Error(writer, "MissingIdempotencyKeyHeaderError", http.StatusBadRequest)
 	case errors.As(err, &idempotency.RequestInFlightError{}):
 		http.Error(writer, "RequestInFlightError", http.StatusConflict)
+	case errors.As(err, &tryLockErr):
+		// Keep the cause in the body so a CI failure is diagnosable.
+		http.Error(writer, fmt.Sprintf("TryLockError: %v", err), http.StatusInternalServerError)
 	case errors.As(err, &idempotency.MismatchedSignatureError{}):
 		http.Error(writer, "MismatchedSignatureError", http.StatusBadRequest)
 	case errors.As(err, &storeRespErr):

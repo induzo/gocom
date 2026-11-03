@@ -410,6 +410,41 @@ func BenchmarkStoreStoreResponse(b *testing.B) {
 	}
 }
 
+func TestWithLockerDefaults(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		in   time.Duration
+		want time.Duration
+	}{
+		{name: "unset uses the store default", in: 0, want: defaultTryNextAfter},
+		{name: "negative uses the store default", in: -time.Second, want: defaultTryNextAfter},
+		{name: "explicit value is kept", in: 50 * time.Millisecond, want: 50 * time.Millisecond},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			in := valkeylock.LockerOption{KeyMajority: 1, TryNextAfter: tt.in}
+			got := withLockerDefaults(&in)
+
+			if got.TryNextAfter != tt.want {
+				t.Errorf("TryNextAfter = %v, want %v", got.TryNextAfter, tt.want)
+			}
+
+			if got.KeyMajority != in.KeyMajority {
+				t.Errorf("KeyMajority changed: %d -> %d", in.KeyMajority, got.KeyMajority)
+			}
+
+			if in.TryNextAfter != tt.in {
+				t.Errorf("caller option mutated: %v", in.TryNextAfter)
+			}
+		})
+	}
+}
+
 func TestTTLIncorrectError_Error(t *testing.T) {
 	t.Parallel()
 

@@ -25,6 +25,14 @@ const responseKeyPrefix = "idemresp:"
 // not pin a goroutine indefinitely.
 const defaultStoreWriteTimeout = 10 * time.Second
 
+// defaultTryNextAfter replaces valkeylock's 20ms default for
+// LockerOption.TryNextAfter when the caller leaves it unset. valkeylock
+// uses that value as the timeout of every lock acquisition round trip, and
+// 20ms is easily exceeded by a busy Valkey or a loaded host. A timed-out
+// acquisition is not "lock held", so the middleware would report it as a
+// store failure (500) instead of an in-flight request (409).
+const defaultTryNextAfter = time.Second
+
 // minStoreTTL is the smallest response TTL the store accepts. Sub-second
 // TTLs cause Valkey SETEX to error at runtime because the seconds-truncated
 // value is zero, so we reject them up front.
@@ -67,7 +75,9 @@ func (e *TTLIncorrectError) Error() string {
 }
 
 // NewStore initializes a Valkey-backed Store. lockerOption must be
-// non-nil; ttl must be at least one second.
+// non-nil; ttl must be at least one second. When lockerOption.TryNextAfter
+// is unset it defaults to one second instead of valkeylock's 20ms (see
+// defaultTryNextAfter); set it explicitly to keep a shorter value.
 func NewStore(lockerOption *valkeylock.LockerOption, ttl time.Duration) (*Store, error) {
 	if lockerOption == nil {
 		return nil, ErrNilLockerOption //nolint:wrapcheck // sentinel returned as-is for errors.Is.
@@ -77,7 +87,7 @@ func NewStore(lockerOption *valkeylock.LockerOption, ttl time.Duration) (*Store,
 		return nil, &TTLIncorrectError{ttl: ttl}
 	}
 
-	locker, err := valkeylock.NewLocker(*lockerOption)
+	locker, err := valkeylock.NewLocker(withLockerDefaults(lockerOption))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create valkey locker: %w", err)
 	}
@@ -87,6 +97,17 @@ func NewStore(lockerOption *valkeylock.LockerOption, ttl time.Duration) (*Store,
 		client:                   locker.Client(),
 		storedResponseTTLSeconds: int64(ttl.Seconds()),
 	}, nil
+}
+
+// withLockerDefaults returns a copy of opt with the store's own defaults
+// applied. It never mutates the caller's option.
+func withLockerDefaults(opt *valkeylock.LockerOption) valkeylock.LockerOption {
+	out := *opt
+	if out.TryNextAfter <= 0 {
+		out.TryNextAfter = defaultTryNextAfter
+	}
+
+	return out
 }
 
 // TryLock takes a Valkey-backed Redlock-style lock for key. The

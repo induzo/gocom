@@ -44,7 +44,7 @@ NewMiddleware constructs a Valkey\-backed \[idempotency.Store\] and wraps it wit
 ttl is the response cache TTL; it must be at least one second \(sub\-second TTLs return TTLIncorrectError because Valkey SETEX rejects 0\-second expirations at runtime\). lockerOption must be non\-nil.
 
 <a name="Store"></a>
-## type [Store](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L42-L46>)
+## type [Store](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L50-L54>)
 
 Store implements idempotency.Store backed by Valkey: distributed in\-flight locks via valkeylock and SETEX\-cached responses on the same Valkey client.
 
@@ -55,16 +55,16 @@ type Store struct {
 ```
 
 <a name="NewStore"></a>
-### func [NewStore](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L71>)
+### func [NewStore](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L81>)
 
 ```go
 func NewStore(lockerOption *valkeylock.LockerOption, ttl time.Duration) (*Store, error)
 ```
 
-NewStore initializes a Valkey\-backed Store. lockerOption must be non\-nil; ttl must be at least one second.
+NewStore initializes a Valkey\-backed Store. lockerOption must be non\-nil; ttl must be at least one second. When lockerOption.TryNextAfter is unset it defaults to one second instead of valkeylock's 20ms \(see defaultTryNextAfter\); set it explicitly to keep a shorter value.
 
 <a name="Store.Close"></a>
-### func \(\*Store\) [Close](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L52>)
+### func \(\*Store\) [Close](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L60>)
 
 ```go
 func (sto *Store) Close() error
@@ -73,7 +73,7 @@ func (sto *Store) Close() error
 Close releases the underlying valkeylock and its Valkey client. The upstream Locker.Close has no error return, so Close is signature\-only and always returns nil; it is safe to call more than once because valkeylock guards against double\-close internally.
 
 <a name="Store.GetStoredResponse"></a>
-### func \(\*Store\) [GetStoredResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L156-L159>)
+### func \(\*Store\) [GetStoredResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L177-L180>)
 
 ```go
 func (sto *Store) GetStoredResponse(ctx context.Context, key string) (*idempotency.StoredResponse, bool, error)
@@ -82,7 +82,7 @@ func (sto *Store) GetStoredResponse(ctx context.Context, key string) (*idempoten
 GetStoredResponse fetches a previously stored response for key, or \(nil, false, nil\) if no entry exists or it has expired.
 
 <a name="Store.StoreResponse"></a>
-### func \(\*Store\) [StoreResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L122-L126>)
+### func \(\*Store\) [StoreResponse](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L143-L147>)
 
 ```go
 func (sto *Store) StoreResponse(ctx context.Context, key string, resp *idempotency.StoredResponse) error
@@ -91,7 +91,7 @@ func (sto *Store) StoreResponse(ctx context.Context, key string, resp *idempoten
 StoreResponse persists the response under the namespaced key with the configured TTL. It detaches from ctx via context.WithoutCancel so a client disconnect between handler completion and the SETEX call does not leave the cache empty \(which would cause the next identical request to re\-execute the handler\). The detached call is bounded by defaultStoreWriteTimeout.
 
 <a name="Store.TryLock"></a>
-### func \(\*Store\) [TryLock](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L100-L103>)
+### func \(\*Store\) [TryLock](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L121-L124>)
 
 ```go
 func (sto *Store) TryLock(ctx context.Context, key string) (context.Context, context.CancelFunc, error)
@@ -102,7 +102,7 @@ TryLock takes a Valkey\-backed Redlock\-style lock for key. The underlying valke
 When the lock is held by another request the returned error wraps \[idempotency.ErrLockHeld\]; any other failure \(connection error, timeout, closed locker\) is returned as\-is so the middleware reports it as a store failure rather than an in\-flight request.
 
 <a name="TTLIncorrectError"></a>
-## type [TTLIncorrectError](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L60-L62>)
+## type [TTLIncorrectError](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L68-L70>)
 
 TTLIncorrectError is returned by NewStore when the supplied TTL is shorter than minStoreTTL.
 
@@ -113,7 +113,7 @@ type TTLIncorrectError struct {
 ```
 
 <a name="TTLIncorrectError.Error"></a>
-### func \(\*TTLIncorrectError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L65>)
+### func \(\*TTLIncorrectError\) [Error](<https://github.com/induzo/gocom/blob/main/http/middleware/valkeydempotency/store.go#L73>)
 
 ```go
 func (e *TTLIncorrectError) Error() string
