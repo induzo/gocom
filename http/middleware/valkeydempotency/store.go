@@ -92,12 +92,21 @@ func NewStore(lockerOption *valkeylock.LockerOption, ttl time.Duration) (*Store,
 // TryLock takes a Valkey-backed Redlock-style lock for key. The
 // underlying valkeylock library handles auto-extension under the
 // configured majority.
+//
+// When the lock is held by another request the returned error wraps
+// [idempotency.ErrLockHeld]; any other failure (connection error,
+// timeout, closed locker) is returned as-is so the middleware reports it
+// as a store failure rather than an in-flight request.
 func (sto *Store) TryLock(
 	ctx context.Context,
 	key string,
 ) (context.Context, context.CancelFunc, error) {
 	ctx, cancel, err := sto.locker.TryWithContext(ctx, key)
 	if err != nil {
+		if errors.Is(err, valkeylock.ErrNotLocked) {
+			return nil, nil, fmt.Errorf("%w: key %s: %w", idempotency.ErrLockHeld, key, err)
+		}
+
 		return nil, nil, fmt.Errorf("failed to lock key %s: %w", key, err)
 	}
 

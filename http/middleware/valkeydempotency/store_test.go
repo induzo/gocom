@@ -124,12 +124,15 @@ func TestStoreLock(t *testing.T) {
 			)
 
 			if tt.isLocked {
-				ctx, unlockPrevLock, errSR = storeValkey.TryLock(ctx, tt.key)
+				// Hold the lock from a separate context so the second
+				// TryLock below fails because the key is held, not
+				// because its context was cancelled.
+				_, unlockPrevLock, errSR = storeValkey.TryLock(context.Background(), tt.key)
 				if errSR != nil {
-					t.Fatalf("StoreResponse() error: %v", errSR)
+					t.Fatalf("TryLock() error: %v", errSR)
 				}
 
-				unlockPrevLock()
+				defer unlockPrevLock()
 			}
 
 			var (
@@ -145,14 +148,55 @@ func TestStoreLock(t *testing.T) {
 				return
 			}
 
+			if tt.wantErr && !errors.Is(err, idempotency.ErrLockHeld) {
+				t.Errorf("held lock error %v should wrap idempotency.ErrLockHeld", err)
+			}
+
 			if unlock != nil {
 				unlock()
 			}
-
-			if unlockPrevLock != nil {
-				unlockPrevLock()
-			}
 		})
+	}
+}
+
+// TestStoreLock_StoreFailureIsNotLockHeld checks that a TryLock failure
+// that is not "the key is held" (here: the locker has been closed) does
+// not wrap idempotency.ErrLockHeld, so the middleware reports it as a
+// store failure instead of an in-flight request.
+func TestStoreLock_StoreFailureIsNotLockHeld(t *testing.T) {
+	t.Parallel()
+
+	storeValkey, errNS := NewStore(
+		&valkeylock.LockerOption{
+			ClientOption:   valkey.ClientOption{InitAddress: []string{testValkeyPortHost}},
+			KeyMajority:    1,
+			NoLoopTracking: true,
+		},
+		1*time.Second,
+	)
+	if errNS != nil {
+		t.Fatalf("NewStore() error = %v", errNS)
+	}
+
+	if errC := storeValkey.Close(); errC != nil {
+		t.Fatalf("Close() error = %v", errC)
+	}
+
+	_, unlock, err := storeValkey.TryLock(context.Background(), "trylock_closed_locker")
+	if unlock != nil {
+		unlock()
+	}
+
+	if err == nil {
+		t.Fatal("TryLock() on a closed locker should fail")
+	}
+
+	if errors.Is(err, idempotency.ErrLockHeld) {
+		t.Errorf("store failure %v must not wrap idempotency.ErrLockHeld", err)
+	}
+
+	if !errors.Is(err, valkeylock.ErrLockerClosed) {
+		t.Errorf("error %v should keep the original cause valkeylock.ErrLockerClosed", err)
 	}
 }
 
