@@ -2,16 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
-## [database/pgx-slog/v1.0.47] - 2026-10-02
+## [database/pgx-slog/v1.0.48] - 2026-11-03
+
+### Bug Fixes
+
+- Sync
+- #44 and #43
 
 ### Documentation
 
 - Update CHANGELOG.md for database/pgx-slog/v1.0.46
+- Update CHANGELOG.md for database/pgx-slog/v1.0.47
 
 ### Miscellaneous Tasks
 
 - Sec update
 - Update deps and lint
+- Update deps
+- Update deps
 
 ## [database/pgx-slog/v1.0.45] - 2026-10-01
 
