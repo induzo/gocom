@@ -3,15 +3,15 @@ module github.com/induzo/gocom/database/pginit/v2
 go 1.27.1
 
 require (
-	github.com/exaring/otelpgx v0.12.0
-	github.com/goccy/go-json v0.11.2
+	github.com/exaring/otelpgx v0.13.0
+	github.com/goccy/go-json v0.12.0
 	github.com/gofrs/uuid/v5 v5.5.1
-	github.com/induzo/gocom/database/pgx-slog v1.0.47
+	github.com/induzo/gocom/database/pgx-slog v1.0.48
 	github.com/jackc/pgx-gofrs-uuid v0.0.0-20230224015001-1d428863c2e2
 	github.com/jackc/pgx-shopspring-decimal v0.0.0-20220624020537-1d36b5a1853e
-	github.com/jackc/pgx/v5 v5.11.0
+	github.com/jackc/pgx/v5 v5.12.0
 	github.com/ory/dockertest/v3 v3.12.0
-	github.com/shopspring/decimal v1.4.0
+	github.com/shopspring/decimal v1.6.0
 	github.com/vgarvardt/pgx-google-uuid/v5 v5.6.0
 	go.uber.org/goleak v1.3.0
 )
@@ -38,7 +38,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/puddle/v2 v2.2.2 // indirect
+	github.com/jackc/puddle/v2 v2.2.3 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/moby/api v1.56.1 // indirect
 	github.com/moby/moby/client v0.6.2 // indirect
