@@ -2,12 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/valkeydempotency/v0.6.1] - 2026-11-03
+
+### Bug Fixes
+
+- Cve and concurrency
+
 ## [http/middleware/valkeydempotency/v0.6.0] - 2026-11-03
 
 ### Bug Fixes
 
 - Sync
 - #44 and #43
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/valkeydempotency/v0.6.0
 
 ## [http/middleware/valkeydempotency/v0.5.1] - 2026-10-11
 
