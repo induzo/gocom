@@ -2,10 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
-## [database/pginit/v2.3.0] - 2026-10-02
+## [database/pginit/v2.3.1] - 2026-11-03
+
+### Bug Fixes
+
+- Sync
+- #44 and #43
+
+### Documentation
+
+- Update CHANGELOG.md for database/pginit/v2.3.0
 
 ### Miscellaneous Tasks
 
+- Update deps
 - Update deps
 
 ## [database/pginit/v2.2.41] - 2026-10-01
