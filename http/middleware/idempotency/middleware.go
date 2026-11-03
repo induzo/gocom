@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"net/http"
 	"slices"
@@ -124,16 +125,33 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 
 			lockCtx, unlock, errL := store.TryLock(req.Context(), storeKey)
 			if errL != nil {
-				conf.errorToHTTPFn(respW, req,
-					RequestInFlightError{
-						RequestContext{
-							URL:       req.URL.String(),
-							Method:    req.Method,
-							KeyHeader: conf.idempotencyKeyHeader,
-							Key:       key,
-						},
-					},
-				)
+				endLock()
+
+				// The client went away (or the server timed the request
+				// out) while we were locking: nothing useful can be
+				// written back and this is not a store failure.
+				if req.Context().Err() != nil {
+					return
+				}
+
+				reqCtx := RequestContext{
+					URL:       req.URL.String(),
+					Method:    req.Method,
+					KeyHeader: conf.idempotencyKeyHeader,
+					Key:       key,
+				}
+
+				// Only a held lock means another request is in flight; any
+				// other failure is the store itself failing.
+				if errors.Is(errL, ErrLockHeld) {
+					conf.errorToHTTPFn(respW, req,
+						RequestInFlightError{RequestContext: reqCtx, Err: errL},
+					)
+				} else {
+					conf.errorToHTTPFn(respW, req,
+						TryLockError{RequestContext: reqCtx, Err: errL},
+					)
+				}
 
 				return
 			}
@@ -145,12 +163,32 @@ func NewMiddleware(store Store, options ...Option) func(http.Handler) http.Handl
 			endLock()
 
 			defer func() {
-				// Try to lock the key to prevent concurrent requests
 				endUnlock := conf.tracerFn(req, "idempotency.unlock")
 
 				unlock()
 				endUnlock()
 			}()
+
+			// Re-check under the lock: the original request may have stored
+			// its response and released the lock between our first check
+			// and the lock acquisition. Without this a late duplicate would
+			// run the handler a second time.
+			endRecheck := conf.tracerFn(req, "idempotency.recheck_response")
+			isFound = handleRequestWithIdempotency(
+				conf,
+				store,
+				storeKey,
+				requestHash,
+				respW,
+				req,
+				key,
+			)
+
+			endRecheck()
+
+			if isFound {
+				return
+			}
 
 			teeRespW := newTeeResponseWriter(respW, conf.maxResponseBodyBytes)
 
@@ -201,6 +239,12 @@ func handleRequestWithIdempotency(
 ) bool {
 	resp, exists, err := store.GetStoredResponse(req.Context(), storeKey)
 	if err != nil {
+		// Request context cancelled mid-lookup: the client is gone, do
+		// not report it as a store failure.
+		if req.Context().Err() != nil {
+			return true
+		}
+
 		conf.errorToHTTPFn(respW, req, GetStoredResponseError{
 			URL:       req.URL.String(),
 			Method:    req.Method,

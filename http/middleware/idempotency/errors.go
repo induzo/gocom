@@ -10,8 +10,10 @@ import (
 )
 
 const (
-	internalServerErrorMsg = "internal server error"
-	headerContentType      = "Content-Type"
+	internalServerErrorMsg    = "internal server error"
+	internalServerErrorType   = "errors/internal-server-error"
+	internalServerErrorDetail = "an internal server error occurred."
+	headerContentType         = "Content-Type"
 )
 
 type RequestContext struct {
@@ -62,12 +64,51 @@ func (e InvalidIdempotencyKeyError) Unwrap() error {
 	return e.Err
 }
 
+// ErrLockHeld must be wrapped by the Store TryLock method when the lock is
+// already held by another in-flight request. The middleware turns it into
+// a RequestInFlightError (409). Any other TryLock error is treated as a
+// store failure and becomes a TryLockError (500).
+var ErrLockHeld = errors.New("idempotency key is locked by an in-flight request")
+
+// RequestInFlightError is returned when another request with the same key
+// currently holds the in-flight lock. Err, when set, is the underlying
+// TryLock error and wraps [ErrLockHeld].
 type RequestInFlightError struct {
 	RequestContext
+	Err error
 }
 
+//nolint:gocritic //keep errors all the same
 func (e RequestInFlightError) Error() string {
 	return "request with key " + e.String() + " still in flight"
+}
+
+//nolint:gocritic //keep errors all the same
+func (e RequestInFlightError) Unwrap() error {
+	return e.Err
+}
+
+// TryLockError is returned when the Store TryLock method fails for a reason
+// other than the lock being held, for example when the backing store is
+// unreachable.
+type TryLockError struct {
+	RequestContext
+	Err error
+}
+
+//nolint:gocritic //keep errors all the same
+func (e TryLockError) Error() string {
+	return fmt.Sprintf("error locking key %s: %v", e.RequestContext.String(), e.Err)
+}
+
+//nolint:gocritic //keep errors all the same
+func (e TryLockError) toAttrs() []slog.Attr {
+	return append(e.RequestContext.toAttrs(), slog.Any("try_lock_error", e.Err))
+}
+
+//nolint:gocritic //keep errors all the same
+func (e TryLockError) Unwrap() error {
+	return e.Err
 }
 
 // MismatchedSignatureError is returned when a request shares an existing
@@ -231,6 +272,18 @@ func (pd ProblemDetail) MarshalJSON() ([]byte, error) {
 	return out, nil
 }
 
+// internalServerProblem is the generic 500 problem detail shared by every
+// store-failure error so that no cause leaks to the client.
+func internalServerProblem(url string) ProblemDetail {
+	return ProblemDetail{
+		HTTPStatusCode: http.StatusInternalServerError,
+		Type:           internalServerErrorType,
+		Title:          internalServerErrorMsg,
+		Detail:         internalServerErrorDetail,
+		Instance:       url,
+	}
+}
+
 // ErrorToHTTPJSONProblemDetail converts an error to a RFC9457 problem detail.
 // This is a sample errorToHTTPFn function that handles the specific errors encountered
 // You can add your own func and set it inside the config
@@ -260,6 +313,7 @@ func ErrorToHTTPJSONProblemDetail(
 		missingIdempotencyKeyHeaderError MissingIdempotencyKeyHeaderError
 		invalidIdempotencyKeyError       InvalidIdempotencyKeyError
 		requestInFlightError             RequestInFlightError
+		tryLockError                     TryLockError
 		mismatchedSignatureError         MismatchedSignatureError
 		storeResponseError               StoreResponseError
 		getStoredResponseError           GetStoredResponseError
@@ -329,14 +383,13 @@ func ErrorToHTTPJSONProblemDetail(
 
 		errorAttrs = append(errorAttrs, slog.Any("issue", bodyTooLargeError))
 		errorAttrs = append(errorAttrs, bodyTooLargeError.toAttrs()...)
+	case errors.As(err, &tryLockError):
+		pbDetail = internalServerProblem(url)
+
+		errorAttrs = append(errorAttrs, slog.Any("issue", tryLockError))
+		errorAttrs = append(errorAttrs, tryLockError.toAttrs()...)
 	case errors.As(err, &getStoredResponseError):
-		pbDetail = ProblemDetail{
-			HTTPStatusCode: http.StatusInternalServerError,
-			Type:           "errors/internal-server-error",
-			Title:          internalServerErrorMsg,
-			Detail:         "an internal server error occurred.",
-			Instance:       url,
-		}
+		pbDetail = internalServerProblem(url)
 
 		errorAttrs = append(errorAttrs, slog.Any("issue", getStoredResponseError))
 		errorAttrs = append(errorAttrs, getStoredResponseError.toAttrs()...)
@@ -348,13 +401,7 @@ func ErrorToHTTPJSONProblemDetail(
 
 		return
 	default:
-		pbDetail = ProblemDetail{
-			HTTPStatusCode: http.StatusInternalServerError,
-			Type:           "errors/internal-server-error",
-			Title:          internalServerErrorMsg,
-			Detail:         "an internal server error occurred.",
-			Instance:       url,
-		}
+		pbDetail = internalServerProblem(url)
 
 		errorAttrs = append(errorAttrs, slog.Any("issue", err))
 	}

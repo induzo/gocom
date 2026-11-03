@@ -705,6 +705,8 @@ func TestMiddleware_WithTracer(t *testing.T) {
 			"idempotency.handle_response:end",
 			"idempotency.try_lock:start",
 			"idempotency.try_lock:end",
+			"idempotency.recheck_response:start",
+			"idempotency.recheck_response:end",
 			"idempotency.store_response:start",
 			"idempotency.store_response:end",
 			"idempotency.unlock:start",
@@ -1028,6 +1030,8 @@ func errorToString(
 		http.Error(writer, "MissingIdempotencyKeyHeaderError", http.StatusBadRequest)
 	case errors.As(err, &RequestInFlightError{}):
 		http.Error(writer, "RequestInFlightError", http.StatusConflict)
+	case errors.As(err, &TryLockError{}):
+		http.Error(writer, fmt.Sprintf("TryLockError: %v", err), http.StatusInternalServerError)
 	case errors.As(err, &MismatchedSignatureError{}):
 		http.Error(writer, "MismatchedSignatureError", http.StatusBadRequest)
 	case errors.As(err, &StoreResponseError{}):
@@ -1148,5 +1152,284 @@ func TestMiddleware_OversizedResponseIsNotReplayed(t *testing.T) {
 	// times rather than the second being replayed.
 	if got := calls.Load(); got != 2 {
 		t.Errorf("expected handler to run twice (no replay), ran %d times", got)
+	}
+}
+
+// gatedStore wraps a Store and lets a test pause a specific TryLock call
+// between the stored-response check and the lock attempt.
+type gatedStore struct {
+	Store
+
+	tryLockCalls atomic.Int32
+	// gateOn is the 1-based TryLock call that must wait on gate.
+	gateOn int32
+	// reached is closed once the gated call has arrived at the gate.
+	reached chan struct{}
+	// gate blocks the gated call until closed.
+	gate chan struct{}
+}
+
+func (g *gatedStore) TryLock(
+	ctx context.Context,
+	key string,
+) (context.Context, context.CancelFunc, error) {
+	if g.tryLockCalls.Add(1) == g.gateOn {
+		close(g.reached)
+		<-g.gate
+	}
+
+	return g.Store.TryLock(ctx, key)
+}
+
+// TestMiddleware_DuplicateAfterOriginalFinishes_ReplaysStoredResponse
+// reproduces issue #43: a duplicate whose stored-response check misses
+// while the original is still running, but which only reaches TryLock after
+// the original has stored its response and released the lock, must replay
+// the stored response instead of running the handler a second time.
+func TestMiddleware_DuplicateAfterOriginalFinishes_ReplaysStoredResponse(t *testing.T) {
+	t.Parallel()
+
+	inmem := NewInMemStore()
+	t.Cleanup(inmem.Close)
+
+	store := &gatedStore{
+		Store:   inmem,
+		gateOn:  2, // the duplicate's TryLock
+		reached: make(chan struct{}),
+		gate:    make(chan struct{}),
+	}
+
+	var (
+		handlerCalls atomic.Int32
+		started      = make(chan struct{}, 1)
+		release      = make(chan struct{})
+	)
+
+	handler := NewMiddleware(store, WithErrorToHTTPFn(errorToString))(http.HandlerFunc(
+		func(w http.ResponseWriter, _ *http.Request) {
+			handlerCalls.Add(1)
+
+			select {
+			case started <- struct{}{}:
+			default:
+			}
+
+			<-release
+			w.WriteHeader(http.StatusCreated)
+			_, _ = w.Write([]byte("created"))
+		}))
+
+	server := httptest.NewServer(handler)
+	defer server.Close()
+
+	const key = "dup-after-finish"
+
+	type result struct {
+		status int
+		body   string
+		err    error
+	}
+
+	original := make(chan result, 1)
+
+	go func() {
+		s, b, err := sendReq(context.Background(), http.MethodPost, "/", server, key, "body")
+		original <- result{status: s, body: b, err: err}
+	}()
+
+	// The original is inside the handler, holding the lock, nothing stored yet.
+	<-started
+
+	duplicate := make(chan result, 1)
+
+	go func() {
+		s, b, err := sendReq(context.Background(), http.MethodPost, "/", server, key, "body")
+		duplicate <- result{status: s, body: b, err: err}
+	}()
+
+	// The duplicate has missed the stored-response check and is paused
+	// just before TryLock.
+	<-store.reached
+
+	// Let the original finish: it stores its response and releases the lock.
+	close(release)
+
+	r := <-original
+	if r.err != nil {
+		t.Fatalf("original request: %v", r.err)
+	}
+
+	if r.status != http.StatusCreated {
+		t.Fatalf("original status = %d, want %d", r.status, http.StatusCreated)
+	}
+
+	// Now let the duplicate take the (free) lock.
+	close(store.gate)
+
+	d := <-duplicate
+	if d.err != nil {
+		t.Fatalf("duplicate request: %v", d.err)
+	}
+
+	if d.status != http.StatusCreated || d.body != "created" {
+		t.Errorf("duplicate response = %d %q, want %d %q",
+			d.status, d.body, http.StatusCreated, "created")
+	}
+
+	if got := handlerCalls.Load(); got != 1 {
+		t.Errorf("handler ran %d times for one idempotency key, want 1", got)
+	}
+}
+
+// failingLockStore is a Store whose TryLock always fails with lockErr.
+type failingLockStore struct {
+	Store
+
+	lockErr error
+}
+
+func (f *failingLockStore) TryLock(
+	_ context.Context,
+	_ string,
+) (context.Context, context.CancelFunc, error) {
+	return nil, nil, f.lockErr
+}
+
+// TestMiddleware_TryLockErrors reproduces issue #44: only a "lock held"
+// failure is a RequestInFlightError (409). Any other TryLock failure, such
+// as the backing store being unreachable, must surface as a store failure
+// (500) that keeps the original error.
+func TestMiddleware_TryLockErrors(t *testing.T) {
+	t.Parallel()
+
+	errUnreachable := errors.New("valkey: connection refused")
+
+	tests := []struct {
+		name       string
+		lockErr    error
+		wantStatus int
+		wantType   string
+		wantWraps  error
+	}{
+		{
+			name:       "lock held is 409",
+			lockErr:    fmt.Errorf("TryLock: %w", ErrLockHeld),
+			wantStatus: http.StatusConflict,
+			wantType:   "RequestInFlightError",
+			wantWraps:  ErrLockHeld,
+		},
+		{
+			name:       "store failure is 500 and keeps the cause",
+			lockErr:    fmt.Errorf("TryLock: %w", errUnreachable),
+			wantStatus: http.StatusInternalServerError,
+			wantType:   "TryLockError",
+			wantWraps:  errUnreachable,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			inmem := NewInMemStore()
+			t.Cleanup(inmem.Close)
+
+			var (
+				gotErr       = make(chan error, 1)
+				handlerCalls atomic.Int32
+			)
+
+			captureErr := func(w http.ResponseWriter, r *http.Request, err error) {
+				gotErr <- err
+
+				errorToString(w, r, err)
+			}
+
+			handler := NewMiddleware(
+				&failingLockStore{Store: inmem, lockErr: tt.lockErr},
+				WithErrorToHTTPFn(captureErr),
+			)(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				handlerCalls.Add(1)
+				w.WriteHeader(http.StatusOK)
+			}))
+
+			server := httptest.NewServer(handler)
+			defer server.Close()
+
+			status, body, err := sendReq(
+				context.Background(), http.MethodPost, "/", server, "lock-err-key", "body",
+			)
+			if err != nil {
+				t.Fatalf("request: %v", err)
+			}
+
+			if status != tt.wantStatus {
+				t.Errorf("status = %d, want %d", status, tt.wantStatus)
+			}
+
+			if !strings.Contains(body, tt.wantType) {
+				t.Errorf("body = %q, want it to contain %s", body, tt.wantType)
+			}
+
+			select {
+			case captured := <-gotErr:
+				if !errors.Is(captured, tt.wantWraps) {
+					t.Errorf("error %v does not wrap %v", captured, tt.wantWraps)
+				}
+			default:
+				t.Error("error handler was not called")
+			}
+
+			if handlerCalls.Load() != 0 {
+				t.Errorf("handler ran %d times, want 0", handlerCalls.Load())
+			}
+		})
+	}
+}
+
+// TestMiddleware_TryLockCancelledRequestIsNotReported checks that a TryLock
+// failure caused by the request's own context being cancelled (client
+// disconnect) is neither reported to the error handler nor treated as a
+// store failure.
+func TestMiddleware_TryLockCancelledRequestIsNotReported(t *testing.T) {
+	t.Parallel()
+
+	inmem := NewInMemStore()
+	t.Cleanup(inmem.Close)
+
+	var (
+		errFnCalls   atomic.Int32
+		handlerCalls atomic.Int32
+	)
+
+	handler := NewMiddleware(
+		&failingLockStore{Store: inmem, lockErr: context.Canceled},
+		WithErrorToHTTPFn(func(w http.ResponseWriter, r *http.Request, err error) {
+			errFnCalls.Add(1)
+			errorToString(w, r, err)
+		}),
+	)(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {
+		handlerCalls.Add(1)
+	}))
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	req := httptest.NewRequestWithContext(ctx, http.MethodPost, "/", strings.NewReader("body"))
+	req.Header.Set(DefaultIdempotencyKeyHeader, "cancelled-key")
+
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	if errFnCalls.Load() != 0 {
+		t.Errorf("error handler called %d times for a cancelled request, want 0", errFnCalls.Load())
+	}
+
+	if handlerCalls.Load() != 0 {
+		t.Errorf("handler ran %d times, want 0", handlerCalls.Load())
+	}
+
+	if rec.Body.Len() != 0 {
+		t.Errorf("body written for a cancelled request: %q", rec.Body.String())
 	}
 }

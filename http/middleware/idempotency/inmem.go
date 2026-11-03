@@ -124,10 +124,7 @@ func (s *InMemStore) TryLock(
 		}
 
 		if now.Before(expiry) {
-			return ctx, nil, fmt.Errorf(
-				"TryLock: %w",
-				errors.New("key is already locked"), //nolint:err113 // local fixture
-			)
+			return ctx, nil, fmt.Errorf("TryLock: %w", ErrLockHeld)
 		}
 
 		// Lock expired. Atomically replace it; if CAS fails another

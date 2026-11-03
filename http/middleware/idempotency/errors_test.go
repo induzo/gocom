@@ -36,6 +36,47 @@ func TestRequestStillInFlightError_Error(t *testing.T) {
 	}
 }
 
+func TestRequestInFlightError_Unwrap(t *testing.T) {
+	t.Parallel()
+
+	cause := fmt.Errorf("TryLock: %w", ErrLockHeld)
+	err := RequestInFlightError{Err: cause}
+
+	if !errors.Is(err, ErrLockHeld) {
+		t.Errorf("RequestInFlightError should wrap ErrLockHeld, got %v", err)
+	}
+}
+
+func TestTryLockError_Error(t *testing.T) {
+	t.Parallel()
+
+	err := TryLockError{
+		Key:       "key",
+		KeyHeader: DefaultIdempotencyKeyHeader,
+		Err:       errors.New("connection refused"),
+	}
+
+	want := "error locking key `X-Idempotency-Key`:`key`: connection refused"
+	if err.Error() != want {
+		t.Errorf("Error() = %q, want %q", err.Error(), want)
+	}
+}
+
+func TestTryLockError_Unwrap(t *testing.T) {
+	t.Parallel()
+
+	cause := errors.New("connection refused")
+	err := TryLockError{Err: cause}
+
+	if !errors.Is(err, cause) {
+		t.Errorf("TryLockError should wrap its cause, got %v", err)
+	}
+
+	if errors.Is(err, ErrLockHeld) {
+		t.Errorf("TryLockError must not wrap ErrLockHeld")
+	}
+}
+
 func TestMismatchedSignatureError_Error(t *testing.T) {
 	// TestMismatchedSignatureError_Error tests the Error method.
 	t.Parallel()
@@ -140,6 +181,18 @@ func TestErrorToHTTPJSONProblemDetail(t *testing.T) {
 			},
 			expectedStatusCode:   http.StatusConflict,
 			expectedBodyContains: `"title": "request already in flight"`,
+		},
+		{
+			name: "try lock store failure",
+			err: TryLockError{
+				RequestContext: RequestContext{
+					Key:       "key",
+					KeyHeader: DefaultIdempotencyKeyHeader,
+				},
+				Err: errors.New("test"),
+			},
+			expectedStatusCode:   http.StatusInternalServerError,
+			expectedBodyContains: `"title": "internal server error"`,
 		},
 		{
 			name: "mismatched signature",

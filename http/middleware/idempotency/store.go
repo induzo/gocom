@@ -26,10 +26,12 @@ type StoredResponse struct {
 type Store interface {
 	// TryLock attempts to acquire an in-flight lock for key. It returns a
 	// context that scopes the lock's lifetime, a cancel function the caller
-	// must invoke once the request has completed, and a non-nil error if
-	// the lock is already held by another in-flight request. The lock
-	// should have a server-side timeout so a crashed handler does not hold
-	// it forever.
+	// must invoke once the request has completed, and a non-nil error on
+	// failure. When the lock is already held by another in-flight request
+	// the error must wrap [ErrLockHeld]; the middleware reports it as a
+	// RequestInFlightError (409). Any other error is treated as a store
+	// failure and reported as a TryLockError (500). The lock should have a
+	// server-side timeout so a crashed handler does not hold it forever.
 	TryLock(ctx context.Context, key string) (context.Context, context.CancelFunc, error)
 
 	// StoreResponse records the final response for key. Implementations
