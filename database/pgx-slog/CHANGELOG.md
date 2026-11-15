@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [database/pgx-slog/v1.0.49] - 2026-11-15
 
+### Documentation
+
+- Update CHANGELOG.md for database/pgx-slog/v1.0.49
+
 ### Miscellaneous Tasks
 
 - Update deps
