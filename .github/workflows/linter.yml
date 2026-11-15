@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 env:
-  LINTER_VERSION: "2.14.0"
+  LINTER_VERSION: "2.15.0"
 
 jobs:
   lint:
@@ -22,13 +22,13 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: Install Go
-        uses: actions/setup-go@v7
+        uses: actions/setup-go@v7.0.0
         with:
           go-version-file: 'go.work'
       - name: Cache golangci-lint
-        uses: actions/cache@v6
+        uses: actions/cache@v6.1.0
         with:
           path: ~/.cache/golangci-lint
           key: ${{ runner.os }}-golangci-lint-${{ env.LINTER_VERSION }}-${{ hashFiles('**/go.work.sum') }}

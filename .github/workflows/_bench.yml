@@ -21,9 +21,9 @@ jobs:
       deployments: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: Install Go
-        uses: actions/setup-go@v7
+        uses: actions/setup-go@v7.0.0
         with:
           go-version-file: 'go.work'
       - name: Run benchmark
@@ -34,7 +34,7 @@ jobs:
           git config --global url.https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/.insteadOf https://github.com/
           go test ./... -bench=. -benchmem | tee ./bench-continuous.txt
       - name: Store benchmark result
-        uses: benchmark-action/github-action-benchmark@4322e5726e6334590d251fc4f92bec0efafc45dc # v1.22.2
+        uses: benchmark-action/github-action-benchmark@v1.22.2
         with:
           tool: "go"
           output-file-path: ./${{ inputs.module }}/bench-continuous.txt
