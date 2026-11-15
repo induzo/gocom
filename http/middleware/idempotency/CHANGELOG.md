@@ -2,11 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/idempotency/v0.12.1] - 2026-11-15
+
+### Bug Fixes
+
+- #44 and #43
+
+### Miscellaneous Tasks
+
+- Update deps
+
 ## [http/middleware/idempotency/v0.12.0] - 2026-11-03
 
 ### Bug Fixes
 
 - #43 #44
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/idempotency/v0.12.0
 
 ## [http/middleware/idempotency/v0.11.0] - 2026-10-02
 
