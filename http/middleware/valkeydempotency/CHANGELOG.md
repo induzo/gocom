@@ -2,11 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [http/middleware/valkeydempotency/v0.6.2] - 2026-11-15
+
+### Miscellaneous Tasks
+
+- Update deps
+- Update deps
+
 ## [http/middleware/valkeydempotency/v0.6.1] - 2026-11-03
 
 ### Bug Fixes
 
 - Cve and concurrency
+
+### Documentation
+
+- Update CHANGELOG.md for http/middleware/valkeydempotency/v0.6.1
 
 ## [http/middleware/valkeydempotency/v0.6.0] - 2026-11-03
 
