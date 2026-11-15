@@ -67,5 +67,5 @@ Let's take an example of an opentelemetry module.
 ## Contribution
 
 ```bash
-pre-commit install -t commit-msg -t pre-commit -t pre-push
+prek install -t commit-msg -t pre-commit -t pre-push
 ```
