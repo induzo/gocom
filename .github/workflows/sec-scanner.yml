@@ -27,7 +27,7 @@ jobs:
         with:
           fetch-depth: 0 # we use 0 here as we need it for gitguardian to inspect everything
       - name: Install Go
-        uses: actions/setup-go@v7.0.0
+        uses: actions/setup-go@v7.1.0
         with:
           go-version-file: 'go.work'
       - name: Install trivy
